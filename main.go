@@ -17,9 +17,20 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("Decoded successfully!")
-	if err = player(decoder, rawAudio); err != nil {
+	normalisedSamples, err := getNormalisedSamples(rawAudio)
+	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("Audio data is normalised")
+	viewState := ViewState{
+		PxPerSec:     10,
+		SamplesPerPx: decoder.SampleRate / 10,
+	}
+	renderableWave := getRenderableWave(normalisedSamples, viewState)
+	fmt.Printf("renderableWave: %v\n", renderableWave)
+	// if err = player(decoder, rawAudio); err != nil {
+	// 	log.Fatal(err)
+	// }
 	// go func() {
 	// 	window := new(app.Window)
 	// 	window.Option(app.Title("re-peat"))
