@@ -20,7 +20,8 @@ func getNormalisedSamples(data []byte) ([]float32, error) {
 	return normalised, nil
 }
 
-type ViewState struct {
+type RenderableWaves struct {
+	SampleRate int
 	// How many pixels are designated for 1 second of audio
 	PxPerSec int
 	// Left border where the decoded audio data should be read from (for zooming functionality)
@@ -28,19 +29,27 @@ type ViewState struct {
 	// Right border where the decoded audio data should be read to (for zooming functionality)
 	RightB       int
 	SamplesPerPx int
+	Samples      []float32
 }
 
-func getRenderableWave(samples []float32, view ViewState) [][2]float32 {
-	if view.RightB == 0 {
-		view.RightB = len(samples)
+func (r *RenderableWaves) SetMaxX(maxX int) {
+	seconds := len(r.Samples) / r.SampleRate
+	r.PxPerSec = maxX / seconds
+	r.SamplesPerPx = r.SampleRate / (maxX / seconds)
+}
+
+func (r RenderableWaves) GetRenderableWaves() [][2]float32 {
+	samples := r.Samples
+	if r.RightB == 0 {
+		r.RightB = len(samples)
 	}
-	samples = samples[view.LeftB:view.RightB]
-	res := make([][2]float32, len(samples)/view.SamplesPerPx)
+	samples = samples[r.LeftB:r.RightB]
+	res := make([][2]float32, len(samples)/r.SamplesPerPx)
 
 	var idx int
 	var min float32 = 1
 	var max float32 = -1
-	count := view.SamplesPerPx
+	count := r.SamplesPerPx
 	for _, it := range samples {
 		if it < min {
 			min = it
@@ -54,7 +63,7 @@ func getRenderableWave(samples []float32, view ViewState) [][2]float32 {
 			idx++
 			min = 1
 			max = -1
-			count = view.SamplesPerPx
+			count = r.SamplesPerPx
 		}
 	}
 
