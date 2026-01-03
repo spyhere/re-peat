@@ -28,14 +28,16 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("Audio data is normalised")
-	renderableWaves := RenderableWaves{
+	rWaves := &RenderableWaves{
 		SampleRate: decoder.SampleRate,
+		Frames:     len(normalisedSamples) / decoder.Channels,
 		Samples:    normalisedSamples,
 	}
+	rWaves.MakeSamplesMono(decoder.Channels)
 	go func() {
 		window := new(app.Window)
 		window.Option(app.Title("re-peat"))
-		err := run(window, renderableWaves)
+		err := run(window, rWaves)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -46,7 +48,7 @@ func main() {
 
 const margin = 400
 
-func run(window *app.Window, rWaves RenderableWaves) error {
+func run(window *app.Window, rWaves *RenderableWaves) error {
 	theme := material.NewTheme()
 	var ops op.Ops
 	list := layout.List{}
@@ -58,15 +60,14 @@ func run(window *app.Window, rWaves RenderableWaves) error {
 			gtx := app.NewContext(&ops, e)
 			_ = theme
 			yMid := (e.Size.Y / 2) - margin
+
 			rWaves.SetMaxX(e.Size.X)
 			waves := rWaves.GetRenderableWaves()
 			offset := op.Offset(image.Pt(0, margin)).Push(gtx.Ops)
 			list.Layout(gtx, len(waves), func(gtx layout.Context, idx int) layout.Dimensions {
-				offset := op.Offset(image.Pt(idx+rWaves.PxPerSec, 0)).Push(gtx.Ops)
 				high := yMid - int((waves[idx][1] * float32(yMid)))
 				low := yMid - int(waves[idx][0]*float32(yMid))
-				box := ColorBox(gtx, image.Rect(0, high, rWaves.PxPerSec-2, low), color.NRGBA{R: 0x99, B: 0xcc, A: 0xff})
-				offset.Pop()
+				box := ColorBox(gtx, image.Rect(0, high, 1, low), color.NRGBA{R: 0x99, B: 0xcc, A: 0xff})
 				return box
 			})
 			offset.Pop()

@@ -23,22 +23,49 @@ func getNormalisedSamples(data []byte) ([]float32, error) {
 type RenderableWaves struct {
 	SampleRate int
 	// How many pixels are designated for 1 second of audio
-	PxPerSec int
+	PxPerSec float64
 	// Left border where the decoded audio data should be read from (for zooming functionality)
 	LeftB int
 	// Right border where the decoded audio data should be read to (for zooming functionality)
 	RightB       int
 	SamplesPerPx int
+	Frames       int
 	Samples      []float32
+	Waves        [][2]float32
+}
+
+func (r *RenderableWaves) MakeSamplesMono(chanNum int) {
+	if chanNum == 1 {
+		return
+	}
+	if chanNum > 2 {
+		return
+	}
+	res := make([]float32, len(r.Samples)/chanNum)
+
+	for i := 0; i < len(r.Samples); i += 2 {
+		lSample := r.Samples[i]
+		rSample := r.Samples[i+1]
+		res[i/2] = (lSample + rSample) * 0.5
+	}
+	r.Samples = res
 }
 
 func (r *RenderableWaves) SetMaxX(maxX int) {
-	seconds := len(r.Samples) / r.SampleRate
-	r.PxPerSec = maxX / seconds
-	r.SamplesPerPx = r.SampleRate / (maxX / seconds)
+	seconds := float64(r.Frames) / float64(r.SampleRate)
+	var pxPerSec float64
+	if r.PxPerSec > 0 {
+		pxPerSec = r.PxPerSec
+	} else {
+		pxPerSec = float64(maxX) / seconds
+	}
+	r.SamplesPerPx = int(float64(r.SampleRate) / pxPerSec)
 }
 
-func (r RenderableWaves) GetRenderableWaves() [][2]float32 {
+func (r *RenderableWaves) GetRenderableWaves() [][2]float32 {
+	if len(r.Waves) > 0 {
+		return r.Waves
+	}
 	samples := r.Samples
 	if r.RightB == 0 {
 		r.RightB = len(samples)
@@ -66,6 +93,6 @@ func (r RenderableWaves) GetRenderableWaves() [][2]float32 {
 			count = r.SamplesPerPx
 		}
 	}
-
+	r.Waves = res
 	return res
 }
