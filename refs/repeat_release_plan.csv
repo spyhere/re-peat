@@ -1,4 +1,3 @@
-repeat_release_plan
 Version; Functionality
 v1.0.0; 3 tabs: project tab, sounds wave tab, labels tab. Can open new track, has custom file explorer. Automatically saves the labels for track. Works only on macOs. User can manually load the labels for a current track.
 v0.9.0; Automatically saves the labels for a track.
