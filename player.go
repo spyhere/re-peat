@@ -116,7 +116,3 @@ func (c *countingReader) Seek(offset int64, whence int) (int64, error) {
 	c.bytes = offset
 	return c.r.Seek(offset, whence)
 }
-
-func (c *countingReader) Stop() {
-	c.isActive = false
-}
