@@ -25,6 +25,10 @@ func (p *Player) Pause() {
 	p.cReader.isActive = false
 }
 
+func (p *Player) IsPlaying() bool {
+	return p.player.IsPlaying()
+}
+
 func (p *Player) SetVolume(volume float64) {
 	p.player.SetVolume(volume)
 }
