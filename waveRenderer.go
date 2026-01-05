@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"gioui.org/app"
+	"gioui.org/f32"
 	"gioui.org/io/key"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -50,7 +51,6 @@ type WavesRenderer struct {
 	padding int
 	// Max size of current widget
 	Size      image.Point
-	list      layout.List
 	clickable widget.Clickable
 }
 
@@ -165,12 +165,25 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 	wavesYBorder := yMid - r.margin
 	wavesYBorderF := float32(wavesYBorder)
 	waves := r.GetRenderableWaves()
+
 	listOffset := op.Offset(image.Pt(0, r.margin)).Push(gtx.Ops)
-	r.list.Layout(gtx, len(waves), func(gtx layout.Context, idx int) layout.Dimensions {
-		high := wavesYBorder - int(waves[idx][1]*wavesYBorderF)
-		low := wavesYBorder - int(waves[idx][0]*wavesYBorderF)
-		return ColorBox(gtx, image.Rect(0, high, 1, low), color.NRGBA{G: 0x32, B: 0x55, A: 0xff})
-	})
+	var path clip.Path
+	path.Begin(gtx.Ops)
+	path.MoveTo(f32.Pt(0, wavesYBorderF))
+	for idx, it := range waves {
+		high := wavesYBorderF - it[1]*wavesYBorderF
+		low := wavesYBorderF - it[0]*wavesYBorderF
+		path.LineTo(f32.Pt(float32(idx+1), high))
+		path.LineTo(f32.Pt(float32(idx+1), low))
+	}
+	path.MoveTo(f32.Pt(0, wavesYBorderF))
+	path.Close()
+	paint.FillShape(gtx.Ops, color.NRGBA{G: 0x32, B: 0x55, A: 0xff},
+		clip.Stroke{
+			Path:  path.End(),
+			Width: 1,
+		}.Op(),
+	)
 	listOffset.Pop()
 
 	r.HandleClick(gtx)
@@ -210,7 +223,6 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *Player) (*WavesR
 		Player:      player,
 		Samples:     monoSamples,
 		Seconds:     float64(frames) / float64(dec.SampleRate),
-		list:        layout.List{},
 		clickable:   widget.Clickable{},
 		margin:      400,
 		padding:     90,
