@@ -49,7 +49,7 @@ func (p *Player) GetReadAmount() int64 {
 	return p.cReader.bytes - int64(p.player.BufferedSize())
 }
 
-func (p *Player) WaitWhenReady() bool {
+func (p *Player) WaitUntilReady() bool {
 	return <-p.cReader.ready
 }
 
