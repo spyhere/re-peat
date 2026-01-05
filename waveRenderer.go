@@ -188,8 +188,6 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 		default:
 			rAmount := player.GetReadAmount()
 			r.CaretPos = int(float64(rAmount) * float64(r.Size.X) / float64(r.PCMLen))
-		}
-		if isPlaying {
 			gtx.Source.Execute(op.InvalidateCmd{At: e.Now.Add(r.caretUpdate)})
 		}
 	}
