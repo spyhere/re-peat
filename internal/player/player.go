@@ -53,6 +53,15 @@ func (p *Player) WaitUntilReady() bool {
 	return <-p.cReader.ready
 }
 
+/*
+You MUST(!) to pause the player when cReader tells it's done,
+otherwise there can be an edge case bug:
+When the player is playing the last portion of bytes and you are
+trying to seek, then player's native "Seek" method blocks forever.
+It's impossible to do it in this method, since we cannot read from
+the channel without emptying it and I need checking for state without
+blocking the thread (select clause).
+*/
 func (p *Player) IsDoneCh() chan bool {
 	return p.cReader.done
 }
@@ -106,7 +115,7 @@ func (c *countingReader) Read(p []byte) (int, error) {
 			c.done <- true
 			c.isActive = false
 		}
-		return 0, err
+		return n, err
 	}
 	c.bytes += int64(n)
 	return n, err
