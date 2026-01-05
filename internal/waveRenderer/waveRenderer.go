@@ -188,7 +188,7 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 	clickableAreaComp(gtx, r.clickable, bgArea)
 
 	r.handleKey(gtx, isPlaying)
-	caretComp(gtx, r.playhead, r.pcmLen)
+	playheadComp(gtx, r.playhead, r.pcmLen)
 	if isPlaying {
 		if r.playhead < r.pcmLen {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(r.playheadUpdate)})

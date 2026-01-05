@@ -28,7 +28,7 @@ func clickableAreaComp(gtx layout.Context, clickable *widget.Clickable, area ima
 	})
 }
 
-func caretComp(gtx layout.Context, playhead int, pcmLen int) {
+func playheadComp(gtx layout.Context, playhead int, pcmLen int) {
 	xCoord := int(float64(playhead) * float64(gtx.Constraints.Max.X) / float64(pcmLen))
 	ColorBox(gtx, image.Rect(xCoord, 0, xCoord+1, gtx.Constraints.Max.Y), color.NRGBA{R: 0xff, G: 0xdd, B: 0xdd, A: 0xff})
 }
