@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"gioui.org/app"
+	"gioui.org/f32"
+	"gioui.org/io/event"
 	"gioui.org/io/key"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/player"
 	"github.com/tosone/minimp3"
 )
@@ -30,7 +32,6 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 		p:              player,
 		samples:        monoSamples,
 		seconds:        float64(frames) / float64(dec.SampleRate),
-		clickable:      &widget.Clickable{},
 		margin:         400,
 		padding:        90,
 		playheadUpdate: time.Millisecond * 50,
@@ -54,8 +55,9 @@ type WavesRenderer struct {
 	margin  int
 	padding int
 	// Max size of current widget
-	size      image.Point
-	clickable *widget.Clickable
+	size   image.Point
+	deltaX float32
+	deltaY float32
 }
 
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
@@ -121,13 +123,14 @@ func (r *WavesRenderer) SetSize(size image.Point) {
 	r.size = size
 }
 
-func (r *WavesRenderer) handleClick(gtx layout.Context) {
-	if r.clickable.Clicked(gtx) {
-		clickHistory := r.clickable.History()
-		pressX := clickHistory[len(clickHistory)-1].Position.X
-		seekVal, _ := r.p.Search(float64(pressX) * 100.0 / float64(r.size.X))
-		r.playhead = int(seekVal)
-	}
+func (r *WavesRenderer) handleClick(posX float32) {
+	seekVal, _ := r.p.Search(posX * 100.0 / float32(r.size.X))
+	r.playhead = int(seekVal)
+}
+
+func (r *WavesRenderer) handleScroll(point f32.Point) {
+	r.deltaX = point.X
+	r.deltaY = point.Y
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
@@ -171,9 +174,36 @@ func (r *WavesRenderer) listenToPlayerUpdates() {
 	}
 }
 
+func (r *WavesRenderer) handlePointerEvents(gtx layout.Context) {
+	event.Op(gtx.Ops, r)
+	for {
+		evt, ok := gtx.Event(pointer.Filter{
+			Target:  r,
+			Kinds:   pointer.Press | pointer.Scroll,
+			ScrollX: pointer.ScrollRange{Min: -1e9, Max: 1e9},
+			ScrollY: pointer.ScrollRange{Min: -1e9, Max: 1e9},
+		})
+		if !ok {
+			break
+		}
+		e, ok := evt.(pointer.Event)
+		if !ok {
+			continue
+		}
+		switch e.Kind {
+		case pointer.Scroll:
+			r.handleScroll(e.Scroll)
+		case pointer.Press:
+			r.handleClick(e.Position.X)
+		}
+	}
+}
+
 func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	player := r.p
 	isPlaying := player.IsPlaying()
+	r.handlePointerEvents(gtx)
+	r.handleKey(gtx, isPlaying)
 
 	backgroundComp(gtx, color.NRGBA{A: 0xff})
 	bgArea := image.Rect(0, r.margin-r.padding, r.size.X, r.size.Y-r.margin+r.padding)
@@ -184,17 +214,12 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 		soundWavesComp(gtx, float32(wavesYBorder), r.getRenderableWaves())
 	})
 
-	r.handleClick(gtx)
-	clickableAreaComp(gtx, r.clickable, bgArea)
-
-	r.handleKey(gtx, isPlaying)
 	playheadComp(gtx, r.playhead, r.pcmLen)
 	if isPlaying {
 		if r.playhead < r.pcmLen {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(r.playheadUpdate)})
 		}
 		r.listenToPlayerUpdates()
-
 	}
 	return layout.Dimensions{}
 }

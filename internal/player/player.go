@@ -35,8 +35,8 @@ func (p *Player) SetVolume(volume float64) {
 
 const BYTES_PER_SAMPLE int64 = 2
 
-func (p *Player) Search(offset float64) (int64, error) {
-	value := int64(offset * float64(p.dataLen) / 100.0)
+func (p *Player) Search(offset float32) (int64, error) {
+	value := int64(offset * float32(p.dataLen) / 100.0)
 	value -= value % BYTES_PER_SAMPLE
 	return p.player.Seek(value, io.SeekStart)
 }

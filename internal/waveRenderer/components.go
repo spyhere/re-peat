@@ -9,7 +9,6 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/widget"
 )
 
 func offsetBy(gtx layout.Context, amount image.Point, w func()) {
@@ -19,13 +18,6 @@ func offsetBy(gtx layout.Context, amount image.Point, w func()) {
 
 func backgroundComp(gtx layout.Context, col color.NRGBA) {
 	ColorBox(gtx, image.Rectangle{Max: image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)}, col)
-}
-
-func clickableAreaComp(gtx layout.Context, clickable *widget.Clickable, area image.Rectangle) {
-	defer op.Offset(area.Min).Push(gtx.Ops).Pop()
-	clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		return layout.Dimensions{Size: image.Pt(area.Dx(), area.Dy())}
-	})
 }
 
 func playheadComp(gtx layout.Context, playhead int, pcmLen int) {
