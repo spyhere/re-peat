@@ -9,7 +9,6 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/io/key"
-	"gioui.org/io/semantic"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -128,11 +127,10 @@ func (r *WavesRenderer) HandleClick(gtx layout.Context) {
 	}
 }
 
-func (r *WavesRenderer) HandleKey(e app.FrameEvent, isPlaying bool) {
+func (r *WavesRenderer) HandleKey(gtx layout.Context, isPlaying bool) {
 	for {
-		evt, ok := e.Source.Event(key.Filter{
-			Focus: nil,
-			Name:  key.NameSpace,
+		evt, ok := gtx.Event(key.Filter{
+			Name: key.NameSpace,
 		})
 		if !ok {
 			break
@@ -146,7 +144,7 @@ func (r *WavesRenderer) HandleKey(e app.FrameEvent, isPlaying bool) {
 				isPlaying = !isPlaying
 				if isPlaying {
 					r.Player.Play()
-					r.Player.WaitWhenReady()
+					r.Player.WaitUntilReady()
 				} else {
 					r.Player.Pause()
 				}
@@ -178,13 +176,11 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 	r.HandleClick(gtx)
 	activeA := op.Offset(bgArea.Min).Push(gtx.Ops)
 	r.clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		// Do I need this?
-		semantic.Button.Add(gtx.Ops)
 		return layout.Dimensions{Size: image.Pt(bgArea.Dx(), bgArea.Dy())}
 	})
 	activeA.Pop()
 
-	r.HandleKey(e, isPlaying)
+	r.HandleKey(gtx, isPlaying)
 	if isPlaying {
 		select {
 		case _ = <-player.IsDoneCh():
