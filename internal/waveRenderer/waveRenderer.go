@@ -1,4 +1,4 @@
-package main
+package waverenderer
 
 import (
 	"encoding/binary"
@@ -15,6 +15,7 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/widget"
+	"github.com/spyhere/re-peat/internal/player"
 	"github.com/tosone/minimp3"
 )
 
@@ -44,7 +45,7 @@ type WavesRenderer struct {
 	Samples  []float32
 	// Temporal caching
 	Waves  [][2]float32
-	Player *Player
+	Player *player.Player
 	// Total seconds of composition
 	Seconds float64
 	margin  int
@@ -208,7 +209,7 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 	return layout.Dimensions{}
 }
 
-func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *Player) (*WavesRenderer, error) {
+func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (*WavesRenderer, error) {
 	normSamples, err := getNormalisedSamples(pcm)
 	if err != nil {
 		return &WavesRenderer{}, err

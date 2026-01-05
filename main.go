@@ -8,6 +8,8 @@ import (
 	"gioui.org/app"
 	"gioui.org/op"
 	"gioui.org/widget/material"
+	p "github.com/spyhere/re-peat/internal/player"
+	wRenderer "github.com/spyhere/re-peat/internal/waveRenderer"
 )
 
 const audioFilePath = "./assets/test_song.mp3"
@@ -18,12 +20,12 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("Decoded successfully")
-	player, err := NewPlayer(decoder, pcm)
+	player, err := p.NewPlayer(decoder, pcm)
 	if err != nil {
 		log.Fatal(err)
 	}
 	player.SetVolume(0.7)
-	wavesR, err := NewWavesRenderer(decoder, pcm, player)
+	wavesR, err := wRenderer.NewWavesRenderer(decoder, pcm, player)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +41,7 @@ func main() {
 	app.Main()
 }
 
-func run(window *app.Window, wavesR *WavesRenderer) error {
+func run(window *app.Window, wavesR *wRenderer.WavesRenderer) error {
 	theme := material.NewTheme()
 	var ops op.Ops
 	for {
