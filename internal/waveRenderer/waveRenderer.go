@@ -32,7 +32,7 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 		pcmMonoLen:     len(monoSamples),
 		p:              player,
 		samples:        monoSamples,
-		seconds:        float64(frames) / float64(dec.SampleRate),
+		seconds:        float32(frames) / float32(dec.SampleRate),
 		margin:         400,
 		padding:        90,
 		playheadUpdate: time.Millisecond * 50,
@@ -46,8 +46,8 @@ type WavesRenderer struct {
 	playhead       int
 	playheadUpdate time.Duration
 	sampleRate     int
-	minPxPerSec    float64
-	maxPxPerSec    float64
+	minPxPerSec    float32
+	maxPxPerSec    float32
 	pcmLen         int
 	pcmMonoLen     int
 	samples        []float32
@@ -55,7 +55,7 @@ type WavesRenderer struct {
 	waves [][2]float32
 	p     *player.Player
 	// Total seconds of composition
-	seconds float64
+	seconds float32
 	margin  int
 	padding int
 	// Max size of current widget
@@ -68,7 +68,7 @@ type zoom struct {
 	maxX   float32
 	deltaX float32
 	deltaY float32
-	val    float64
+	val    float32
 }
 
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
@@ -94,7 +94,7 @@ func (r *WavesRenderer) getSamplesPerPx() int {
 	if r.zoom.val != 0 {
 		pxPerSec = r.zoom.val
 	}
-	return int(float64(r.sampleRate) / pxPerSec)
+	return int(float32(r.sampleRate) / pxPerSec)
 }
 
 func (r *WavesRenderer) guardZoom(leftB int, rightB int) {
@@ -145,7 +145,7 @@ func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 
 func (r *WavesRenderer) SetSize(size image.Point) {
 	r.size = size
-	r.minPxPerSec = float64(size.X) / r.seconds
+	r.minPxPerSec = float32(size.X) / r.seconds
 }
 
 func (r *WavesRenderer) handleClick(posX float32) {
@@ -158,10 +158,10 @@ func (r *WavesRenderer) handleScroll(point f32.Point) {
 	r.zoom.deltaX = min(max(r.zoom.minX, r.zoom.deltaX), r.zoom.maxX)
 
 	r.zoom.deltaY += point.Y
-	minPx := float32(r.minPxPerSec * 100)
-	maxPx := float32(r.maxPxPerSec * 100)
+	minPx := r.minPxPerSec * 100.0
+	maxPx := r.maxPxPerSec * 100.0
 	r.zoom.deltaY = min(max(minPx, r.zoom.deltaY), maxPx)
-	r.zoom.val = float64(r.zoom.deltaY) * 0.01
+	r.zoom.val = r.zoom.deltaY * 0.01
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
