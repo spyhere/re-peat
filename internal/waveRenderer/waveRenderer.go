@@ -64,11 +64,11 @@ type WavesRenderer struct {
 }
 
 type zoom struct {
-	minX   float32
-	maxX   float32
-	deltaX float32
-	deltaY float32
-	val    float32
+	minX     float32
+	maxX     float32
+	deltaX   float32
+	deltaY   float32
+	pxPerSec float32
 }
 
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
@@ -91,8 +91,8 @@ func makeSamplesMono(samples []float32, chanNum int) []float32 {
 func (r *WavesRenderer) getSamplesPerPx() int {
 	pxPerSec := r.minPxPerSec
 
-	if r.zoom.val != 0 {
-		pxPerSec = r.zoom.val
+	if r.zoom.pxPerSec != 0 {
+		pxPerSec = r.zoom.pxPerSec
 	}
 	return int(float32(r.sampleRate) / pxPerSec)
 }
@@ -161,7 +161,7 @@ func (r *WavesRenderer) handleScroll(point f32.Point) {
 	minPx := r.minPxPerSec * 100.0
 	maxPx := r.maxPxPerSec * 100.0
 	r.zoom.deltaY = min(max(minPx, r.zoom.deltaY), maxPx)
-	r.zoom.val = r.zoom.deltaY * 0.01
+	r.zoom.pxPerSec = r.zoom.deltaY * 0.01
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
