@@ -29,12 +29,15 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 	return &WavesRenderer{
 		sampleRate:     dec.SampleRate,
 		pcmLen:         len(pcm),
+		pcmMonoLen:     len(monoSamples),
 		p:              player,
 		samples:        monoSamples,
 		seconds:        float64(frames) / float64(dec.SampleRate),
 		margin:         400,
 		padding:        90,
 		playheadUpdate: time.Millisecond * 50,
+		maxPxPerSec:    200,
+		zoom:           zoom{},
 	}, nil
 }
 
@@ -43,10 +46,11 @@ type WavesRenderer struct {
 	playhead       int
 	playheadUpdate time.Duration
 	sampleRate     int
-	// Manual setting, otherwise it is calculated using max screen size
-	pxPerSec float64
-	pcmLen   int
-	samples  []float32
+	minPxPerSec    float64
+	maxPxPerSec    float64
+	pcmLen         int
+	pcmMonoLen     int
+	samples        []float32
 	// Temporal caching
 	waves [][2]float32
 	p     *player.Player
@@ -55,9 +59,16 @@ type WavesRenderer struct {
 	margin  int
 	padding int
 	// Max size of current widget
-	size   image.Point
+	size image.Point
+	zoom zoom
+}
+
+type zoom struct {
+	minX   float32
+	maxX   float32
 	deltaX float32
 	deltaY float32
+	val    float64
 }
 
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
@@ -78,22 +89,35 @@ func makeSamplesMono(samples []float32, chanNum int) []float32 {
 }
 
 func (r *WavesRenderer) getSamplesPerPx() int {
-	var pxPerSec float64
-	if r.pxPerSec > 0 {
-		pxPerSec = r.pxPerSec
-	} else {
-		pxPerSec = float64(r.size.X) / r.seconds
+	pxPerSec := r.minPxPerSec
+
+	if r.zoom.val != 0 {
+		pxPerSec = r.zoom.val
 	}
 	return int(float64(r.sampleRate) / pxPerSec)
 }
 
-func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
-	if len(r.waves) > 0 {
-		return r.waves
+func (r *WavesRenderer) guardZoom(leftB int, rightB int) {
+	if leftB == 0 {
+		r.zoom.minX = 0
 	}
-	samples := r.samples
+	if rightB == r.pcmMonoLen {
+		r.zoom.maxX = r.zoom.deltaX
+	} else {
+		r.zoom.maxX = 1e38
+	}
+}
+
+func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 	samplesPerPx := r.getSamplesPerPx()
-	res := make([][2]float32, len(samples)/samplesPerPx)
+	maxSamples := samplesPerPx * r.size.X
+	leftB := int(min(max(0, r.zoom.deltaX*200.0), float32(r.pcmMonoLen-maxSamples)))
+	rightB := leftB + maxSamples
+	r.guardZoom(leftB, rightB)
+	// cache layer here
+
+	samples := r.samples[leftB:rightB]
+	res := make([][2]float32, r.size.X)
 
 	var idx int
 	var min float32 = 1
@@ -121,6 +145,7 @@ func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 
 func (r *WavesRenderer) SetSize(size image.Point) {
 	r.size = size
+	r.minPxPerSec = float64(size.X) / r.seconds
 }
 
 func (r *WavesRenderer) handleClick(posX float32) {
@@ -129,8 +154,14 @@ func (r *WavesRenderer) handleClick(posX float32) {
 }
 
 func (r *WavesRenderer) handleScroll(point f32.Point) {
-	r.deltaX = point.X
-	r.deltaY = point.Y
+	r.zoom.deltaX += point.X
+	r.zoom.deltaX = min(max(r.zoom.minX, r.zoom.deltaX), r.zoom.maxX)
+
+	r.zoom.deltaY += point.Y
+	minPx := float32(r.minPxPerSec * 100)
+	maxPx := float32(r.maxPxPerSec * 100)
+	r.zoom.deltaY = min(max(minPx, r.zoom.deltaY), maxPx)
+	r.zoom.val = float64(r.zoom.deltaY) * 0.01
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
