@@ -25,7 +25,7 @@ func playheadComp(gtx layout.Context, playhead int, audio audio, scroll scroll) 
 	// Since leftB is an index of monoPLC we need to divide it only by sampleRate
 	// Optimisation: seconds value for left border can be saved when building waves
 	leftBSec := float32(scroll.leftB) / float32(audio.sampleRate)
-	xCoord := int((currSec - leftBSec) * max(scroll.minPxPerSec, scroll.deltaY))
+	xCoord := int((currSec - leftBSec) * max(scroll.minPxPerSec, scroll.pxPerSec))
 	if xCoord < 0 || xCoord > gtx.Constraints.Max.X {
 		return
 	}

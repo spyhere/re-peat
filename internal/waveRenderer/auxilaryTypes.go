@@ -1,19 +1,17 @@
 package waverenderer
 
 type audio struct {
-	sampleRate  int
-	channels    int
-	pcmLen      int
-	pcmMonoLen  int
-	seconds     float32
-	secsPerByte float32
+	sampleRate   int
+	samplesPerPx int
+	channels     int
+	pcmLen       int
+	pcmMonoLen   int
+	seconds      float32
+	secsPerByte  float32
 }
 
 type scroll struct {
-	minX        float32
-	maxX        float32
-	deltaX      float32
-	deltaY      float32
+	pxPerSec    float32
 	originX     float32
 	minPxPerSec float32
 	maxPxPerSec float32

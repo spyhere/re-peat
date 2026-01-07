@@ -78,34 +78,22 @@ func makeSamplesMono(samples []float32, chanNum int) []float32 {
 	return res
 }
 
-func (r *WavesRenderer) getSamplesPerPx() int {
-	pxPerSec := r.scroll.minPxPerSec
-
-	if r.scroll.deltaY != 0 {
-		pxPerSec = r.scroll.deltaY
-	}
-	return int(float32(r.audio.sampleRate) / pxPerSec)
-}
-
-func (r *WavesRenderer) guardZoom(leftB int, rightB int) {
-	if leftB == 0 {
-		r.scroll.minX = 0
-	}
-	if rightB == r.audio.pcmMonoLen {
-		r.scroll.maxX = r.scroll.deltaX
-	} else {
-		r.scroll.maxX = 1e38
-	}
+// TODO: Split responsibility
+func (r *WavesRenderer) getSamplesPerPx() (int, int) {
+	pxPerSec := max(r.scroll.minPxPerSec, r.scroll.pxPerSec)
+	res := int(float32(r.audio.sampleRate) / pxPerSec)
+	prev := r.audio.samplesPerPx
+	r.audio.samplesPerPx = res
+	return prev, res
 }
 
 func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
-	samplesPerPx := r.getSamplesPerPx()
+	prevSamplesPerPx, samplesPerPx := r.getSamplesPerPx()
 	maxSamples := samplesPerPx * r.size.X
-	deltaSamples := int(r.scroll.deltaX) * samplesPerPx
-	// TODO: zoom on scroll.originX
-	leftB := int(min(max(0, deltaSamples), r.audio.pcmMonoLen-maxSamples))
+	sampleAtCursor := r.scroll.leftB + int(r.scroll.originX*float32(prevSamplesPerPx))
+	leftB := sampleAtCursor - int(r.scroll.originX*float32(samplesPerPx))
+	leftB = clamp(0, leftB, r.audio.pcmMonoLen-maxSamples)
 	rightB := leftB + maxSamples
-	r.guardZoom(leftB, rightB)
 	if leftB == r.scroll.leftB && rightB == r.scroll.rightB {
 		return r.cached
 	}
@@ -113,7 +101,7 @@ func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 	r.scroll.rightB = rightB
 
 	monoSamples := r.monoSamples[leftB:rightB]
-	res := make([][2]float32, r.size.X)
+	res := r.cached[:r.size.X]
 
 	var idx int
 	var min float32 = 1
@@ -135,17 +123,23 @@ func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 			count = samplesPerPx
 		}
 	}
+	if count != samplesPerPx && idx < len(res) {
+		res[idx] = [2]float32{min, max}
+	}
 	r.cached = res
 	return res
 }
 
 func (r *WavesRenderer) SetSize(size image.Point) {
 	r.size = size
+	if cap(r.cached) < size.X {
+		r.cached = make([][2]float32, size.X, size.X*2)
+	}
 	r.scroll.minPxPerSec = float32(size.X) / r.audio.seconds
 }
 
 func (r *WavesRenderer) handleClick(posX float32) {
-	pxPerSec := max(r.scroll.minPxPerSec, r.scroll.deltaY)
+	pxPerSec := max(r.scroll.minPxPerSec, r.scroll.pxPerSec)
 	seconds := (posX / pxPerSec) + (float32(r.scroll.leftB) / float32(r.audio.sampleRate))
 	// TODO: handle error here
 	seekVal, _ := r.p.Search(seconds)
@@ -153,16 +147,19 @@ func (r *WavesRenderer) handleClick(posX float32) {
 }
 
 const ZOOM_RATE = 0.01
-const PAN_RATE = 0.2
+const PAN_RATE = 2
 
 func (r *WavesRenderer) handleScroll(scroll f32.Point, pos f32.Point) {
 	r.scroll.originX = pos.X
 
-	r.scroll.deltaX += scroll.X * PAN_RATE
-	r.scroll.deltaX = clamp(r.scroll.minX, r.scroll.deltaX, r.scroll.maxX)
+	panSamples := int(scroll.X * PAN_RATE * r.scroll.pxPerSec)
+	r.scroll.leftB += panSamples
+	// TODO: create maxLeft() func
+	maxLeft := r.audio.pcmMonoLen - r.audio.samplesPerPx*r.size.X
+	r.scroll.leftB = clamp(0, r.scroll.leftB, maxLeft)
 
-	r.scroll.deltaY += scroll.Y * ZOOM_RATE
-	r.scroll.deltaY = clamp(r.scroll.minPxPerSec, r.scroll.deltaY, r.scroll.maxPxPerSec)
+	r.scroll.pxPerSec += scroll.Y * ZOOM_RATE
+	r.scroll.pxPerSec = clamp(r.scroll.minPxPerSec, r.scroll.pxPerSec, r.scroll.maxPxPerSec)
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
