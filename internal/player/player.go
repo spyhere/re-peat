@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/ebitengine/oto/v3"
+	"github.com/spyhere/re-peat/internal/constants"
 	"github.com/tosone/minimp3"
 )
 
@@ -33,11 +34,9 @@ func (p *Player) SetVolume(volume float64) {
 	p.player.SetVolume(volume)
 }
 
-const BYTES_PER_SAMPLE int64 = 2
-
-func (p *Player) Search(offset float32) (int64, error) {
-	value := int64(offset * float32(p.dataLen) / 100.0)
-	value -= value % BYTES_PER_SAMPLE
+func (p *Player) Search(seconds float32) (int64, error) {
+	value := int64(seconds * float32(p.dataLen) / p.totalSec)
+	value -= value % constants.BYTES_PER_SAMPLE
 	return p.player.Seek(value, io.SeekStart)
 }
 
