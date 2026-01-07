@@ -78,17 +78,15 @@ func makeSamplesMono(samples []float32, chanNum int) []float32 {
 	return res
 }
 
-// TODO: Split responsibility
-func (r *WavesRenderer) getSamplesPerPx() (int, int) {
+func (r *WavesRenderer) getSamplesPerPx() int {
 	pxPerSec := max(r.scroll.minPxPerSec, r.scroll.pxPerSec)
-	res := int(float32(r.audio.sampleRate) / pxPerSec)
-	prev := r.audio.samplesPerPx
-	r.audio.samplesPerPx = res
-	return prev, res
+	return int(float32(r.audio.sampleRate) / pxPerSec)
 }
 
 func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
-	prevSamplesPerPx, samplesPerPx := r.getSamplesPerPx()
+	prevSamplesPerPx := r.audio.samplesPerPx
+	samplesPerPx := r.getSamplesPerPx()
+	r.audio.samplesPerPx = samplesPerPx
 	maxSamples := samplesPerPx * r.size.X
 	sampleAtCursor := r.scroll.leftB + int(r.scroll.originX*float32(prevSamplesPerPx))
 	leftB := sampleAtCursor - int(r.scroll.originX*float32(samplesPerPx))
@@ -147,14 +145,13 @@ func (r *WavesRenderer) handleClick(posX float32) {
 }
 
 const ZOOM_RATE = 0.01
-const PAN_RATE = 2
+const PAN_RATE = 0.2
 
 func (r *WavesRenderer) handleScroll(scroll f32.Point, pos f32.Point) {
 	r.scroll.originX = pos.X
 
-	panSamples := int(scroll.X * PAN_RATE * r.scroll.pxPerSec)
+	panSamples := int(scroll.X * PAN_RATE * float32(r.getSamplesPerPx()))
 	r.scroll.leftB += panSamples
-	// TODO: create maxLeft() func
 	maxLeft := r.audio.pcmMonoLen - r.audio.samplesPerPx*r.size.X
 	r.scroll.leftB = clamp(0, r.scroll.leftB, maxLeft)
 
