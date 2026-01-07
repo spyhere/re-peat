@@ -13,6 +13,7 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"github.com/spyhere/re-peat/internal/constants"
 	"github.com/spyhere/re-peat/internal/player"
 	"github.com/tosone/minimp3"
 )
@@ -27,17 +28,22 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 	monoSamples := makeSamplesMono(normSamples, dec.Channels)
 	fmt.Println("WaveRenderer received mono samples")
 	return &WavesRenderer{
-		sampleRate:     dec.SampleRate,
-		pcmLen:         len(pcm),
-		pcmMonoLen:     len(monoSamples),
-		p:              player,
-		samples:        monoSamples,
-		seconds:        float32(frames) / float32(dec.SampleRate),
+		p:           player,
+		monoSamples: monoSamples,
+		audio: audio{
+			sampleRate:  dec.SampleRate,
+			channels:    dec.Channels,
+			pcmLen:      len(pcm),
+			pcmMonoLen:  len(monoSamples),
+			seconds:     float32(frames) / float32(dec.SampleRate),
+			secsPerByte: 1.0 / (float32(dec.SampleRate) * constants.BYTES_PER_SAMPLE * float32(dec.Channels)),
+		},
 		margin:         400,
 		padding:        90,
 		playheadUpdate: time.Millisecond * 50,
-		maxPxPerSec:    200,
-		zoom:           zoom{},
+		scroll: scroll{
+			maxPxPerSec: 200,
+		},
 	}, nil
 }
 
@@ -45,30 +51,14 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 type WavesRenderer struct {
 	playhead       int
 	playheadUpdate time.Duration
-	sampleRate     int
-	minPxPerSec    float32
-	maxPxPerSec    float32
-	pcmLen         int
-	pcmMonoLen     int
-	samples        []float32
-	// Temporal caching
-	waves [][2]float32
-	p     *player.Player
-	// Total seconds of composition
-	seconds float32
-	margin  int
-	padding int
-	// Max size of current widget
-	size image.Point
-	zoom zoom
-}
-
-type zoom struct {
-	minX     float32
-	maxX     float32
-	deltaX   float32
-	deltaY   float32
-	pxPerSec float32
+	audio          audio
+	monoSamples    []float32
+	cached         [][2]float32
+	p              *player.Player
+	margin         int
+	padding        int
+	size           image.Point
+	scroll         scroll
 }
 
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
@@ -89,41 +79,47 @@ func makeSamplesMono(samples []float32, chanNum int) []float32 {
 }
 
 func (r *WavesRenderer) getSamplesPerPx() int {
-	pxPerSec := r.minPxPerSec
+	pxPerSec := r.scroll.minPxPerSec
 
-	if r.zoom.pxPerSec != 0 {
-		pxPerSec = r.zoom.pxPerSec
+	if r.scroll.deltaY != 0 {
+		pxPerSec = r.scroll.deltaY
 	}
-	return int(float32(r.sampleRate) / pxPerSec)
+	return int(float32(r.audio.sampleRate) / pxPerSec)
 }
 
 func (r *WavesRenderer) guardZoom(leftB int, rightB int) {
 	if leftB == 0 {
-		r.zoom.minX = 0
+		r.scroll.minX = 0
 	}
-	if rightB == r.pcmMonoLen {
-		r.zoom.maxX = r.zoom.deltaX
+	if rightB == r.audio.pcmMonoLen {
+		r.scroll.maxX = r.scroll.deltaX
 	} else {
-		r.zoom.maxX = 1e38
+		r.scroll.maxX = 1e38
 	}
 }
 
 func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 	samplesPerPx := r.getSamplesPerPx()
 	maxSamples := samplesPerPx * r.size.X
-	leftB := int(min(max(0, r.zoom.deltaX*200.0), float32(r.pcmMonoLen-maxSamples)))
+	deltaSamples := int(r.scroll.deltaX) * samplesPerPx
+	// TODO: zoom on scroll.originX
+	leftB := int(min(max(0, deltaSamples), r.audio.pcmMonoLen-maxSamples))
 	rightB := leftB + maxSamples
 	r.guardZoom(leftB, rightB)
-	// cache layer here
+	if leftB == r.scroll.leftB && rightB == r.scroll.rightB {
+		return r.cached
+	}
+	r.scroll.leftB = leftB
+	r.scroll.rightB = rightB
 
-	samples := r.samples[leftB:rightB]
+	monoSamples := r.monoSamples[leftB:rightB]
 	res := make([][2]float32, r.size.X)
 
 	var idx int
 	var min float32 = 1
 	var max float32 = -1
 	count := samplesPerPx
-	for _, it := range samples {
+	for _, it := range monoSamples {
 		if it < min {
 			min = it
 		}
@@ -139,29 +135,34 @@ func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 			count = samplesPerPx
 		}
 	}
-	r.waves = res
+	r.cached = res
 	return res
 }
 
 func (r *WavesRenderer) SetSize(size image.Point) {
 	r.size = size
-	r.minPxPerSec = float32(size.X) / r.seconds
+	r.scroll.minPxPerSec = float32(size.X) / r.audio.seconds
 }
 
 func (r *WavesRenderer) handleClick(posX float32) {
-	seekVal, _ := r.p.Search(posX * 100.0 / float32(r.size.X))
+	pxPerSec := max(r.scroll.minPxPerSec, r.scroll.deltaY)
+	seconds := (posX / pxPerSec) + (float32(r.scroll.leftB) / float32(r.audio.sampleRate))
+	// TODO: handle error here
+	seekVal, _ := r.p.Search(seconds)
 	r.playhead = int(seekVal)
 }
 
-func (r *WavesRenderer) handleScroll(point f32.Point) {
-	r.zoom.deltaX += point.X
-	r.zoom.deltaX = min(max(r.zoom.minX, r.zoom.deltaX), r.zoom.maxX)
+const ZOOM_RATE = 0.01
+const PAN_RATE = 0.2
 
-	r.zoom.deltaY += point.Y
-	minPx := r.minPxPerSec * 100.0
-	maxPx := r.maxPxPerSec * 100.0
-	r.zoom.deltaY = min(max(minPx, r.zoom.deltaY), maxPx)
-	r.zoom.pxPerSec = r.zoom.deltaY * 0.01
+func (r *WavesRenderer) handleScroll(scroll f32.Point, pos f32.Point) {
+	r.scroll.originX = pos.X
+
+	r.scroll.deltaX += scroll.X * PAN_RATE
+	r.scroll.deltaX = clamp(r.scroll.minX, r.scroll.deltaX, r.scroll.maxX)
+
+	r.scroll.deltaY += scroll.Y * ZOOM_RATE
+	r.scroll.deltaY = clamp(r.scroll.minPxPerSec, r.scroll.deltaY, r.scroll.maxPxPerSec)
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
@@ -180,7 +181,7 @@ func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
 			if e.Name == key.NameSpace {
 				isPlaying = !isPlaying
 				if isPlaying {
-					if r.playhead >= r.pcmLen {
+					if r.playhead >= r.audio.pcmLen {
 						continue
 					}
 					r.p.Play()
@@ -197,7 +198,7 @@ func (r *WavesRenderer) listenToPlayerUpdates() {
 	player := r.p
 	select {
 	case _ = <-player.IsDoneCh():
-		r.playhead = r.pcmLen
+		r.playhead = r.audio.pcmLen
 		// We need to pause it after it's done to mitigate the potential bug. See [player.IsDoneCh] comment.
 		r.p.Pause()
 	default:
@@ -223,7 +224,7 @@ func (r *WavesRenderer) handlePointerEvents(gtx layout.Context) {
 		}
 		switch e.Kind {
 		case pointer.Scroll:
-			r.handleScroll(e.Scroll)
+			r.handleScroll(e.Scroll, e.Position)
 		case pointer.Press:
 			r.handleClick(e.Position.X)
 		}
@@ -244,10 +245,11 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 	offsetBy(gtx, image.Pt(0, r.margin), func() {
 		soundWavesComp(gtx, float32(wavesYBorder), r.getRenderableWaves())
 	})
+	// TODO: draw seconds measure
 
-	playheadComp(gtx, r.playhead, r.pcmLen)
+	playheadComp(gtx, r.playhead, r.audio, r.scroll)
 	if isPlaying {
-		if r.playhead < r.pcmLen {
+		if r.playhead < r.audio.pcmLen {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(r.playheadUpdate)})
 		}
 		r.listenToPlayerUpdates()
