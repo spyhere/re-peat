@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 	"time"
 
 	"gioui.org/app"
@@ -134,6 +135,7 @@ func (r *WavesRenderer) SetSize(size image.Point) {
 		r.cached = make([][2]float32, size.X, size.X*2)
 	}
 	r.scroll.minPxPerSec = float32(size.X) / r.audio.seconds
+	r.scroll.maxZoomExp = float32(math.Log2(float64(r.scroll.maxPxPerSec) / float64(r.scroll.minPxPerSec)))
 }
 
 func (r *WavesRenderer) handleClick(posX float32) {
@@ -144,7 +146,7 @@ func (r *WavesRenderer) handleClick(posX float32) {
 	r.playhead = int(seekVal)
 }
 
-const ZOOM_RATE = 0.01
+const ZOOM_RATE = 0.0008
 const PAN_RATE = 0.2
 
 func (r *WavesRenderer) handleScroll(scroll f32.Point, pos f32.Point) {
@@ -155,8 +157,9 @@ func (r *WavesRenderer) handleScroll(scroll f32.Point, pos f32.Point) {
 	maxLeft := r.audio.pcmMonoLen - r.audio.samplesPerPx*r.size.X
 	r.scroll.leftB = clamp(0, r.scroll.leftB, maxLeft)
 
-	r.scroll.pxPerSec += scroll.Y * ZOOM_RATE
-	r.scroll.pxPerSec = clamp(r.scroll.minPxPerSec, r.scroll.pxPerSec, r.scroll.maxPxPerSec)
+	r.scroll.zoomExpDelta += scroll.Y * ZOOM_RATE
+	r.scroll.zoomExpDelta = clamp(0.0, r.scroll.zoomExpDelta, r.scroll.maxZoomExp)
+	r.scroll.pxPerSec = float32(float64(r.scroll.minPxPerSec) * math.Exp2(float64(r.scroll.zoomExpDelta)))
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
