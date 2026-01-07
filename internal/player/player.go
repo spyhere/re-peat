@@ -14,7 +14,8 @@ type Player struct {
 	player  *oto.Player
 	cReader *countingReader
 	// Amount of PCM bytes
-	dataLen int
+	dataLen  int
+	totalSec float32
 }
 
 func (p *Player) Play() {
@@ -84,9 +85,10 @@ func NewPlayer(dec *minimp3.Decoder, data []byte) (*Player, error) {
 	}
 	player := otoCtx.NewPlayer(cReader)
 	return &Player{
-		player:  player,
-		cReader: cReader,
-		dataLen: len(data),
+		player:   player,
+		cReader:  cReader,
+		dataLen:  len(data),
+		totalSec: float32(len(data)) / float32(dec.SampleRate) * 0.25,
 	}, nil
 }
 
