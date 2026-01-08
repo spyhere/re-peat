@@ -25,3 +25,6 @@ The goal of this application is to eliminate that hassle by allowing users to ma
 
 Right now you can scroll and pan the waves, as well as play with `spacebar` the audio track. Click on the sound waves to put a playhead there.
 
+## Contributing
+
+If you are good at math or Go and you spot that there is a room for improvement, you can create a PR.
