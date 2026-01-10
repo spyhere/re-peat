@@ -23,8 +23,12 @@ func backgroundComp(gtx layout.Context, col color.NRGBA) {
 }
 
 func playheadComp(gtx layout.Context, playhead int64, audio audio, scroll scroll) {
+	maxX := gtx.Constraints.Max.X
 	currSamples := audio.getSamplesFromPCM(playhead) - scroll.leftB
-	x := int(float32(currSamples) * float32(gtx.Constraints.Max.X) / float32(scroll.rightB-scroll.leftB))
+	x := int(float32(currSamples) * float32(maxX) / float32(scroll.rightB-scroll.leftB))
+	if x < 0 || x > maxX {
+		return
+	}
 	ColorBox(gtx, image.Rect(x, 0, x+1, gtx.Constraints.Max.Y), color.NRGBA{R: 0xff, G: 0xdd, B: 0xdd, A: 0xff})
 }
 
