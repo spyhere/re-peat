@@ -35,7 +35,7 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 		audio: audio{
 			sampleRate:  dec.SampleRate,
 			channels:    dec.Channels,
-			pcmLen:      len(pcm),
+			pcmLen:      int64(len(pcm)),
 			pcmMonoLen:  len(monoSamples),
 			seconds:     float32(frames) / float32(dec.SampleRate),
 			secsPerByte: 1.0 / (float32(dec.SampleRate) * constants.BYTES_PER_SAMPLE * float32(dec.Channels)),
@@ -51,7 +51,7 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 
 // Entity to visualise wave forms of sound track
 type WavesRenderer struct {
-	playhead       int
+	playhead       int64 // Shows amount of PCM bytes from the beginning (not samples)
 	playheadUpdate time.Duration
 	audio          audio
 	monoSamples    []float32
@@ -145,7 +145,7 @@ func (r *WavesRenderer) handleClick(posX float32) {
 	seconds := (posX / pxPerSec) + (float32(r.scroll.leftB) / float32(r.audio.sampleRate))
 	// TODO: handle error here
 	seekVal, _ := r.p.Search(seconds)
-	r.playhead = int(seekVal)
+	r.playhead = seekVal
 }
 
 const ZOOM_RATE = 0.0008
@@ -201,7 +201,7 @@ func (r *WavesRenderer) listenToPlayerUpdates() {
 		// We need to pause it after it's done to mitigate the potential bug. See [player.IsDoneCh] comment.
 		r.p.Pause()
 	default:
-		r.playhead = int(player.GetReadAmount())
+		r.playhead = player.GetReadAmount()
 	}
 }
 

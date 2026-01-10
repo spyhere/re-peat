@@ -2,13 +2,15 @@ package waverenderer
 
 import (
 	"math"
+
+	"github.com/spyhere/re-peat/internal/constants"
 )
 
 type audio struct {
 	sampleRate   int
 	samplesPerPx int
 	channels     int
-	pcmLen       int
+	pcmLen       int64
 	pcmMonoLen   int
 	seconds      float32
 	secsPerByte  float32
@@ -20,6 +22,9 @@ func (a audio) getSecondsFromSamples(samplesIdx int) float64 {
 func (a audio) getNextSecond(second float64) (nextSecond float64, sammplesIdx int) {
 	nextSecond = math.Ceil(second)
 	return nextSecond, int(nextSecond * float64(a.sampleRate))
+}
+func (a audio) getSamplesFromPCM(pcmBytes int64) int {
+	return int(pcmBytes / int64(a.channels) / constants.BYTES_PER_SAMPLE)
 }
 
 type scroll struct {

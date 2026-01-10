@@ -22,16 +22,10 @@ func backgroundComp(gtx layout.Context, col color.NRGBA) {
 	ColorBox(gtx, image.Rectangle{Max: image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)}, col)
 }
 
-func playheadComp(gtx layout.Context, playhead int, audio audio, scroll scroll) {
-	currSec := float32(playhead) * audio.secsPerByte
-	// Since leftB is an index of monoPLC we need to divide it only by sampleRate
-	// Optimisation: seconds value for left border can be saved when building waves
-	leftBSec := float32(scroll.leftB) / float32(audio.sampleRate)
-	xCoord := int((currSec - leftBSec) * max(scroll.minPxPerSec, scroll.pxPerSec))
-	if xCoord < 0 || xCoord > gtx.Constraints.Max.X {
-		return
-	}
-	ColorBox(gtx, image.Rect(xCoord, 0, xCoord+1, gtx.Constraints.Max.Y), color.NRGBA{R: 0xff, G: 0xdd, B: 0xdd, A: 0xff})
+func playheadComp(gtx layout.Context, playhead int64, audio audio, scroll scroll) {
+	currSamples := audio.getSamplesFromPCM(playhead) - scroll.leftB
+	x := int(float32(currSamples) * float32(gtx.Constraints.Max.X) / float32(scroll.rightB-scroll.leftB))
+	ColorBox(gtx, image.Rect(x, 0, x+1, gtx.Constraints.Max.Y), color.NRGBA{R: 0xff, G: 0xdd, B: 0xdd, A: 0xff})
 }
 
 func soundWavesComp(gtx layout.Context, yBorder float32, waves [][2]float32) {
