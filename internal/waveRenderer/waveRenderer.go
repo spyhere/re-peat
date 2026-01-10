@@ -14,6 +14,7 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/constants"
 	"github.com/spyhere/re-peat/internal/player"
 	"github.com/tosone/minimp3"
@@ -160,7 +161,7 @@ func (r *WavesRenderer) handleScroll(scroll f32.Point, pos f32.Point) {
 
 	r.scroll.zoomExpDelta += scroll.Y * ZOOM_RATE
 	r.scroll.zoomExpDelta = clamp(0.0, r.scroll.zoomExpDelta, r.scroll.maxZoomExp)
-	r.scroll.pxPerSec = float32(float64(r.scroll.minPxPerSec) * math.Exp2(float64(r.scroll.zoomExpDelta)))
+	r.scroll.pxPerSec = r.scroll.minPxPerSec * float32(math.Exp2(float64(r.scroll.zoomExpDelta)))
 }
 
 func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
@@ -229,7 +230,7 @@ func (r *WavesRenderer) handlePointerEvents(gtx layout.Context) {
 	}
 }
 
-func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
+func (r *WavesRenderer) Layout(gtx layout.Context, th *material.Theme, e app.FrameEvent) layout.Dimensions {
 	player := r.p
 	isPlaying := player.IsPlaying()
 	r.handlePointerEvents(gtx)
@@ -243,7 +244,7 @@ func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dime
 	offsetBy(gtx, image.Pt(0, r.margin), func() {
 		soundWavesComp(gtx, float32(wavesYBorder), r.getRenderableWaves())
 	})
-	// TODO: draw seconds measure
+	secondsRulerComp(gtx, th, r.margin, r.audio, r.scroll)
 
 	playheadComp(gtx, r.playhead, r.audio, r.scroll)
 	if isPlaying {

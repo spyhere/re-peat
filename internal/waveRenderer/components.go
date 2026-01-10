@@ -1,6 +1,7 @@
 package waverenderer
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 
@@ -9,6 +10,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/widget/material"
 )
 
 func offsetBy(gtx layout.Context, amount image.Point, w func()) {
@@ -50,6 +52,56 @@ func soundWavesComp(gtx layout.Context, yBorder float32, waves [][2]float32) {
 			Width: 1,
 		}.Op(),
 	)
+}
+
+const (
+	MIN_TIME_INTERVAL_PX = 100
+	TICK_LENGTH_10_SEC   = 40
+	TICK_LENGTH_5_SEC    = 30
+	TICK_LENGTH          = 10
+)
+
+var TICK_COLOR_10_SEC = color.NRGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
+var TICK_COLOR_5_SEC = color.NRGBA{G: 0xff, B: 0xbb, A: 0xff}
+var TICK_COLOR = color.NRGBA{A: 0xff}
+
+var timeIntervals = [5]float32{1, 5, 10, 30, 60}
+
+func secondsRulerComp(gtx layout.Context, th *material.Theme, margin int, audio audio, scroll scroll) {
+	margin -= 50
+	pxPerSec := scroll.getPxPerSec()
+	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
+	var intervalSec int
+	for _, it := range timeIntervals {
+		if it*pxPerSec >= MIN_TIME_INTERVAL_PX {
+			intervalSec = int(it)
+			break
+		}
+	}
+
+	nextSec, nextSecIdx := audio.getNextSecond(leftBSec)
+	curSecIdx := nextSecIdx
+	curSec := int(nextSec)
+	for ; curSecIdx < scroll.rightB; curSecIdx += audio.sampleRate {
+		// TODO: Use theme for this
+		tickLength := TICK_LENGTH
+		tickColor := TICK_COLOR
+		if curSec%10 == 0 {
+			tickLength = TICK_LENGTH_10_SEC
+			tickColor = TICK_COLOR_10_SEC
+		} else if curSec%5 == 0 {
+			tickLength = TICK_LENGTH_5_SEC
+			tickColor = TICK_COLOR_5_SEC
+		}
+		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
+		if curSec%intervalSec == 0 {
+			off := op.Offset(image.Pt(x-20, margin-30)).Push(gtx.Ops)
+			material.Body2(th, fmt.Sprintf("%d", curSec)).Layout(gtx)
+			off.Pop()
+		}
+		ColorBox(gtx, image.Rect(x, margin, x+2, margin+tickLength), tickColor)
+		curSec++
+	}
 }
 
 func ColorBox(gtx layout.Context, size image.Rectangle, color color.NRGBA) layout.Dimensions {

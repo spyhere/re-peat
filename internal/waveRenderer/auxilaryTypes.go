@@ -1,5 +1,9 @@
 package waverenderer
 
+import (
+	"math"
+)
+
 type audio struct {
 	sampleRate   int
 	samplesPerPx int
@@ -8,6 +12,14 @@ type audio struct {
 	pcmMonoLen   int
 	seconds      float32
 	secsPerByte  float32
+}
+
+func (a audio) getSecondsFromSamples(samplesIdx int) float64 {
+	return float64(samplesIdx) / float64(a.sampleRate)
+}
+func (a audio) getNextSecond(second float64) (nextSecond float64, sammplesIdx int) {
+	nextSecond = math.Ceil(second)
+	return nextSecond, int(nextSecond * float64(a.sampleRate))
 }
 
 type scroll struct {
@@ -19,4 +31,8 @@ type scroll struct {
 	rightB       int     // right border of samples
 	zoomExpDelta float32 // zoom exponent delta
 	maxZoomExp   float32 // max zoom exponent delta
+}
+
+func (s scroll) getPxPerSec() float32 {
+	return max(s.minPxPerSec, s.pxPerSec)
 }

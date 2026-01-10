@@ -50,10 +50,9 @@ func run(window *app.Window, wavesR *wRenderer.WavesRenderer) error {
 			return e.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
-			_ = theme
 
 			wavesR.SetSize(e.Size)
-			wavesR.Layout(gtx, e)
+			wavesR.Layout(gtx, theme, e)
 
 			e.Frame(gtx.Ops)
 		}
