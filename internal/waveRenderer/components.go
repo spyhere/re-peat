@@ -50,8 +50,8 @@ func soundWavesComp(gtx layout.Context, yBorder float32, waves [][2]float32) {
 
 const (
 	MIN_TIME_INTERVAL_PX = 100
-	TICK_LENGTH_10_SEC   = 40
-	TICK_LENGTH_5_SEC    = 30
+	TICK_LENGTH_10_SEC   = 30
+	TICK_LENGTH_5_SEC    = 20
 	TICK_LENGTH          = 10
 )
 
@@ -89,6 +89,7 @@ func secondsRulerComp(gtx layout.Context, th *material.Theme, margin int, audio 
 		}
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
 		if curSec%intervalSec == 0 {
+			// TODO: center seconds properly
 			off := op.Offset(image.Pt(x-20, margin-30)).Push(gtx.Ops)
 			material.Body2(th, fmt.Sprintf("%d", curSec)).Layout(gtx)
 			off.Pop()
