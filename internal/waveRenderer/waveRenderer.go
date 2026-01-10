@@ -64,9 +64,10 @@ type WavesRenderer struct {
 
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
 	if chanNum == 1 {
-		return []float32{}
+		return samples
 	}
 	if chanNum > 2 {
+		fmt.Println("Not supported more than 2 channels")
 		return []float32{}
 	}
 	res := make([]float32, len(samples)/chanNum)
