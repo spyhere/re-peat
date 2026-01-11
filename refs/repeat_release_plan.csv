@@ -1,11 +1,11 @@
 Version; Functionality
-v1.0.0; 3 tabs: project tab, sounds wave tab, labels tab. Can open new track, has custom file explorer. Automatically saves the labels for track. Works only on macOs. User can manually load the labels for a current track.
-v0.9.0; Automatically saves the labels for a track.
-v0.8.0; Has functionality to save labels - Project tab.
+v1.0.0; 3 tabs: project tab, sounds wave tab, markers tab. Can open new track, has custom file explorer. Automatically saves markers for track. Works only on macOs. User can manually load markers for a current track.
+v0.9.0; Can automatically save markers for a track.
+v0.8.0; Can save markers - Project tab.
 v0.7.0; Can open the file (mp3, wav) - Project tab.
-v0.6.0; Has custom file explorer.
-v0.5.0; Has grouped buttons and 3 tabs. Project tab placholder, sound wave tab, labels tab.
-v0.4.0; Can show labels list. Able to play from selected label.
-v0.3.0; It's possible to place labels on the sound wave. Can show labels on the sound wave.
+v0.6.0; Can use custom file explorer.
+v0.5.0; Can show markers list. Able to play from selected marker.
+v0.4.0; Can see grouped buttons and 3 tabs. Project tab placholder, sound wave tab, markers tab.
+v0.3.0; Can place markers on the sound wave, edit or remove them.
 v0.2.0; Can scroll the sound wave, able to zoom.
 v0.1.0; Can render the sound wave, and play from cursor.
