@@ -86,6 +86,7 @@ func (r *WavesRenderer) getSamplesPerPx() int {
 	return int(float32(r.audio.sampleRate) / pxPerSec)
 }
 
+// TODO: optimisation - create multi-resolution downsampled samples map
 func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 	prevSamplesPerPx := r.audio.samplesPerPx
 	samplesPerPx := r.getSamplesPerPx()
