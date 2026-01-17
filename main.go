@@ -7,8 +7,8 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/op"
-	"gioui.org/widget/material"
 	p "github.com/spyhere/re-peat/internal/player"
+	"github.com/spyhere/re-peat/internal/ui/theme"
 	wRenderer "github.com/spyhere/re-peat/internal/waveRenderer"
 )
 
@@ -25,7 +25,8 @@ func main() {
 		log.Fatal(err)
 	}
 	player.SetVolume(0.7)
-	wavesR, err := wRenderer.NewWavesRenderer(decoder, pcm, player)
+	th := theme.New()
+	wavesR, err := wRenderer.NewWavesRenderer(th, decoder, pcm, player)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +43,6 @@ func main() {
 }
 
 func run(window *app.Window, wavesR *wRenderer.WavesRenderer) error {
-	theme := material.NewTheme()
 	var ops op.Ops
 	for {
 		switch e := window.Event().(type) {
@@ -52,7 +52,7 @@ func run(window *app.Window, wavesR *wRenderer.WavesRenderer) error {
 			gtx := app.NewContext(&ops, e)
 
 			wavesR.SetSize(e.Size)
-			wavesR.Layout(gtx, theme, e)
+			wavesR.Layout(gtx, e)
 
 			e.Frame(gtx.Ops)
 		}

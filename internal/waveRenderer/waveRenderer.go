@@ -3,7 +3,6 @@ package waverenderer
 import (
 	"fmt"
 	"image"
-	"image/color"
 	"math"
 	"time"
 
@@ -14,13 +13,13 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/constants"
 	"github.com/spyhere/re-peat/internal/player"
+	"github.com/spyhere/re-peat/internal/ui/theme"
 	"github.com/tosone/minimp3"
 )
 
-func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (*WavesRenderer, error) {
+func NewWavesRenderer(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *player.Player) (*WavesRenderer, error) {
 	normSamples, err := getNormalisedSamples(pcm)
 	if err != nil {
 		return &WavesRenderer{}, err
@@ -46,6 +45,7 @@ func NewWavesRenderer(dec *minimp3.Decoder, pcm []byte, player *player.Player) (
 		scroll: scroll{
 			maxPxPerSec: 200,
 		},
+		th: th,
 	}, nil
 }
 
@@ -61,6 +61,7 @@ type WavesRenderer struct {
 	padding        int
 	size           image.Point
 	scroll         scroll
+	th             *theme.RepeatTheme
 }
 
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
@@ -231,23 +232,21 @@ func (r *WavesRenderer) handlePointerEvents(gtx layout.Context) {
 	}
 }
 
-func (r *WavesRenderer) Layout(gtx layout.Context, th *material.Theme, e app.FrameEvent) layout.Dimensions {
+func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	player := r.p
 	isPlaying := player.IsPlaying()
 	r.handlePointerEvents(gtx)
 	r.handleKey(gtx, isPlaying)
 
-	backgroundComp(gtx, color.NRGBA{A: 0xff})
-	bgArea := image.Rect(0, r.margin-r.padding, r.size.X, r.size.Y-r.margin+r.padding)
-	ColorBox(gtx, bgArea, color.NRGBA{R: 0x11, G: 0x77, B: 0x66, A: 0xff})
+	backgroundComp(gtx, r.th.Editor.Bg)
 
 	wavesYBorder := r.size.Y/2 - r.margin
 	offsetBy(gtx, image.Pt(0, r.margin), func() {
-		soundWavesComp(gtx, float32(wavesYBorder), r.getRenderableWaves())
+		soundWavesComp(gtx, r.th, float32(wavesYBorder), r.getRenderableWaves())
 	})
-	secondsRulerComp(gtx, th, r.margin, r.audio, r.scroll)
+	secondsRulerComp(gtx, r.th, r.margin, r.audio, r.scroll)
 
-	playheadComp(gtx, r.playhead, r.audio, r.scroll)
+	playheadComp(gtx, r.th, r.playhead, r.audio, r.scroll)
 	if isPlaying {
 		if r.playhead < r.audio.pcmLen {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(r.playheadUpdate)})

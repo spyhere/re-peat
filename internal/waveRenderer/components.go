@@ -11,6 +11,7 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
 func offsetBy(gtx layout.Context, amount image.Point, w func()) {
@@ -22,17 +23,17 @@ func backgroundComp(gtx layout.Context, col color.NRGBA) {
 	ColorBox(gtx, image.Rectangle{Max: image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)}, col)
 }
 
-func playheadComp(gtx layout.Context, playhead int64, audio audio, scroll scroll) {
+func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio, scroll scroll) {
 	maxX := gtx.Constraints.Max.X
 	currSamples := audio.getSamplesFromPCM(playhead) - scroll.leftB
 	x := int(float32(currSamples) * float32(maxX) / float32(scroll.rightB-scroll.leftB))
 	if x < 0 || x > maxX {
 		return
 	}
-	ColorBox(gtx, image.Rect(x, 0, x+1, gtx.Constraints.Max.Y), color.NRGBA{R: 0xff, G: 0xdd, B: 0xdd, A: 0xff})
+	ColorBox(gtx, image.Rect(x, 0, x+2, gtx.Constraints.Max.Y), th.Editor.Playhead)
 }
 
-func soundWavesComp(gtx layout.Context, yBorder float32, waves [][2]float32) {
+func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yBorder float32, waves [][2]float32) {
 	var path clip.Path
 	path.Begin(gtx.Ops)
 	path.MoveTo(f32.Pt(0, yBorder))
@@ -44,7 +45,7 @@ func soundWavesComp(gtx layout.Context, yBorder float32, waves [][2]float32) {
 	}
 	path.MoveTo(f32.Pt(0, yBorder))
 	path.Close()
-	paint.FillShape(gtx.Ops, color.NRGBA{G: 0x32, B: 0x55, A: 0xff},
+	paint.FillShape(gtx.Ops, th.Editor.SoundWave,
 		clip.Stroke{
 			Path:  path.End(),
 			Width: 1,
@@ -65,7 +66,7 @@ var TICK_COLOR = color.NRGBA{A: 0xff}
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
-func secondsRulerComp(gtx layout.Context, th *material.Theme, margin int, audio audio, scroll scroll) {
+func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, margin int, audio audio, scroll scroll) {
 	margin -= 50
 	pxPerSec := scroll.getPxPerSec()
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
@@ -95,7 +96,7 @@ func secondsRulerComp(gtx layout.Context, th *material.Theme, margin int, audio 
 		if curSec%intervalSec == 0 {
 			// TODO: center seconds properly
 			off := op.Offset(image.Pt(x-20, margin-30)).Push(gtx.Ops)
-			material.Body2(th, fmt.Sprintf("%d", curSec)).Layout(gtx)
+			material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(gtx)
 			off.Pop()
 		}
 		ColorBox(gtx, image.Rect(x, margin, x+2, margin+tickLength), tickColor)
