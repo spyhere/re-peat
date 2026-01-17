@@ -1,4 +1,4 @@
-package waverenderer
+package editor
 
 import (
 	"math"

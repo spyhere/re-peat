@@ -1,4 +1,4 @@
-package waverenderer
+package editor
 
 import (
 	"fmt"
@@ -19,16 +19,16 @@ import (
 	"github.com/tosone/minimp3"
 )
 
-func NewWavesRenderer(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *player.Player) (*WavesRenderer, error) {
+func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *player.Player) (*Editor, error) {
 	normSamples, err := getNormalisedSamples(pcm)
 	if err != nil {
-		return &WavesRenderer{}, err
+		return &Editor{}, err
 	}
 	fmt.Println("Audio data is normalised")
 	frames := len(normSamples) / dec.Channels
 	monoSamples := makeSamplesMono(normSamples, dec.Channels)
 	fmt.Println("WaveRenderer received mono samples")
-	return &WavesRenderer{
+	return &Editor{
 		p:           player,
 		monoSamples: monoSamples,
 		audio: audio{
@@ -49,8 +49,7 @@ func NewWavesRenderer(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, p
 	}, nil
 }
 
-// Entity to visualise wave forms of sound track
-type WavesRenderer struct {
+type Editor struct {
 	playhead       int64 // Shows amount of PCM bytes from the beginning (not samples)
 	playheadUpdate time.Duration
 	audio          audio
@@ -82,29 +81,29 @@ func makeSamplesMono(samples []float32, chanNum int) []float32 {
 	return res
 }
 
-func (r *WavesRenderer) getSamplesPerPx() int {
-	pxPerSec := max(r.scroll.minPxPerSec, r.scroll.pxPerSec)
-	return int(float32(r.audio.sampleRate) / pxPerSec)
+func (ed *Editor) getSamplesPerPx() int {
+	pxPerSec := max(ed.scroll.minPxPerSec, ed.scroll.pxPerSec)
+	return int(float32(ed.audio.sampleRate) / pxPerSec)
 }
 
 // TODO: optimisation - create multi-resolution downsampled samples map
-func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
-	prevSamplesPerPx := r.audio.samplesPerPx
-	samplesPerPx := r.getSamplesPerPx()
-	r.audio.samplesPerPx = samplesPerPx
-	maxSamples := samplesPerPx * r.size.X
-	sampleAtCursor := r.scroll.leftB + int(r.scroll.originX*float32(prevSamplesPerPx))
-	leftB := sampleAtCursor - int(r.scroll.originX*float32(samplesPerPx))
-	leftB = clamp(0, leftB, r.audio.pcmMonoLen-maxSamples)
+func (ed *Editor) getRenderableWaves() [][2]float32 {
+	prevSamplesPerPx := ed.audio.samplesPerPx
+	samplesPerPx := ed.getSamplesPerPx()
+	ed.audio.samplesPerPx = samplesPerPx
+	maxSamples := samplesPerPx * ed.size.X
+	sampleAtCursor := ed.scroll.leftB + int(ed.scroll.originX*float32(prevSamplesPerPx))
+	leftB := sampleAtCursor - int(ed.scroll.originX*float32(samplesPerPx))
+	leftB = clamp(0, leftB, ed.audio.pcmMonoLen-maxSamples)
 	rightB := leftB + maxSamples
-	if leftB == r.scroll.leftB && rightB == r.scroll.rightB {
-		return r.cached
+	if leftB == ed.scroll.leftB && rightB == ed.scroll.rightB {
+		return ed.cached
 	}
-	r.scroll.leftB = leftB
-	r.scroll.rightB = rightB
+	ed.scroll.leftB = leftB
+	ed.scroll.rightB = rightB
 
-	monoSamples := r.monoSamples[leftB:rightB]
-	res := r.cached[:r.size.X]
+	monoSamples := ed.monoSamples[leftB:rightB]
+	res := ed.cached[:ed.size.X]
 
 	var idx int
 	var min float32 = 1
@@ -129,44 +128,44 @@ func (r *WavesRenderer) getRenderableWaves() [][2]float32 {
 	if count != samplesPerPx && idx < len(res) {
 		res[idx] = [2]float32{min, max}
 	}
-	r.cached = res
+	ed.cached = res
 	return res
 }
 
-func (r *WavesRenderer) SetSize(size image.Point) {
-	r.size = size
-	if cap(r.cached) < size.X {
-		r.cached = make([][2]float32, size.X, size.X*2)
+func (ed *Editor) SetSize(size image.Point) {
+	ed.size = size
+	if cap(ed.cached) < size.X {
+		ed.cached = make([][2]float32, size.X, size.X*2)
 	}
-	r.scroll.minPxPerSec = float32(size.X) / r.audio.seconds
-	r.scroll.maxZoomExp = float32(math.Log2(float64(r.scroll.maxPxPerSec) / float64(r.scroll.minPxPerSec)))
+	ed.scroll.minPxPerSec = float32(size.X) / ed.audio.seconds
+	ed.scroll.maxZoomExp = float32(math.Log2(float64(ed.scroll.maxPxPerSec) / float64(ed.scroll.minPxPerSec)))
 }
 
-func (r *WavesRenderer) handleClick(posX float32) {
-	pxPerSec := max(r.scroll.minPxPerSec, r.scroll.pxPerSec)
-	seconds := (posX / pxPerSec) + (float32(r.scroll.leftB) / float32(r.audio.sampleRate))
+func (ed *Editor) handleClick(posX float32) {
+	pxPerSec := max(ed.scroll.minPxPerSec, ed.scroll.pxPerSec)
+	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.sampleRate))
 	// TODO: handle error here
-	seekVal, _ := r.p.Search(seconds)
-	r.playhead = seekVal
+	seekVal, _ := ed.p.Search(seconds)
+	ed.playhead = seekVal
 }
 
 const ZOOM_RATE = 0.0008
 const PAN_RATE = 0.2
 
-func (r *WavesRenderer) handleScroll(scroll f32.Point, pos f32.Point) {
-	r.scroll.originX = pos.X
+func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
+	ed.scroll.originX = pos.X
 
-	panSamples := int(scroll.X * PAN_RATE * float32(r.getSamplesPerPx()))
-	r.scroll.leftB += panSamples
-	maxLeft := r.audio.pcmMonoLen - r.audio.samplesPerPx*r.size.X
-	r.scroll.leftB = clamp(0, r.scroll.leftB, maxLeft)
+	panSamples := int(scroll.X * PAN_RATE * float32(ed.getSamplesPerPx()))
+	ed.scroll.leftB += panSamples
+	maxLeft := ed.audio.pcmMonoLen - ed.audio.samplesPerPx*ed.size.X
+	ed.scroll.leftB = clamp(0, ed.scroll.leftB, maxLeft)
 
-	r.scroll.zoomExpDelta += scroll.Y * ZOOM_RATE
-	r.scroll.zoomExpDelta = clamp(0.0, r.scroll.zoomExpDelta, r.scroll.maxZoomExp)
-	r.scroll.pxPerSec = r.scroll.minPxPerSec * float32(math.Exp2(float64(r.scroll.zoomExpDelta)))
+	ed.scroll.zoomExpDelta += scroll.Y * ZOOM_RATE
+	ed.scroll.zoomExpDelta = clamp(0.0, ed.scroll.zoomExpDelta, ed.scroll.maxZoomExp)
+	ed.scroll.pxPerSec = ed.scroll.minPxPerSec * float32(math.Exp2(float64(ed.scroll.zoomExpDelta)))
 }
 
-func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
+func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
 	for {
 		evt, ok := gtx.Event(key.Filter{
 			Name: key.NameSpace,
@@ -182,36 +181,36 @@ func (r *WavesRenderer) handleKey(gtx layout.Context, isPlaying bool) {
 			if e.Name == key.NameSpace {
 				isPlaying = !isPlaying
 				if isPlaying {
-					if r.playhead >= r.audio.pcmLen {
+					if ed.playhead >= ed.audio.pcmLen {
 						continue
 					}
-					r.p.Play()
-					r.p.WaitUntilReady()
+					ed.p.Play()
+					ed.p.WaitUntilReady()
 				} else {
-					r.p.Pause()
+					ed.p.Pause()
 				}
 			}
 		}
 	}
 }
 
-func (r *WavesRenderer) listenToPlayerUpdates() {
-	player := r.p
+func (ed *Editor) listenToPlayerUpdates() {
+	player := ed.p
 	select {
 	case _ = <-player.IsDoneCh():
-		r.playhead = r.audio.pcmLen
+		ed.playhead = ed.audio.pcmLen
 		// We need to pause it after it's done to mitigate the potential bug. See [player.IsDoneCh] comment.
-		r.p.Pause()
+		ed.p.Pause()
 	default:
-		r.playhead = player.GetReadAmount()
+		ed.playhead = player.GetReadAmount()
 	}
 }
 
-func (r *WavesRenderer) handlePointerEvents(gtx layout.Context) {
-	event.Op(gtx.Ops, r)
+func (ed *Editor) handlePointerEvents(gtx layout.Context) {
+	event.Op(gtx.Ops, ed)
 	for {
 		evt, ok := gtx.Event(pointer.Filter{
-			Target:  r,
+			Target:  ed,
 			Kinds:   pointer.Press | pointer.Scroll,
 			ScrollX: pointer.ScrollRange{Min: -1e9, Max: 1e9},
 			ScrollY: pointer.ScrollRange{Min: -1e9, Max: 1e9},
@@ -225,33 +224,33 @@ func (r *WavesRenderer) handlePointerEvents(gtx layout.Context) {
 		}
 		switch e.Kind {
 		case pointer.Scroll:
-			r.handleScroll(e.Scroll, e.Position)
+			ed.handleScroll(e.Scroll, e.Position)
 		case pointer.Press:
-			r.handleClick(e.Position.X)
+			ed.handleClick(e.Position.X)
 		}
 	}
 }
 
-func (r *WavesRenderer) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
-	player := r.p
+func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
+	player := ed.p
 	isPlaying := player.IsPlaying()
-	r.handlePointerEvents(gtx)
-	r.handleKey(gtx, isPlaying)
+	ed.handlePointerEvents(gtx)
+	ed.handleKey(gtx, isPlaying)
 
-	backgroundComp(gtx, r.th.Editor.Bg)
+	backgroundComp(gtx, ed.th.Editor.Bg)
 
-	wavesYBorder := r.size.Y/2 - r.margin
-	offsetBy(gtx, image.Pt(0, r.margin), func() {
-		soundWavesComp(gtx, r.th, float32(wavesYBorder), r.getRenderableWaves())
+	wavesYBorder := ed.size.Y/2 - ed.margin
+	offsetBy(gtx, image.Pt(0, ed.margin), func() {
+		soundWavesComp(gtx, ed.th, float32(wavesYBorder), ed.getRenderableWaves())
 	})
-	secondsRulerComp(gtx, r.th, r.margin, r.audio, r.scroll)
+	secondsRulerComp(gtx, ed.th, ed.margin, ed.audio, ed.scroll)
 
-	playheadComp(gtx, r.th, r.playhead, r.audio, r.scroll)
+	playheadComp(gtx, ed.th, ed.playhead, ed.audio, ed.scroll)
 	if isPlaying {
-		if r.playhead < r.audio.pcmLen {
-			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(r.playheadUpdate)})
+		if ed.playhead < ed.audio.pcmLen {
+			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playheadUpdate)})
 		}
-		r.listenToPlayerUpdates()
+		ed.listenToPlayerUpdates()
 	}
 	return layout.Dimensions{}
 }

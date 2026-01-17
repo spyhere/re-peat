@@ -7,9 +7,9 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/op"
+	"github.com/spyhere/re-peat/internal/editor"
 	p "github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/ui/theme"
-	wRenderer "github.com/spyhere/re-peat/internal/waveRenderer"
 )
 
 const audioFilePath = "./assets/test_song.mp3"
@@ -26,14 +26,14 @@ func main() {
 	}
 	player.SetVolume(0.7)
 	th := theme.New()
-	wavesR, err := wRenderer.NewWavesRenderer(th, decoder, pcm, player)
+	ed, err := editor.NewEditor(th, decoder, pcm, player)
 	if err != nil {
 		log.Fatal(err)
 	}
 	go func() {
 		window := new(app.Window)
 		window.Option(app.Title("re-peat"))
-		err := run(window, wavesR)
+		err := run(window, ed)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -42,7 +42,7 @@ func main() {
 	app.Main()
 }
 
-func run(window *app.Window, wavesR *wRenderer.WavesRenderer) error {
+func run(window *app.Window, ed *editor.Editor) error {
 	var ops op.Ops
 	for {
 		switch e := window.Event().(type) {
@@ -51,8 +51,8 @@ func run(window *app.Window, wavesR *wRenderer.WavesRenderer) error {
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
 
-			wavesR.SetSize(e.Size)
-			wavesR.Layout(gtx, e)
+			ed.SetSize(e.Size)
+			ed.Layout(gtx, e)
 
 			e.Frame(gtx.Ops)
 		}
