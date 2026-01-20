@@ -39,7 +39,7 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 	path.MoveTo(f32.Pt(0, yCenter))
 	lastI0 := -1
 	lastI1 := -1
-	for px := range gtx.Constraints.Max.X + WaveEdgePadding {
+	for px := range gtx.Constraints.Max.X + waveEdgePadding {
 		sample0 := s.leftB + int(float32(px)*s.samplesPerPx)
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
 		i0 := (sample0 / c.curLvl) - c.leftB
@@ -65,10 +65,10 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 }
 
 const (
-	MIN_TIME_INTERVAL_PX = 100
-	TICK_LENGTH_10_SEC   = 30
-	TICK_LENGTH_5_SEC    = 20
-	TICK_LENGTH          = 10
+	minTimeInvervalPx = 100
+	tickLength10Sec   = 30
+	tickLength5Sec    = 20
+	tickLength        = 10
 )
 
 var TICK_COLOR_10_SEC = color.NRGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
@@ -82,7 +82,7 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
 	var intervalSec int
 	for _, it := range timeIntervals {
-		if it*pxPerSec >= MIN_TIME_INTERVAL_PX {
+		if it*pxPerSec >= minTimeInvervalPx {
 			intervalSec = int(it)
 			break
 		}
@@ -93,13 +93,13 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 	curSec := int(nextSec)
 	for ; curSecIdx < scroll.rightB; curSecIdx += audio.sampleRate {
 		// TODO: Use theme for this
-		tickLength := TICK_LENGTH
+		tickLength := tickLength
 		tickColor := TICK_COLOR
 		if curSec%10 == 0 {
-			tickLength = TICK_LENGTH_10_SEC
+			tickLength = tickLength10Sec
 			tickColor = TICK_COLOR_10_SEC
 		} else if curSec%5 == 0 {
-			tickLength = TICK_LENGTH_5_SEC
+			tickLength = tickLength5Sec
 			tickColor = TICK_COLOR_5_SEC
 		}
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))

@@ -37,7 +37,7 @@ func (p *Player) SetVolume(volume float64) {
 
 func (p *Player) Search(seconds float32) (int64, error) {
 	value := int64(seconds * float32(p.dataLen) / p.totalSec)
-	value -= value % constants.BYTES_PER_SAMPLE
+	value -= value % constants.BytesPerSample
 	return p.player.Seek(value, io.SeekStart)
 }
 

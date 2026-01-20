@@ -16,13 +16,11 @@ import (
 	"github.com/tosone/minimp3"
 )
 
-// TODO: Rename all constants to Go idiomatic way (no caps snake case)
-
 const (
-	WaveEdgePadding = 3 // Forced to add this padding otherwise waves left and right border's px is being clipped
+	waveEdgePadding = 3 // Forced to add this padding otherwise waves left and right border's px is being clipped
 	// TODO: Can we store it as ms duration?
-	PLAYHEAD_INIT_DUR = 50
-	MaxScrollLvl      = 5
+	playheadInitDur = 50
+	maxScrollLvl    = 5
 )
 
 func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *player.Player) (*Editor, error) {
@@ -46,14 +44,14 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 		},
 		margin:         400,
 		padding:        90,
-		playheadUpdate: time.Millisecond * PLAYHEAD_INIT_DUR,
+		playheadUpdate: time.Millisecond * playheadInitDur,
 		cache: cache{
 			peakMap: make(map[int][][2]float32),
-			levels:  make([]int, MaxScrollLvl+1),
-			workers: make([]*cacheWorker, MaxScrollLvl+1),
+			levels:  make([]int, maxScrollLvl+1),
+			workers: make([]*cacheWorker, maxScrollLvl+1),
 		},
 		scroll: scroll{
-			maxLvl: MaxScrollLvl,
+			maxLvl: maxScrollLvl,
 		},
 		th: th,
 	}, nil
@@ -95,7 +93,7 @@ func (ed *Editor) getRenderableWaves() [][2]float32 {
 }
 
 func (ed *Editor) SetSize(size image.Point) {
-	size.X += WaveEdgePadding
+	size.X += waveEdgePadding
 	ed.size = size
 }
 
@@ -135,19 +133,19 @@ func (ed *Editor) handleClick(posX float32) {
 }
 
 const (
-	ZOOM_RATE = 0.0008
-	PAN_RATE  = 0.2
+	zoomRate = 0.0008
+	panRate  = 0.2
 )
 
 func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
 	// Zoom
 	oldSPP := ed.scroll.samplesPerPx
-	ed.scroll.samplesPerPx *= float32(math.Exp(float64(-scroll.Y * ZOOM_RATE)))
+	ed.scroll.samplesPerPx *= float32(math.Exp(float64(-scroll.Y * zoomRate)))
 	ed.scroll.samplesPerPx = clamp(float32(ed.scroll.minSamplesPerPx), ed.scroll.samplesPerPx, float32(ed.scroll.maxSamplesPerPx))
 	ed.scroll.leftB += int(pos.X * (oldSPP - ed.scroll.samplesPerPx))
 	// Pan
 	curSamplesPerPx := ed.scroll.samplesPerPx
-	panSamples := int(scroll.X * PAN_RATE * float32(curSamplesPerPx))
+	panSamples := int(scroll.X * panRate * float32(curSamplesPerPx))
 	ed.scroll.leftB += panSamples
 }
 

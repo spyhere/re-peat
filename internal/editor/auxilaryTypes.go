@@ -24,7 +24,7 @@ func (a audio) getNextSecond(second float64) (nextSecond float64, sammplesIdx in
 	return nextSecond, int(nextSecond * float64(a.sampleRate))
 }
 func (a audio) getSamplesFromPCM(pcmBytes int64) int {
-	return int(pcmBytes / int64(a.channels) / constants.BYTES_PER_SAMPLE)
+	return int(pcmBytes / int64(a.channels) / constants.BytesPerSample)
 }
 
 type scroll struct {
