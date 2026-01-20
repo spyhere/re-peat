@@ -7,6 +7,7 @@ import (
 
 const maxUin16 float32 = 32767.0
 
+// TODO: move to helpers
 func getNormalisedSamples(data []byte) ([]float32, error) {
 	if len(data)%2 != 0 {
 		return []float32{}, fmt.Errorf("Read samples are not uint16: %d\n", len(data))

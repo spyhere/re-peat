@@ -33,18 +33,29 @@ func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, aud
 	ColorBox(gtx, image.Rect(x, 0, x+2, gtx.Constraints.Max.Y), th.Editor.Playhead)
 }
 
-func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yBorder float32, waves [][2]float32) {
+func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
 	var path clip.Path
 	path.Begin(gtx.Ops)
-	path.MoveTo(f32.Pt(0, yBorder))
-	for idx, it := range waves {
-		high := yBorder - it[1]*yBorder
-		low := yBorder - it[0]*yBorder
-		path.LineTo(f32.Pt(float32(idx+1), high))
-		path.LineTo(f32.Pt(float32(idx+1), low))
+	path.MoveTo(f32.Pt(0, yCenter))
+	lastI0 := -1
+	lastI1 := -1
+	for px := range gtx.Constraints.Max.X + WaveEdgePadding {
+		sample0 := s.leftB + int(float32(px)*s.samplesPerPx)
+		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
+		i0 := (sample0 / c.curLvl) - c.leftB
+		i1 := (sample1 / c.curLvl) - c.leftB
+		i1 = min(i1+1, len(waves))
+		if i0 == lastI0 && i1 == lastI1 {
+			continue
+		}
+		lastI0 = i0
+		lastI1 = i1
+		low, high := reducePeaks(waves[i0:i1])
+		high = yCenter - high*yCenter
+		low = yCenter - low*yCenter
+		path.LineTo(f32.Pt(float32(px), high))
+		path.LineTo(f32.Pt(float32(px), low))
 	}
-	path.MoveTo(f32.Pt(0, yBorder))
-	path.Close()
 	paint.FillShape(gtx.Ops, th.Editor.SoundWave,
 		clip.Stroke{
 			Path:  path.End(),
@@ -66,9 +77,8 @@ var TICK_COLOR = color.NRGBA{A: 0xff}
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
-func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, margin int, audio audio, scroll scroll) {
-	margin -= 50
-	pxPerSec := scroll.getPxPerSec()
+func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio audio, scroll scroll) {
+	pxPerSec := float32(audio.sampleRate) / float32(scroll.samplesPerPx)
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
 	var intervalSec int
 	for _, it := range timeIntervals {
@@ -95,11 +105,11 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, margin int, aud
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
 		if curSec%intervalSec == 0 {
 			// TODO: center seconds properly
-			off := op.Offset(image.Pt(x-20, margin-30)).Push(gtx.Ops)
+			off := op.Offset(image.Pt(x-20, y-30)).Push(gtx.Ops)
 			material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(gtx)
 			off.Pop()
 		}
-		ColorBox(gtx, image.Rect(x, margin, x+2, margin+tickLength), tickColor)
+		ColorBox(gtx, image.Rect(x, y, x+2, y+tickLength), tickColor)
 		curSec++
 	}
 }

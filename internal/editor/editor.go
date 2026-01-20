@@ -13,10 +13,18 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"github.com/spyhere/re-peat/internal/constants"
 	"github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 	"github.com/tosone/minimp3"
+)
+
+// TODO: Rename all constants to Go idiomatic way (no caps snake case)
+
+const (
+	WaveEdgePadding = 3 // Forced to add this padding otherwise waves left and right border's px is being clipped
+	// TODO: Can we store it as ms duration?
+	PLAYHEAD_INIT_DUR = 50
+	MaxScrollLvl      = 5
 )
 
 func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *player.Player) (*Editor, error) {
@@ -32,18 +40,22 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 		p:           player,
 		monoSamples: monoSamples,
 		audio: audio{
-			sampleRate:  dec.SampleRate,
-			channels:    dec.Channels,
-			pcmLen:      int64(len(pcm)),
-			pcmMonoLen:  len(monoSamples),
-			seconds:     float32(frames) / float32(dec.SampleRate),
-			secsPerByte: 1.0 / (float32(dec.SampleRate) * constants.BYTES_PER_SAMPLE * float32(dec.Channels)),
+			sampleRate: dec.SampleRate,
+			channels:   dec.Channels,
+			pcmLen:     int64(len(pcm)),
+			pcmMonoLen: len(monoSamples),
+			seconds:    float32(frames) / float32(dec.SampleRate),
 		},
 		margin:         400,
 		padding:        90,
-		playheadUpdate: time.Millisecond * 50,
+		playheadUpdate: time.Millisecond * PLAYHEAD_INIT_DUR,
+		cache: cache{
+			peakMap: make(map[int][][2]float32),
+			levels:  make([]int, MaxScrollLvl+1),
+			workers: make([]*cacheWorker, MaxScrollLvl+1),
+		},
 		scroll: scroll{
-			maxPxPerSec: 200,
+			maxLvl: MaxScrollLvl,
 		},
 		th: th,
 	}, nil
@@ -54,7 +66,7 @@ type Editor struct {
 	playheadUpdate time.Duration
 	audio          audio
 	monoSamples    []float32
-	cached         [][2]float32
+	cache          cache
 	p              *player.Player
 	margin         int
 	padding        int
@@ -63,6 +75,7 @@ type Editor struct {
 	th             *theme.RepeatTheme
 }
 
+// TODO: move to helpers
 func makeSamplesMono(samples []float32, chanNum int) []float32 {
 	if chanNum == 1 {
 		return samples
@@ -81,88 +94,87 @@ func makeSamplesMono(samples []float32, chanNum int) []float32 {
 	return res
 }
 
-func (ed *Editor) getSamplesPerPx() int {
-	pxPerSec := max(ed.scroll.minPxPerSec, ed.scroll.pxPerSec)
-	return int(float32(ed.audio.sampleRate) / pxPerSec)
-}
-
-// TODO: optimisation - create multi-resolution downsampled samples map
 func (ed *Editor) getRenderableWaves() [][2]float32 {
-	prevSamplesPerPx := ed.audio.samplesPerPx
-	samplesPerPx := ed.getSamplesPerPx()
-	ed.audio.samplesPerPx = samplesPerPx
-	maxSamples := samplesPerPx * ed.size.X
-	sampleAtCursor := ed.scroll.leftB + int(ed.scroll.originX*float32(prevSamplesPerPx))
-	leftB := sampleAtCursor - int(ed.scroll.originX*float32(samplesPerPx))
-	leftB = clamp(0, leftB, ed.audio.pcmMonoLen-maxSamples)
-	rightB := leftB + maxSamples
+	samplesPerPx := ed.scroll.samplesPerPx
+	visibleSamples := int(samplesPerPx * float32(ed.size.X))
+	leftB := clamp(0, ed.scroll.leftB, ed.audio.pcmMonoLen-visibleSamples)
+	rightB := leftB + visibleSamples
 	if leftB == ed.scroll.leftB && rightB == ed.scroll.rightB {
-		return ed.cached
+		return ed.cache.curSlice
 	}
 	ed.scroll.leftB = leftB
 	ed.scroll.rightB = rightB
 
-	monoSamples := ed.monoSamples[leftB:rightB]
-	res := ed.cached[:ed.size.X]
+	cacheSPP := ed.cache.getLevel(samplesPerPx)
+	cacheLeftB := leftB / cacheSPP
+	cacheRightB := rightB / cacheSPP
 
-	var idx int
-	var min float32 = 1
-	var max float32 = -1
-	count := samplesPerPx
-	for _, it := range monoSamples {
-		if it < min {
-			min = it
-		}
-		if it > max {
-			max = it
-		}
-		count--
-		if count == 0 {
-			res[idx] = [2]float32{min, max}
-			idx++
-			min = 1
-			max = -1
-			count = samplesPerPx
-		}
-	}
-	if count != samplesPerPx && idx < len(res) {
-		res[idx] = [2]float32{min, max}
-	}
-	ed.cached = res
-	return res
+	ed.cache.curSlice = ed.cache.peakMap[cacheSPP][cacheLeftB:cacheRightB]
+	ed.cache.curLvl = cacheSPP
+	ed.cache.leftB = cacheLeftB
+	return ed.cache.curSlice
 }
 
 func (ed *Editor) SetSize(size image.Point) {
+	size.X += WaveEdgePadding
 	ed.size = size
-	if cap(ed.cached) < size.X {
-		ed.cached = make([][2]float32, size.X, size.X*2)
+}
+
+// TODO: optimisation - debounce on window resize
+func (ed *Editor) MakePeakMap() {
+	if ed.cache.isPopulated {
+		return
 	}
-	ed.scroll.minPxPerSec = float32(size.X) / ed.audio.seconds
-	ed.scroll.maxZoomExp = float32(math.Log2(float64(ed.scroll.maxPxPerSec) / float64(ed.scroll.minPxPerSec)))
+	ed.scroll.maxSamplesPerPx = float32(ed.audio.sampleRate) / (float32(ed.size.X) / ed.audio.seconds)
+	ed.scroll.minSamplesPerPx = ed.scroll.maxSamplesPerPx / float32(math.Exp2(float64(ed.scroll.maxLvl)))
+	ed.scroll.samplesPerPx = float32(ed.scroll.maxSamplesPerPx)
+
+	idx := 0
+	maxSamplesPerPx := int(ed.scroll.maxSamplesPerPx)
+	minSamplesPerPx := int(ed.scroll.minSamplesPerPx)
+	for i := maxSamplesPerPx; i >= minSamplesPerPx; i /= 2 {
+		ed.cache.workers[idx] = &cacheWorker{
+			samplesPerPx: i,
+			min:          1,
+			max:          -1,
+			count:        i,
+		}
+		ed.cache.peakMap[i] = make([][2]float32, len(ed.monoSamples)/i)
+		ed.cache.levels[idx] = i
+		idx++
+	}
+	populateCache(ed.cache.peakMap, ed.monoSamples, ed.cache.workers)
+	ed.cache.isPopulated = true
 }
 
 func (ed *Editor) handleClick(posX float32) {
-	pxPerSec := max(ed.scroll.minPxPerSec, ed.scroll.pxPerSec)
+	pxPerSec := float32(ed.audio.sampleRate) / float32(ed.scroll.samplesPerPx)
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.sampleRate))
 	// TODO: handle error here
 	seekVal, _ := ed.p.Search(seconds)
 	ed.playhead = seekVal
 }
 
-const ZOOM_RATE = 0.0008
-const PAN_RATE = 0.2
+const (
+	ZOOM_RATE = 0.0008
+	PAN_RATE  = 0.2
+)
 
 func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
-	ed.scroll.originX = pos.X
-
-	panSamples := int(scroll.X * PAN_RATE * float32(ed.getSamplesPerPx()))
+	// Pan
+	curSamplesPerPx := ed.scroll.samplesPerPx
+	panSamples := int(scroll.X * PAN_RATE * float32(curSamplesPerPx))
 	ed.scroll.leftB += panSamples
-	maxLeft := ed.audio.pcmMonoLen - ed.audio.samplesPerPx*ed.size.X
+	maxLeft := ed.audio.pcmMonoLen - int(curSamplesPerPx)*ed.size.X
+	// TODO: Do I have to clamp it here?
 	ed.scroll.leftB = clamp(0, ed.scroll.leftB, maxLeft)
 
-	ed.scroll.zoomExpDelta += scroll.Y * ZOOM_RATE
-	ed.scroll.zoomExpDelta = clamp(0.0, ed.scroll.zoomExpDelta, ed.scroll.maxZoomExp)
-	ed.scroll.pxPerSec = ed.scroll.minPxPerSec * float32(math.Exp2(float64(ed.scroll.zoomExpDelta)))
+	// Zoom
+	// TODO: maybe zoom should be before pan?
+	oldSPP := ed.scroll.samplesPerPx
+	ed.scroll.samplesPerPx *= float32(math.Exp(float64(-scroll.Y * ZOOM_RATE)))
+	ed.scroll.samplesPerPx = clamp(float32(ed.scroll.minSamplesPerPx), ed.scroll.samplesPerPx, float32(ed.scroll.maxSamplesPerPx))
+	ed.scroll.leftB += int(pos.X * (oldSPP - ed.scroll.samplesPerPx))
 }
 
 func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
@@ -231,6 +243,7 @@ func (ed *Editor) handlePointerEvents(gtx layout.Context) {
 	}
 }
 
+// TODO: Move this method to separate file
 func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	player := ed.p
 	isPlaying := player.IsPlaying()
@@ -239,11 +252,11 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 
 	backgroundComp(gtx, ed.th.Editor.Bg)
 
-	wavesYBorder := ed.size.Y/2 - ed.margin
+	yCenter := gtx.Constraints.Max.Y / 2
 	offsetBy(gtx, image.Pt(0, ed.margin), func() {
-		soundWavesComp(gtx, ed.th, float32(wavesYBorder), ed.getRenderableWaves())
+		soundWavesComp(gtx, ed.th, float32(yCenter-ed.margin), ed.getRenderableWaves(), ed.scroll, ed.cache)
 	})
-	secondsRulerComp(gtx, ed.th, ed.margin, ed.audio, ed.scroll)
+	secondsRulerComp(gtx, ed.th, ed.margin-50, ed.audio, ed.scroll)
 
 	playheadComp(gtx, ed.th, ed.playhead, ed.audio, ed.scroll)
 	if isPlaying {

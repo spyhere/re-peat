@@ -52,6 +52,7 @@ func run(window *app.Window, ed *editor.Editor) error {
 			gtx := app.NewContext(&ops, e)
 
 			ed.SetSize(e.Size)
+			ed.MakePeakMap()
 			ed.Layout(gtx, e)
 
 			e.Frame(gtx.Ops)
