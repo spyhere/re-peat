@@ -104,9 +104,12 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 		}
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
 		if curSec%intervalSec == 0 {
-			// TODO: center seconds properly
-			off := op.Offset(image.Pt(x-20, y-30)).Push(gtx.Ops)
-			material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(gtx)
+			// TODO: You have to have proper text and/or widget dimension tool
+			secLabel := fmt.Sprintf("%d", curSec)
+			lbl := material.Body2(th.Theme, secLabel)
+			secSizeX := int(lbl.TextSize) * len(secLabel)
+			off := op.Offset(image.Pt(x-secSizeX/2, y-30)).Push(gtx.Ops)
+			lbl.Layout(gtx)
 			off.Pop()
 		}
 		ColorBox(gtx, image.Rect(x, y, x+2, y+tickLength), tickColor)
