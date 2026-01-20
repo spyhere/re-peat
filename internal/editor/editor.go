@@ -146,9 +146,6 @@ func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
 	curSamplesPerPx := ed.scroll.samplesPerPx
 	panSamples := int(scroll.X * PAN_RATE * float32(curSamplesPerPx))
 	ed.scroll.leftB += panSamples
-	maxLeft := ed.audio.pcmMonoLen - int(curSamplesPerPx)*ed.size.X
-	// TODO: Do I have to clamp it here?
-	ed.scroll.leftB = clamp(0, ed.scroll.leftB, maxLeft)
 
 	// Zoom
 	// TODO: maybe zoom should be before pan?
