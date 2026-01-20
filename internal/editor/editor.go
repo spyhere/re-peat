@@ -142,17 +142,15 @@ const (
 )
 
 func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
-	// Pan
-	curSamplesPerPx := ed.scroll.samplesPerPx
-	panSamples := int(scroll.X * PAN_RATE * float32(curSamplesPerPx))
-	ed.scroll.leftB += panSamples
-
 	// Zoom
-	// TODO: maybe zoom should be before pan?
 	oldSPP := ed.scroll.samplesPerPx
 	ed.scroll.samplesPerPx *= float32(math.Exp(float64(-scroll.Y * ZOOM_RATE)))
 	ed.scroll.samplesPerPx = clamp(float32(ed.scroll.minSamplesPerPx), ed.scroll.samplesPerPx, float32(ed.scroll.maxSamplesPerPx))
 	ed.scroll.leftB += int(pos.X * (oldSPP - ed.scroll.samplesPerPx))
+	// Pan
+	curSamplesPerPx := ed.scroll.samplesPerPx
+	panSamples := int(scroll.X * PAN_RATE * float32(curSamplesPerPx))
+	ed.scroll.leftB += panSamples
 }
 
 func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
