@@ -75,25 +75,6 @@ type Editor struct {
 	th             *theme.RepeatTheme
 }
 
-// TODO: move to helpers
-func makeSamplesMono(samples []float32, chanNum int) []float32 {
-	if chanNum == 1 {
-		return samples
-	}
-	if chanNum > 2 {
-		fmt.Println("Not supported more than 2 channels")
-		return []float32{}
-	}
-	res := make([]float32, len(samples)/chanNum)
-
-	for i := 0; i < len(samples); i += 2 {
-		lSample := samples[i]
-		rSample := samples[i+1]
-		res[i/2] = (lSample + rSample) * 0.5
-	}
-	return res
-}
-
 func (ed *Editor) getRenderableWaves() [][2]float32 {
 	samplesPerPx := ed.scroll.samplesPerPx
 	visibleSamples := int(samplesPerPx * float32(ed.size.X))

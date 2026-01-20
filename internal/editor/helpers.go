@@ -2,7 +2,42 @@ package editor
 
 import (
 	"cmp"
+	"encoding/binary"
+	"fmt"
 )
+
+const maxUin16 float32 = 32767.0
+
+func getNormalisedSamples(data []byte) ([]float32, error) {
+	if len(data)%2 != 0 {
+		return []float32{}, fmt.Errorf("Read samples are not uint16: %d\n", len(data))
+	}
+	normalised := make([]float32, len(data)/2)
+	for i := 0; i < len(data); i += 2 {
+		sample := int16(binary.LittleEndian.Uint16(data[i : i+2]))
+		// Normalize to -1..1
+		normalised[i/2] = float32(sample) / maxUin16
+	}
+	return normalised, nil
+}
+
+func makeSamplesMono(samples []float32, chanNum int) []float32 {
+	if chanNum == 1 {
+		return samples
+	}
+	if chanNum > 2 {
+		fmt.Println("Not supported more than 2 channels")
+		return []float32{}
+	}
+	res := make([]float32, len(samples)/chanNum)
+
+	for i := 0; i < len(samples); i += 2 {
+		lSample := samples[i]
+		rSample := samples[i+1]
+		res[i/2] = (lSample + rSample) * 0.5
+	}
+	return res
+}
 
 // Lock "this" between "from" and "to"
 func clamp[T cmp.Ordered](from T, this T, to T) T {
