@@ -18,8 +18,8 @@ import (
 
 const (
 	waveEdgePadding = 3 // Forced to add this padding otherwise waves left and right border's px is being clipped
-	// TODO: Can we store it as ms duration?
-	playheadInitDur = 50
+	playheadInitDur = time.Millisecond * 50
+	playheadMinDur  = time.Millisecond * 20
 	maxScrollLvl    = 5
 )
 
@@ -44,7 +44,7 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 		},
 		margin:         400,
 		padding:        90,
-		playheadUpdate: time.Millisecond * playheadInitDur,
+		playheadUpdate: playheadInitDur,
 		cache: cache{
 			peakMap: make(map[int][][2]float32),
 			levels:  make([]int, maxScrollLvl+1),
@@ -143,6 +143,9 @@ func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.samplesPerPx *= float32(math.Exp(float64(-scroll.Y * zoomRate)))
 	ed.scroll.samplesPerPx = clamp(float32(ed.scroll.minSamplesPerPx), ed.scroll.samplesPerPx, float32(ed.scroll.maxSamplesPerPx))
 	ed.scroll.leftB += int(pos.X * (oldSPP - ed.scroll.samplesPerPx))
+	zoomFactor := ed.scroll.maxSamplesPerPx / ed.scroll.samplesPerPx
+	playheadUpdate := time.Duration(float32(playheadInitDur) / zoomFactor)
+	ed.playheadUpdate = clamp(playheadMinDur, playheadUpdate, playheadInitDur)
 	// Pan
 	curSamplesPerPx := ed.scroll.samplesPerPx
 	panSamples := int(scroll.X * panRate * float32(curSamplesPerPx))
