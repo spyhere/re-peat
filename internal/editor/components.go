@@ -30,7 +30,7 @@ func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, aud
 	if x < 0 || x > maxX {
 		return
 	}
-	ColorBox(gtx, image.Rect(x, 0, x+2, gtx.Constraints.Max.Y), th.Editor.Playhead)
+	ColorBox(gtx, image.Rect(x, 0, x+2, gtx.Constraints.Max.Y), th.Palette.Editor.Playhead)
 }
 
 func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
@@ -56,24 +56,13 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 		path.LineTo(f32.Pt(float32(px), high))
 		path.LineTo(f32.Pt(float32(px), low))
 	}
-	paint.FillShape(gtx.Ops, th.Editor.SoundWave,
+	paint.FillShape(gtx.Ops, th.Palette.Editor.SoundWave,
 		clip.Stroke{
 			Path:  path.End(),
 			Width: 1,
 		}.Op(),
 	)
 }
-
-const (
-	minTimeInvervalPx = 100
-	tickLength10Sec   = 30
-	tickLength5Sec    = 20
-	tickLength        = 10
-)
-
-var TICK_COLOR_10_SEC = color.NRGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
-var TICK_COLOR_5_SEC = color.NRGBA{G: 0xff, B: 0xbb, A: 0xff}
-var TICK_COLOR = color.NRGBA{A: 0xff}
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
@@ -82,7 +71,7 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
 	var intervalSec int
 	for _, it := range timeIntervals {
-		if it*pxPerSec >= minTimeInvervalPx {
+		if it*pxPerSec >= float32(th.Sizing.Editor.Grid.MinTimeInterval) {
 			intervalSec = int(it)
 			break
 		}
@@ -91,16 +80,17 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 	nextSec, nextSecIdx := audio.getNextSecond(leftBSec)
 	curSecIdx := nextSecIdx
 	curSec := int(nextSec)
+	gridPalette := th.Palette.Editor.Grid
+	gridSizing := th.Sizing.Editor.Grid
 	for ; curSecIdx < scroll.rightB; curSecIdx += audio.sampleRate {
-		// TODO: Use theme for this
-		tickLength := tickLength
-		tickColor := TICK_COLOR
+		tickH := gridSizing.Tick
+		tickC := gridPalette.Tick
 		if curSec%10 == 0 {
-			tickLength = tickLength10Sec
-			tickColor = TICK_COLOR_10_SEC
+			tickH = gridSizing.Tick10s
+			tickC = gridPalette.Tick10s
 		} else if curSec%5 == 0 {
-			tickLength = tickLength5Sec
-			tickColor = TICK_COLOR_5_SEC
+			tickH = gridSizing.Tick5s
+			tickC = gridPalette.Tick5s
 		}
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
 		if curSec%intervalSec == 0 {
@@ -112,7 +102,7 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 			lbl.Layout(gtx)
 			off.Pop()
 		}
-		ColorBox(gtx, image.Rect(x, y, x+2, y+tickLength), tickColor)
+		ColorBox(gtx, image.Rect(x, y, x+2, y+tickH), tickC)
 		curSec++
 	}
 }

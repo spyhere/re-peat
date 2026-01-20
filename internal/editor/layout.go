@@ -14,7 +14,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	ed.handlePointerEvents(gtx)
 	ed.handleKey(gtx, isPlaying)
 
-	backgroundComp(gtx, ed.th.Editor.Bg)
+	backgroundComp(gtx, ed.th.Palette.Editor.Bg)
 
 	yCenter := gtx.Constraints.Max.Y / 2
 	offsetBy(gtx, image.Pt(0, ed.margin), func() {
