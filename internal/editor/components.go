@@ -6,6 +6,7 @@ import (
 	"image/color"
 
 	"gioui.org/f32"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -112,4 +113,9 @@ func ColorBox(gtx layout.Context, size image.Rectangle, color color.NRGBA) layou
 	paint.ColorOp{Color: color}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	return layout.Dimensions{Size: size.Size()}
+}
+
+func setCrosshairCursor(gtx layout.Context) {
+	defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Max}).Push(gtx.Ops).Pop()
+	pointer.Cursor(pointer.CursorCrosshair).Add(gtx.Ops)
 }

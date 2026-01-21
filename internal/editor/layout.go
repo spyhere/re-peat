@@ -14,6 +14,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	ed.handlePointerEvents(gtx)
 	ed.handleKey(gtx, isPlaying)
 
+	setCrosshairCursor(gtx)
 	backgroundComp(gtx, ed.th.Palette.Editor.Bg)
 
 	yCenter := gtx.Constraints.Max.Y / 2
