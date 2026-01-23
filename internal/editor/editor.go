@@ -93,8 +93,12 @@ func (ed *Editor) getRenderableWaves() [][2]float32 {
 }
 
 func (ed *Editor) SetSize(size image.Point) {
+	prev := ed.size
 	size.X += waveEdgePadding
 	ed.size = size
+	if !prev.Eq(ed.size) {
+		ed.cache.isPopulated = false
+	}
 }
 
 // TODO: optimisation - debounce on window resize
