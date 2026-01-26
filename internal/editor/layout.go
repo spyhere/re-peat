@@ -7,6 +7,7 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
 )
 
 func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
@@ -21,7 +22,6 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	offsetBy(gtx, image.Pt(0, ed.margin), func() {
 		soundWavesComp(gtx, ed.th, float32(yCenter-ed.margin), ed.getRenderableWaves(), ed.scroll, ed.cache)
 	})
-	secondsRulerComp(gtx, ed.th, ed.margin-50, ed.audio, ed.scroll)
 	wavesArea := clip.Rect(image.Rect(0, ed.margin, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.margin)).Push(gtx.Ops)
 	setCursor(gtx, pointer.CursorCrosshair)
 	wavesArea.Pop()
@@ -33,5 +33,8 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 		}
 		ed.listenToPlayerUpdates()
 	}
+	markersComp(gtx, ed.th, ed.margin, ed.scroll, ed.markers)
+	secondsRulerComp(gtx, ed.th, ed.margin-50, ed.audio, ed.scroll)
+	newMarkerComp(gtx, ed.th, ed.margin, &ed.markers)
 	return layout.Dimensions{}
 }

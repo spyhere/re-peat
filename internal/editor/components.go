@@ -136,6 +136,43 @@ func ColorBox(gtx layout.Context, size image.Rectangle, color color.NRGBA) layou
 func setCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
+
+func newMarkerComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, m *markers) {
+	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
+	if m.draft.isVisible && m.draft.isPointerInside {
+		x := int(m.draft.pointerX)
+		offsetBy(gtx, image.Pt(x, wavePadding), func() {
+			markerComp(gtx, th, markerDraft, soundWaveH, 0, "", 0)
+		})
+	}
+}
+
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, m markers) {
+	mrkSz := th.Sizing.Editor.Markers
+	maxX := gtx.Constraints.Max.X
+	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
+
+	prevLblX, bPad, colDeviation := maxX, 0, 0
+	for i := m.idx - 1; i >= 0; i-- {
+		marker := m.arr[i]
+		// TODO: Implement proper culling
+		x := int(float32(marker.Samples-s.leftB) / s.samplesPerPx)
+		// TODO: Calculate label's name width for real
+		lblW := clamp(mrkSz.Lbl.MinW, 120, mrkSz.Lbl.MaxW)
+		if x+lblW+10 >= prevLblX && prevLblX != maxX {
+			bPad += mrkSz.Lbl.H + 5
+			colDeviation += 8
+		} else {
+			bPad = 0
+			colDeviation = 0
+		}
+		offsetBy(gtx, image.Pt(x, wavePadding), func() {
+			markerComp(gtx, th, markerReal, soundWaveH, bPad, marker.Name, uint8(colDeviation))
+		})
+		prevLblX = x
+	}
+}
+
 type markerType int
 
 const (
