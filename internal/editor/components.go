@@ -68,7 +68,7 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
 func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio audio, scroll scroll) {
-	pxPerSec := float32(audio.sampleRate) / float32(scroll.samplesPerPx)
+	pxPerSec := float32(audio.sampleRate) / scroll.samplesPerPx
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
 	var intervalSec int
 	for _, it := range timeIntervals {
@@ -106,6 +106,21 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 		ColorBox(gtx, image.Rect(x, y, x+2, y+tickH), tickC)
 		curSec++
 	}
+}
+
+type cornerRadii struct {
+	SE, SW, NW, NE int
+}
+
+func cornerR(se, sw, nw, ne int) cornerRadii {
+	return cornerRadii{SE: se, SW: sw, NW: nw, NE: ne}
+}
+
+func ColorBoxR(gtx layout.Context, size image.Rectangle, color color.NRGBA, r cornerRadii) layout.Dimensions {
+	defer clip.RRect{Rect: size, SE: r.SE, SW: r.SW, NE: r.NE, NW: r.NW}.Push(gtx.Ops).Pop()
+	paint.ColorOp{Color: color}.Add(gtx.Ops)
+	paint.PaintOp{}.Add(gtx.Ops)
+	return layout.Dimensions{Size: size.Size()}
 }
 
 func ColorBox(gtx layout.Context, size image.Rectangle, color color.NRGBA) layout.Dimensions {
