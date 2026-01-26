@@ -115,7 +115,7 @@ func ColorBox(gtx layout.Context, size image.Rectangle, color color.NRGBA) layou
 	return layout.Dimensions{Size: size.Size()}
 }
 
-func setCrosshairCursor(gtx layout.Context) {
-	defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Max}).Push(gtx.Ops).Pop()
-	pointer.Cursor(pointer.CursorCrosshair).Add(gtx.Ops)
+func setCursor(gtx layout.Context, cursor pointer.Cursor) {
+	pointer.Cursor(cursor).Add(gtx.Ops)
+}
 }
