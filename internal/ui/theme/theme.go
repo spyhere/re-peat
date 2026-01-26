@@ -8,7 +8,8 @@ type RepeatTheme struct {
 	*material.Theme
 
 	Palette palette
-	Sizing  sizing
+	// TODO: Move wave padding and playhead width to Sizing
+	Sizing sizing
 }
 
 func New() *RepeatTheme {

@@ -8,6 +8,7 @@ var repeatSizing = sizing{
 			Tick10s:         30,
 			MinTimeInterval: 100,
 		},
+		Markers: markers,
 	},
 }
 
@@ -15,7 +16,8 @@ type sizing struct {
 	Editor editorSizing
 }
 type editorSizing struct {
-	Grid gridSizing
+	Grid    gridSizing
+	Markers markersSizing
 }
 
 // In px
