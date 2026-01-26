@@ -8,3 +8,7 @@ type scroll struct {
 	minSamplesPerPx float32
 	maxSamplesPerPx float32
 }
+
+func (s scroll) getSamplesFromPx(x float32) int {
+	return s.leftB + int(s.samplesPerPx*x)
+}

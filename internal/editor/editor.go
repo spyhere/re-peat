@@ -50,6 +50,7 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 			levels:  make([]int, maxScrollLvl+1),
 			workers: make([]*cacheWorker, maxScrollLvl+1),
 		},
+		markers: markers{arr: make([]marker, 0, markersLimit)},
 		scroll: scroll{
 			maxLvl: maxScrollLvl,
 		},
@@ -63,6 +64,7 @@ type Editor struct {
 	audio          audio
 	monoSamples    []float32
 	cache          cache
+	markers        markers
 	p              *player.Player
 	margin         int
 	padding        int
@@ -128,12 +130,27 @@ func (ed *Editor) MakePeakMap() {
 	ed.cache.isPopulated = true
 }
 
-func (ed *Editor) handleClick(posX float32) {
+func (ed *Editor) setPlayhead(posX float32) {
 	pxPerSec := float32(ed.audio.sampleRate) / float32(ed.scroll.samplesPerPx)
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.sampleRate))
 	// TODO: handle error here
 	seekVal, _ := ed.p.Search(seconds)
 	ed.playhead = seekVal
+}
+
+// TODO: Move marker logic to markers struct
+func (ed *Editor) handleClick(pCoords f32.Point, buttons pointer.Buttons) {
+	switch buttons {
+	case pointer.ButtonPrimary:
+		if !ed.markers.draft.isVisible {
+			ed.setPlayhead(pCoords.X)
+		} else {
+			samples := ed.scroll.getSamplesFromPx(ed.markers.draft.pointerX)
+			ed.markers.NewMarker(samples)
+		}
+	case pointer.ButtonSecondary:
+		ed.markers.draft.isVisible = !ed.markers.draft.isVisible
+	}
 }
 
 const (
@@ -154,6 +171,18 @@ func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
 	curSamplesPerPx := ed.scroll.samplesPerPx
 	panSamples := int(scroll.X * panRate * float32(curSamplesPerPx))
 	ed.scroll.leftB += panSamples
+}
+
+// TODO: Move this method to markers struct
+func (ed *Editor) handleMove(pCoords f32.Point) {
+	wavesYTop := float32(ed.margin)
+	wavesYBottom := float32(ed.size.Y - ed.margin)
+	if pCoords.Y < wavesYTop || pCoords.Y > wavesYBottom {
+		ed.markers.draft.isPointerInside = false
+	} else {
+		ed.markers.draft.isPointerInside = true
+		ed.markers.draft.pointerX = pCoords.X
+	}
 }
 
 func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
@@ -202,7 +231,7 @@ func (ed *Editor) handlePointerEvents(gtx layout.Context) {
 	for {
 		evt, ok := gtx.Event(pointer.Filter{
 			Target:  ed,
-			Kinds:   pointer.Press | pointer.Scroll,
+			Kinds:   pointer.Press | pointer.Scroll | pointer.Move,
 			ScrollX: pointer.ScrollRange{Min: -1e9, Max: 1e9},
 			ScrollY: pointer.ScrollRange{Min: -1e9, Max: 1e9},
 		})
@@ -217,7 +246,9 @@ func (ed *Editor) handlePointerEvents(gtx layout.Context) {
 		case pointer.Scroll:
 			ed.handleScroll(e.Scroll, e.Position)
 		case pointer.Press:
-			ed.handleClick(e.Position.X)
+			ed.handleClick(e.Position, e.Buttons)
+		case pointer.Move:
+			ed.handleMove(e.Position)
 		}
 	}
 }
