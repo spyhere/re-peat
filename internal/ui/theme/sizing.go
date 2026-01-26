@@ -5,7 +5,9 @@ var repeatSizing = sizing{
 		PlayheadW: 2,
 		WaveM:     "32%",
 		Grid: gridSizing{
-			Tick:            10,
+			MargT:           "-15%",
+			TickW:           2,
+			TickH:           10,
 			Tick5s:          20,
 			Tick10s:         30,
 			MinTimeInterval: 100,
@@ -26,8 +28,10 @@ type editorSizing struct {
 
 // In px
 type gridSizing struct {
+	MargT           string
 	MinTimeInterval int
-	Tick            int
+	TickW           int
+	TickH           int
 	Tick10s         int
 	Tick5s          int
 }

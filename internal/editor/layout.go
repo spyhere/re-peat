@@ -34,7 +34,9 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 		ed.listenToPlayerUpdates()
 	}
 	markersComp(gtx, ed.th, ed.waveM, ed.scroll, ed.markers)
-	secondsRulerComp(gtx, ed.th, ed.waveM-50, ed.audio, ed.scroll)
+	offsetBy(gtx, image.Pt(0, ed.waveM+prcToPx(ed.waveM, ed.th.Sizing.Editor.Grid.MargT)), func() {
+		secondsRulerComp(gtx, ed.th, ed.audio, ed.scroll)
+	})
 	newMarkerComp(gtx, ed.th, ed.waveM, &ed.markers)
 	return layout.Dimensions{}
 }

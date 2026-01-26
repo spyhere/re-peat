@@ -70,7 +70,7 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
-func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio audio, scroll scroll) {
+func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scroll scroll) {
 	pxPerSec := float32(audio.sampleRate) / scroll.samplesPerPx
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
 	var intervalSec int
@@ -87,7 +87,7 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 	gridPalette := th.Palette.Editor.Grid
 	gridSizing := th.Sizing.Editor.Grid
 	for ; curSecIdx < scroll.rightB; curSecIdx += audio.sampleRate {
-		tickH := gridSizing.Tick
+		tickH := gridSizing.TickH
 		tickC := gridPalette.Tick
 		if curSec%10 == 0 {
 			tickH = gridSizing.Tick10s
@@ -102,11 +102,11 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, y int, audio au
 			secLabel := fmt.Sprintf("%d", curSec)
 			lbl := material.Body2(th.Theme, secLabel)
 			secSizeX := int(lbl.TextSize) * len(secLabel)
-			off := op.Offset(image.Pt(x-secSizeX/2, y-30)).Push(gtx.Ops)
+			off := op.Offset(image.Pt(x-secSizeX/2, -30)).Push(gtx.Ops)
 			lbl.Layout(gtx)
 			off.Pop()
 		}
-		ColorBox(gtx, image.Rect(x, y, x+2, y+tickH), tickC)
+		ColorBox(gtx, image.Rect(x, 0, x+th.Sizing.Editor.Grid.TickW, tickH), tickC)
 		curSec++
 	}
 }
