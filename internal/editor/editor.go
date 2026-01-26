@@ -42,8 +42,6 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 			pcmMonoLen: len(monoSamples),
 			seconds:    float32(frames) / float32(dec.SampleRate),
 		},
-		margin:         400,
-		padding:        90,
 		playheadUpdate: playheadInitDur,
 		cache: cache{
 			peakMap: make(map[int][][2]float32),
@@ -66,8 +64,7 @@ type Editor struct {
 	cache          cache
 	markers        markers
 	p              *player.Player
-	margin         int
-	padding        int
+	waveM          int // wave margin
 	size           image.Point
 	scroll         scroll
 	th             *theme.RepeatTheme
@@ -99,6 +96,7 @@ func (ed *Editor) SetSize(size image.Point) {
 	size.X += waveEdgePadding
 	ed.size = size
 	if !prev.Eq(ed.size) {
+		ed.waveM = prcToPx(size.Y, ed.th.Sizing.Editor.WaveM)
 		ed.cache.isPopulated = false
 	}
 }
@@ -175,8 +173,8 @@ func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
 
 // TODO: Move this method to markers struct
 func (ed *Editor) handleMove(pCoords f32.Point) {
-	wavesYTop := float32(ed.margin)
-	wavesYBottom := float32(ed.size.Y - ed.margin)
+	wavesYTop := float32(ed.waveM)
+	wavesYBottom := float32(ed.size.Y - ed.waveM)
 	if pCoords.Y < wavesYTop || pCoords.Y > wavesYBottom {
 		ed.markers.draft.isPointerInside = false
 	} else {

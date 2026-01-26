@@ -19,10 +19,10 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	backgroundComp(gtx, ed.th.Palette.Editor.Bg)
 
 	yCenter := gtx.Constraints.Max.Y / 2
-	offsetBy(gtx, image.Pt(0, ed.margin), func() {
-		soundWavesComp(gtx, ed.th, float32(yCenter-ed.margin), ed.getRenderableWaves(), ed.scroll, ed.cache)
+	offsetBy(gtx, image.Pt(0, ed.waveM), func() {
+		soundWavesComp(gtx, ed.th, float32(yCenter-ed.waveM), ed.getRenderableWaves(), ed.scroll, ed.cache)
 	})
-	wavesArea := clip.Rect(image.Rect(0, ed.margin, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.margin)).Push(gtx.Ops)
+	wavesArea := clip.Rect(image.Rect(0, ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.waveM)).Push(gtx.Ops)
 	setCursor(gtx, pointer.CursorCrosshair)
 	wavesArea.Pop()
 
@@ -33,8 +33,8 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 		}
 		ed.listenToPlayerUpdates()
 	}
-	markersComp(gtx, ed.th, ed.margin, ed.scroll, ed.markers)
-	secondsRulerComp(gtx, ed.th, ed.margin-50, ed.audio, ed.scroll)
-	newMarkerComp(gtx, ed.th, ed.margin, &ed.markers)
+	markersComp(gtx, ed.th, ed.waveM, ed.scroll, ed.markers)
+	secondsRulerComp(gtx, ed.th, ed.waveM-50, ed.audio, ed.scroll)
+	newMarkerComp(gtx, ed.th, ed.waveM, &ed.markers)
 	return layout.Dimensions{}
 }
