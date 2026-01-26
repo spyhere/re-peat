@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
@@ -11,7 +12,9 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"gioui.org/widget/material"
+	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -133,4 +136,98 @@ func ColorBox(gtx layout.Context, size image.Rectangle, color color.NRGBA) layou
 func setCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
+type markerType int
+
+const (
+	markerDraft markerType = iota
+	markerReal
+)
+
+func markerComp(gtx layout.Context, th *theme.RepeatTheme, mType markerType, h, bPad int, name string, colDeviation uint8) {
+	var col color.NRGBA
+	if mType == markerDraft {
+		col = th.Palette.Editor.AddMarker
+	} else {
+		col = th.Palette.Editor.Playhead
+		col.R -= colDeviation
+		col.G -= colDeviation
+		col.B -= colDeviation
+	}
+	mrkSz := th.Sizing.Editor.Markers
+	// Pole
+	poleYPad := prcToPx(h, mrkSz.Pole.Pad)
+	poleH := poleYPad*2 + h
+	y := -poleYPad
+	if mType == markerDraft {
+		offsetBy(gtx, image.Pt(0, y), func() {
+			dashedLineComp(gtx, mrkSz.Pole.W, poleH, mrkSz.Pole.Dash, col)
+		})
+	} else {
+		ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+bPad+poleH), col)
+	}
+
+	// Flag
+	var path clip.Path
+	path.Begin(gtx.Ops)
+	flagHalf := float32(mrkSz.Pole.FlagW) / 2
+	// N
+	poleCenter := float32(mrkSz.Pole.W) / 2
+	yF := float32(-poleYPad)
+	path.MoveTo(f32.Pt(poleCenter, yF))
+	// NE
+	path.Line(f32.Pt(flagHalf, 0))
+	// SE
+	// tan(corner) = flagH / flagW
+	notchVrtxY := int(math.Tan(mrkSz.Pole.FlagCorn) * float64(flagHalf))
+	path.Line(f32.Pt(0, float32(mrkSz.Pole.FlagH-notchVrtxY)))
+	// S
+	path.Line(f32.Pt(-flagHalf, float32(notchVrtxY)))
+	path.Close()
+	pathSpec := path.End()
+	paint.FillShape(gtx.Ops, col,
+		clip.Outline{Path: pathSpec}.Op(),
+	)
+	// Mirror Flag
+	t := f32.NewAffine2D(
+		-1, 0, 2*poleCenter,
+		0, 1, 0,
+	)
+	mir := op.Affine(t).Push(gtx.Ops)
+	paint.FillShape(gtx.Ops, col,
+		clip.Outline{Path: pathSpec}.Op(),
+	)
+	mir.Pop()
+
+	// Label
+	lblMargB := prcToPx(poleH, mrkSz.Lbl.MargB)
+	y = y + bPad + poleH - lblMargB
+	var lblWInit int
+	if mType == markerDraft {
+		lblWInit = 50
+	} else {
+		lblWInit = 120
+	}
+	lblW := clamp(mrkSz.Lbl.MinW, lblWInit, mrkSz.Lbl.MaxW)
+	ColorBoxR(gtx, image.Rect(0, y, lblW, y+mrkSz.Lbl.H), col, cornerR(10, 0, 0, 10))
+	// Label Name
+	// TODO: Calculate label's width properly
+	if mType == markerDraft {
+		iconSize := th.Sizing.Editor.Markers.Lbl.IconW
+		offsetBy(gtx, image.Pt(iconSize/2, y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func() {
+			gtx.Constraints.Min.X = iconSize
+			micons.ContentAddCircle.Layout(gtx, th.Palette.Editor.SoundWave)
+		})
+	} else {
+		mrkName := material.Body2(th.Theme, name)
+		nameW := int(mrkName.TextSize * unit.Sp(len(name)))
+		offsetBy(gtx, image.Pt((lblW-nameW-15)/2, y+8), func() {
+			mrkName.Layout(gtx)
+		})
+	}
+}
+
+func dashedLineComp(gtx layout.Context, w, h, dashGap int, col color.NRGBA) {
+	for y := 0; y < h; y += dashGap * 2 {
+		ColorBox(gtx, image.Rect(0, y, w, y+dashGap), col)
+	}
 }

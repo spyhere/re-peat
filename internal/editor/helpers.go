@@ -4,6 +4,9 @@ import (
 	"cmp"
 	"encoding/binary"
 	"fmt"
+	"log"
+	"strconv"
+	"strings"
 )
 
 const maxUin16 float32 = 32767.0
@@ -80,4 +83,13 @@ func reducePeaks(data [][2]float32) (low float32, high float32) {
 		}
 	}
 	return low, high
+}
+
+func prcToPx(origin int, prc string) int {
+	prc = strings.Split(prc, "%")[0]
+	prcInt, err := strconv.Atoi(prc)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return prcInt * origin / 100
 }
