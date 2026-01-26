@@ -2,6 +2,7 @@ package theme
 
 var repeatSizing = sizing{
 	Editor: editorSizing{
+		PlayheadW: 2,
 		Grid: gridSizing{
 			Tick:            10,
 			Tick5s:          20,
@@ -16,8 +17,9 @@ type sizing struct {
 	Editor editorSizing
 }
 type editorSizing struct {
-	Grid    gridSizing
-	Markers markersSizing
+	PlayheadW int
+	Grid      gridSizing
+	Markers   markersSizing
 }
 
 // In px

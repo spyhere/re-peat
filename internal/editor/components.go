@@ -34,7 +34,7 @@ func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, aud
 	if x < 0 || x > maxX {
 		return
 	}
-	ColorBox(gtx, image.Rect(x, 0, x+2, gtx.Constraints.Max.Y), th.Palette.Editor.Playhead)
+	ColorBox(gtx, image.Rect(x, 0, x+th.Sizing.Editor.PlayheadW, gtx.Constraints.Max.Y), th.Palette.Editor.Playhead)
 }
 
 func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
