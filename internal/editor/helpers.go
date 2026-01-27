@@ -7,6 +7,10 @@ import (
 	"log"
 	"strconv"
 	"strings"
+
+	"gioui.org/io/event"
+	"gioui.org/io/pointer"
+	"gioui.org/layout"
 )
 
 const maxUin16 float32 = 32767.0
@@ -92,4 +96,23 @@ func prcToPx(origin int, prc string) int {
 		log.Fatal(err)
 	}
 	return prcInt * origin / 100
+}
+
+func handlePointerEvents(gtx layout.Context, tag event.Tag, pKind pointer.Kind, cb func(e pointer.Event)) {
+	for {
+		evt, ok := gtx.Event(pointer.Filter{
+			Target:  tag,
+			Kinds:   pKind,
+			ScrollX: pointer.ScrollRange{Min: -1e9, Max: 1e9},
+			ScrollY: pointer.ScrollRange{Min: -1e9, Max: 1e9},
+		})
+		if !ok {
+			break
+		}
+		e, ok := evt.(pointer.Event)
+		if !ok {
+			continue
+		}
+		cb(e)
+	}
 }
