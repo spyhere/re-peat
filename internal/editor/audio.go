@@ -4,7 +4,18 @@ import (
 	"math"
 
 	"github.com/spyhere/re-peat/internal/constants"
+	"github.com/tosone/minimp3"
 )
+
+func newAudio(dec *minimp3.Decoder, pcm []byte, monoSamples []float32, frames int) audio {
+	return audio{
+		sampleRate: dec.SampleRate,
+		channels:   dec.Channels,
+		pcmLen:     int64(len(pcm)),
+		pcmMonoLen: len(monoSamples),
+		seconds:    float32(frames) / float32(dec.SampleRate),
+	}
+}
 
 type audio struct {
 	sampleRate int

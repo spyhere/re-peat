@@ -1,5 +1,13 @@
 package editor
 
+func newCache() cache {
+	return cache{
+		peakMap: make(map[int][][2]float32),
+		levels:  make([]int, maxScrollLvl+1),
+		workers: make([]*cacheWorker, maxScrollLvl+1),
+	}
+}
+
 // Stores peak map where "samplesPerPx" is key (level)
 type cache struct {
 	peakMap     map[int][][2]float32

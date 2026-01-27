@@ -19,7 +19,6 @@ const (
 	waveEdgePadding = 3 // Forced to add this padding otherwise waves left and right border's px is being clipped
 	playheadInitDur = time.Millisecond * 50
 	playheadMinDur  = time.Millisecond * 20
-	maxScrollLvl    = 5
 )
 
 func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *player.Player) (*Editor, error) {
@@ -32,27 +31,14 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 	monoSamples := makeSamplesMono(normSamples, dec.Channels)
 	fmt.Println("WaveRenderer received mono samples")
 	return &Editor{
-		p:           player,
-		monoSamples: monoSamples,
-		audio: audio{
-			sampleRate: dec.SampleRate,
-			channels:   dec.Channels,
-			pcmLen:     int64(len(pcm)),
-			pcmMonoLen: len(monoSamples),
-			seconds:    float32(frames) / float32(dec.SampleRate),
-		},
+		p:              player,
+		monoSamples:    monoSamples,
+		audio:          newAudio(dec, pcm, monoSamples, frames),
 		playheadUpdate: playheadInitDur,
-		// TODO: Create initializer for cache
-		cache: cache{
-			peakMap: make(map[int][][2]float32),
-			levels:  make([]int, maxScrollLvl+1),
-			workers: make([]*cacheWorker, maxScrollLvl+1),
-		},
-		markers: newMarkers(),
-		scroll: scroll{
-			maxLvl: maxScrollLvl,
-		},
-		th: th,
+		cache:          newCache(),
+		markers:        newMarkers(),
+		scroll:         newScroll(),
+		th:             th,
 	}, nil
 }
 
