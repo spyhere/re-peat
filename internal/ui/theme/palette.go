@@ -8,6 +8,7 @@ var repeatPalette = palette{
 		SoundWave: blackRF,
 		Playhead:  white,
 		AddMarker: cyan,
+		MarkerDev: 8,
 		Grid: gridPalette{
 			Tick:    rgb(0x000000),
 			Tick5s:  white,
@@ -38,6 +39,7 @@ type editorPalette struct {
 	Playhead  color.NRGBA
 	Grid      gridPalette
 	AddMarker color.NRGBA
+	MarkerDev int // Color deviation for stacked markers, so they can be distinguished
 }
 
 type gridPalette struct {
