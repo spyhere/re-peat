@@ -7,6 +7,7 @@ import (
 	"math"
 
 	"gioui.org/f32"
+	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -139,7 +140,7 @@ func setCursor(gtx layout.Context, cursor pointer.Cursor) {
 
 func newMarkerComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, m *markers) {
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
-	if m.draft.isVisible && m.draft.isPointerInside {
+	if m.isDraftVisible() {
 		x := int(m.draft.pointerX)
 		offsetBy(gtx, image.Pt(x, wavePadding), func() {
 			markerComp(gtx, th, markerDraft, soundWaveH, 0, "", 0)
@@ -147,27 +148,35 @@ func newMarkerComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, m
 	}
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, m markers) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, m *markers, shouldInterest bool) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
 
 	prevLblX, bPad, colDeviation := maxX, 0, 0
-	for i := m.idx - 1; i >= 0; i-- {
-		marker := m.arr[i]
+	for _, marker := range m.getSortedMarkers() {
 		// TODO: Implement proper culling
 		x := int(float32(marker.Samples-s.leftB) / s.samplesPerPx)
 		// TODO: Calculate label's name width for real
 		lblW := clamp(mrkSz.Lbl.MinW, 120, mrkSz.Lbl.MaxW)
 		if x+lblW+10 >= prevLblX && prevLblX != maxX {
-			bPad += mrkSz.Lbl.H + 5
-			colDeviation += 8
+			bPad += mrkSz.Lbl.H + mrkSz.Lbl.InvisPadE
+			colDeviation += th.Palette.Editor.MarkerDev
 		} else {
 			bPad = 0
 			colDeviation = 0
 		}
 		offsetBy(gtx, image.Pt(x, wavePadding), func() {
 			markerComp(gtx, th, markerReal, soundWaveH, bPad, marker.Name, uint8(colDeviation))
+			if shouldInterest {
+				activeWPad := mrkSz.Pole.ActiveWPad
+				area := clip.Rect{
+					Min: image.Pt(-activeWPad, 0),
+					Max: image.Pt(mrkSz.Pole.W+activeWPad, soundWaveH),
+				}.Push(gtx.Ops)
+				event.Op(gtx.Ops, marker)
+				area.Pop()
+			}
 		})
 		prevLblX = x
 	}

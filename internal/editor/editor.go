@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"gioui.org/f32"
-	"gioui.org/io/event"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -43,12 +42,13 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 			seconds:    float32(frames) / float32(dec.SampleRate),
 		},
 		playheadUpdate: playheadInitDur,
+		// TODO: Create initializer for cache
 		cache: cache{
 			peakMap: make(map[int][][2]float32),
 			levels:  make([]int, maxScrollLvl+1),
 			workers: make([]*cacheWorker, maxScrollLvl+1),
 		},
-		markers: markers{arr: make([]marker, 0, markersLimit)},
+		markers: newMarkers(),
 		scroll: scroll{
 			maxLvl: maxScrollLvl,
 		},
@@ -56,15 +56,28 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 	}, nil
 }
 
+type interactionMode int
+
+const (
+	modeIdle interactionMode = iota
+	modeHitWave
+	modeSetMarker
+	modeHitMarker
+	modeDragMarker
+)
+
 type Editor struct {
+	mode           interactionMode
+	cursor         pointer.Cursor
 	playhead       int64 // Shows amount of PCM bytes from the beginning (not samples)
 	playheadUpdate time.Duration
 	audio          audio
 	monoSamples    []float32
 	cache          cache
-	markers        markers
+	markers        *markers
 	p              *player.Player
 	waveM          int // wave margin
+	waveTag        struct{}
 	size           image.Point
 	scroll         scroll
 	th             *theme.RepeatTheme
@@ -136,18 +149,36 @@ func (ed *Editor) setPlayhead(posX float32) {
 	ed.playhead = seekVal
 }
 
-// TODO: Move marker logic to markers struct
-func (ed *Editor) handleClick(pCoords f32.Point, buttons pointer.Buttons) {
+func (ed *Editor) handleWaveClick(pCoords f32.Point, buttons pointer.Buttons) {
 	switch buttons {
 	case pointer.ButtonPrimary:
-		if !ed.markers.draft.isVisible {
+		switch ed.mode {
+		case modeHitWave:
 			ed.setPlayhead(pCoords.X)
-		} else {
+		case modeSetMarker:
 			samples := ed.scroll.getSamplesFromPx(ed.markers.draft.pointerX)
 			ed.markers.NewMarker(samples)
 		}
 	case pointer.ButtonSecondary:
-		ed.markers.draft.isVisible = !ed.markers.draft.isVisible
+		switch ed.mode {
+		case modeHitWave:
+			ed.mode = modeSetMarker
+			ed.markers.enableDraft(pCoords.X)
+		case modeSetMarker:
+			ed.mode = modeHitWave
+			ed.markers.disableDraft()
+		}
+	}
+}
+
+func (ed *Editor) handleWaveMove(m *marker, pCoord f32.Point) {
+	switch ed.mode {
+	case modeSetMarker:
+		ed.markers.enableDraft(pCoord.X)
+	case modeDragMarker:
+		dSamples := ed.scroll.samplesPerPx * pCoord.X
+		m.Samples += int(dSamples)
+		m.Samples = clamp(0, m.Samples, ed.scroll.rightB)
 	}
 }
 
@@ -156,7 +187,7 @@ const (
 	panRate  = 0.2
 )
 
-func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
+func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	// Zoom
 	oldSPP := ed.scroll.samplesPerPx
 	ed.scroll.samplesPerPx *= float32(math.Exp(float64(-scroll.Y * zoomRate)))
@@ -169,18 +200,6 @@ func (ed *Editor) handleScroll(scroll f32.Point, pos f32.Point) {
 	curSamplesPerPx := ed.scroll.samplesPerPx
 	panSamples := int(scroll.X * panRate * float32(curSamplesPerPx))
 	ed.scroll.leftB += panSamples
-}
-
-// TODO: Move this method to markers struct
-func (ed *Editor) handleMove(pCoords f32.Point) {
-	wavesYTop := float32(ed.waveM)
-	wavesYBottom := float32(ed.size.Y - ed.waveM)
-	if pCoords.Y < wavesYTop || pCoords.Y > wavesYBottom {
-		ed.markers.draft.isPointerInside = false
-	} else {
-		ed.markers.draft.isPointerInside = true
-		ed.markers.draft.pointerX = pCoords.X
-	}
 }
 
 func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
@@ -224,29 +243,164 @@ func (ed *Editor) listenToPlayerUpdates() {
 	}
 }
 
-func (ed *Editor) handlePointerEvents(gtx layout.Context) {
-	event.Op(gtx.Ops, ed)
-	for {
-		evt, ok := gtx.Event(pointer.Filter{
-			Target:  ed,
-			Kinds:   pointer.Press | pointer.Scroll | pointer.Move,
-			ScrollX: pointer.ScrollRange{Min: -1e9, Max: 1e9},
-			ScrollY: pointer.ScrollRange{Min: -1e9, Max: 1e9},
-		})
-		if !ok {
-			break
+func (ed *Editor) shouldMarkersInterest() bool {
+	return ed.mode != modeSetMarker && ed.mode != modeDragMarker
+}
+
+func (ed *Editor) setCursor(c pointer.Cursor) {
+	ed.cursor = c
+}
+
+type hitKind int
+
+const (
+	hitNone hitKind = iota
+	hitWave
+	hitMarker
+)
+
+type hitTarget struct {
+	Kind   hitKind
+	Marker *marker
+}
+
+type pointerEvent struct {
+	Event  pointer.Event
+	Target hitTarget
+}
+
+func (ed *Editor) transition(p pointerEvent) {
+	isDragMarker := ed.mode == modeDragMarker
+	isSetMarker := ed.mode == modeSetMarker
+	switch p.Target.Kind {
+	case hitNone:
+		if isDragMarker || isSetMarker {
+			return
 		}
-		e, ok := evt.(pointer.Event)
-		if !ok {
-			continue
+		ed.setCursor(pointer.CursorDefault)
+		ed.mode = modeIdle
+	case hitWave:
+		if isDragMarker || isSetMarker {
+			return
 		}
-		switch e.Kind {
-		case pointer.Scroll:
-			ed.handleScroll(e.Scroll, e.Position)
-		case pointer.Press:
-			ed.handleClick(e.Position, e.Buttons)
-		case pointer.Move:
-			ed.handleMove(e.Position)
+		ed.setCursor(pointer.CursorCrosshair)
+		ed.mode = modeHitWave
+	case hitMarker:
+		if isDragMarker || isSetMarker {
+			return
 		}
+		ed.mode = modeHitMarker
+		ed.setCursor(pointer.CursorGrab)
+	}
+}
+
+func (ed *Editor) handleIdle(p pointerEvent) {
+	ed.transition(p)
+}
+
+func (ed *Editor) handleWave(p pointerEvent) {
+	switch p.Event.Kind {
+	case pointer.Scroll:
+		ed.handleWaveScroll(p.Event.Scroll, p.Event.Position)
+	case pointer.Press:
+		ed.handleWaveClick(p.Event.Position, p.Event.Buttons)
+	case pointer.Move:
+		ed.handleWaveMove(p.Target.Marker, p.Event.Position)
+	}
+	ed.transition(p)
+}
+
+func (ed *Editor) handleHitMarker(p pointerEvent) {
+	switch p.Event.Kind {
+	case pointer.Drag:
+		ed.mode = modeDragMarker
+		ed.setCursor(pointer.CursorGrabbing)
+	}
+	ed.transition(p)
+}
+
+func (ed *Editor) handleDragMarker(p pointerEvent) {
+	switch p.Event.Kind {
+	case pointer.Drag:
+		dSamples := ed.scroll.samplesPerPx * p.Event.Position.X
+		m := p.Target.Marker
+		m.Samples = int(dSamples)
+		m.Samples = clamp(0, m.Samples, ed.scroll.rightB)
+	case pointer.Release:
+		ed.mode = modeHitWave
+	}
+	ed.transition(p)
+}
+
+func (ed *Editor) handlePointer(p pointerEvent) {
+	switch ed.mode {
+	case modeIdle:
+		ed.handleIdle(p)
+	case modeHitWave:
+		ed.handleWave(p)
+	case modeHitMarker:
+		ed.handleHitMarker(p)
+	case modeSetMarker:
+		ed.handleWave(p)
+	case modeDragMarker:
+		ed.handleDragMarker(p)
+	}
+}
+
+// TODO: Move dispatches to separate file
+func (ed *Editor) dispatch(gtx layout.Context) {
+	ed.dispatchEditorEvents(gtx)
+	ed.dispatchWaveEvents(gtx)
+	ed.dispatchMarkerEvent(gtx)
+}
+
+func (ed *Editor) dispatchEditorEvents(gtx layout.Context) {
+	handlePointerEvents(
+		gtx,
+		ed,
+		pointer.Enter|pointer.Press|pointer.Move,
+		func(e pointer.Event) {
+			ed.handlePointer(pointerEvent{
+				Event: e,
+				Target: hitTarget{
+					Kind: hitNone,
+				},
+			})
+		},
+	)
+}
+
+func (ed *Editor) dispatchWaveEvents(gtx layout.Context) {
+	handlePointerEvents(
+		gtx,
+		ed.waveTag,
+		pointer.Enter|pointer.Press|pointer.Scroll|pointer.Move,
+		func(e pointer.Event) {
+			ed.handlePointer(pointerEvent{
+				Event: e,
+				Target: hitTarget{
+					Kind: hitWave,
+				},
+			})
+		},
+	)
+}
+
+func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
+	for _, marker := range ed.markers.arr {
+		handlePointerEvents(
+			gtx,
+			marker,
+			pointer.Enter|pointer.Press|pointer.Move|pointer.Drag|pointer.Release,
+			func(e pointer.Event) {
+				ed.handlePointer(pointerEvent{
+					Event: e,
+					Target: hitTarget{
+						Kind:   hitMarker,
+						Marker: marker,
+					},
+				})
+			},
+		)
 	}
 }
