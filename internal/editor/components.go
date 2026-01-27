@@ -7,7 +7,6 @@ import (
 	"math"
 
 	"gioui.org/f32"
-	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -148,7 +147,7 @@ func newMarkerComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, m
 	}
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, m *markers, shouldInterest bool) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, m *markers, isInteresting bool) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -168,14 +167,13 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s s
 		}
 		offsetBy(gtx, image.Pt(x, wavePadding), func() {
 			markerComp(gtx, th, markerReal, soundWaveH, bPad, marker.Name, uint8(colDeviation))
-			if shouldInterest {
+			if isInteresting {
 				activeWPad := mrkSz.Pole.ActiveWPad
-				area := clip.Rect{
+				area := image.Rectangle{
 					Min: image.Pt(-activeWPad, 0),
 					Max: image.Pt(mrkSz.Pole.W+activeWPad, soundWaveH),
-				}.Push(gtx.Ops)
-				event.Op(gtx.Ops, marker)
-				area.Pop()
+				}
+				registerTag(gtx, marker, area)
 			}
 		})
 		prevLblX = x

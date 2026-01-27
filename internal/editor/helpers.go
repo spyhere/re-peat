@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"encoding/binary"
 	"fmt"
+	"image"
 	"log"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/op/clip"
 )
 
 const maxUin16 float32 = 32767.0
@@ -115,4 +117,9 @@ func handlePointerEvents(gtx layout.Context, tag event.Tag, pKind pointer.Kind, 
 		}
 		cb(e)
 	}
+}
+
+func registerTag(gtx layout.Context, tag event.Tag, area image.Rectangle) {
+	defer clip.Rect(area).Push(gtx.Ops).Pop()
+	event.Op(gtx.Ops, tag)
 }

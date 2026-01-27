@@ -4,10 +4,8 @@ import (
 	"image"
 
 	"gioui.org/app"
-	"gioui.org/io/event"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 )
 
 func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
@@ -17,17 +15,13 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	ed.handleKey(gtx, isPlaying)
 
 	backgroundComp(gtx, ed.th.Palette.Editor.Bg)
-	editorArea := clip.Rect(image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Min.Y)).Push(gtx.Ops)
-	event.Op(gtx.Ops, ed)
-	editorArea.Pop()
+	registerTag(gtx, ed, image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Min.Y))
 
 	yCenter := gtx.Constraints.Max.Y / 2
 	offsetBy(gtx, image.Pt(0, ed.waveM), func() {
 		soundWavesComp(gtx, ed.th, float32(yCenter-ed.waveM), ed.getRenderableWaves(), ed.scroll, ed.cache)
 	})
-	wavesArea := clip.Rect(image.Rect(0, ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.waveM)).Push(gtx.Ops)
-	event.Op(gtx.Ops, ed.waveTag)
-	wavesArea.Pop()
+	registerTag(gtx, ed.waveTag, image.Rect(0, ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.waveM))
 
 	playheadComp(gtx, ed.th, ed.playhead, ed.audio, ed.scroll)
 	if isPlaying {
