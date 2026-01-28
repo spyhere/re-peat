@@ -40,7 +40,7 @@ func (m *markers) isDraftVisible() bool {
 	return m.draft.isVisible
 }
 
-func (m *markers) NewMarker(samples int) {
+func (m *markers) newMarker(samples int) {
 	if m.idx+1 > markersLimit {
 		// TODO: display error
 		return

@@ -143,7 +143,7 @@ func (ed *Editor) handleWaveClick(pCoords f32.Point, buttons pointer.Buttons) {
 			ed.setPlayhead(pCoords.X)
 		case modeSetMarker:
 			samples := ed.scroll.getSamplesFromPx(ed.markers.draft.pointerX)
-			ed.markers.NewMarker(samples)
+			ed.markers.newMarker(samples)
 		}
 	case pointer.ButtonSecondary:
 		switch ed.mode {

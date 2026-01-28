@@ -23,6 +23,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	})
 	registerTag(gtx, ed.waveTag, image.Rect(0, ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.waveM))
 
+	// TODO: Make playhead distinguishable when there are plenty of markers
 	playheadComp(gtx, ed.th, ed.playhead, ed.audio, ed.scroll)
 	if isPlaying {
 		if ed.playhead < ed.audio.pcmLen {
