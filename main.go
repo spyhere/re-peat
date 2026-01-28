@@ -7,6 +7,7 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/op"
+	"gioui.org/unit"
 	"github.com/spyhere/re-peat/internal/editor"
 	p "github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -33,6 +34,7 @@ func main() {
 	go func() {
 		window := new(app.Window)
 		window.Option(app.Title("re-peat"))
+		window.Option(app.Size(unit.Dp(900), unit.Dp(700)))
 		err := run(window, ed)
 		if err != nil {
 			log.Fatal(err)
