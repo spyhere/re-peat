@@ -31,14 +31,14 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 	monoSamples := makeSamplesMono(normSamples, dec.Channels)
 	fmt.Println("WaveRenderer received mono samples")
 	return &Editor{
-		p:              player,
-		monoSamples:    monoSamples,
-		audio:          newAudio(dec, pcm, monoSamples, frames),
-		playheadUpdate: playheadInitDur,
-		cache:          newCache(),
-		markers:        newMarkers(),
-		scroll:         newScroll(),
-		th:             th,
+		p:           player,
+		monoSamples: monoSamples,
+		audio:       newAudio(dec, pcm, monoSamples, frames),
+		playhead:    newPlayhead(playheadInitDur),
+		cache:       newCache(),
+		markers:     newMarkers(),
+		scroll:      newScroll(),
+		th:          th,
 	}, nil
 }
 
@@ -53,20 +53,19 @@ const (
 )
 
 type Editor struct {
-	mode           interactionMode
-	cursor         pointer.Cursor
-	playhead       int64 // Shows amount of PCM bytes from the beginning (not samples)
-	playheadUpdate time.Duration
-	audio          audio
-	monoSamples    []float32
-	cache          cache
-	markers        *markers
-	p              *player.Player
-	waveM          int // wave margin
-	waveTag        struct{}
-	size           image.Point
-	scroll         scroll
-	th             *theme.RepeatTheme
+	mode        interactionMode
+	cursor      pointer.Cursor
+	playhead    *playhead
+	audio       audio
+	monoSamples []float32
+	cache       cache
+	markers     *markers
+	p           *player.Player
+	waveM       int // wave margin
+	waveTag     struct{}
+	size        image.Point
+	scroll      scroll
+	th          *theme.RepeatTheme
 }
 
 func (ed *Editor) getRenderableWaves() [][2]float32 {
@@ -132,7 +131,7 @@ func (ed *Editor) setPlayhead(posX float32) {
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.sampleRate))
 	// TODO: handle error here
 	seekVal, _ := ed.p.Search(seconds)
-	ed.playhead = seekVal
+	ed.playhead.set(seekVal)
 }
 
 func (ed *Editor) handleWaveClick(pCoords f32.Point, buttons pointer.Buttons) {
@@ -181,7 +180,7 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.leftB += int(pos.X * (oldSPP - ed.scroll.samplesPerPx))
 	zoomFactor := ed.scroll.maxSamplesPerPx / ed.scroll.samplesPerPx
 	playheadUpdate := time.Duration(float32(playheadInitDur) / zoomFactor)
-	ed.playheadUpdate = clamp(playheadMinDur, playheadUpdate, playheadInitDur)
+	ed.playhead.update = clamp(playheadMinDur, playheadUpdate, playheadInitDur)
 	// Pan
 	curSamplesPerPx := ed.scroll.samplesPerPx
 	panSamples := int(scroll.X * panRate * float32(curSamplesPerPx))
@@ -204,13 +203,15 @@ func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
 			if e.Name == key.NameSpace {
 				isPlaying = !isPlaying
 				if isPlaying {
-					if ed.playhead >= ed.audio.pcmLen {
+					if ed.playhead.bytes >= ed.audio.pcmLen {
 						continue
 					}
 					ed.p.Play()
 					ed.p.WaitUntilReady()
 				} else {
 					ed.p.Pause()
+					ed.playhead.reset()
+					ed.p.Set(ed.playhead.bytes)
 				}
 			}
 		}
@@ -221,11 +222,11 @@ func (ed *Editor) listenToPlayerUpdates() {
 	player := ed.p
 	select {
 	case _ = <-player.IsDoneCh():
-		ed.playhead = ed.audio.pcmLen
+		ed.playhead.bytes = ed.audio.pcmLen
 		// We need to pause it after it's done to mitigate the potential bug. See [player.IsDoneCh] comment.
 		ed.p.Pause()
 	default:
-		ed.playhead = player.GetReadAmount()
+		ed.playhead.bytes = player.GetReadAmount()
 	}
 }
 

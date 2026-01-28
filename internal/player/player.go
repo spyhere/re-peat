@@ -41,6 +41,10 @@ func (p *Player) Search(seconds float32) (int64, error) {
 	return p.player.Seek(value, io.SeekStart)
 }
 
+func (p *Player) Set(pcm int64) (int64, error) {
+	return p.player.Seek(pcm, io.SeekStart)
+}
+
 func (p *Player) BufferedSize() int {
 	return p.player.BufferedSize()
 }
