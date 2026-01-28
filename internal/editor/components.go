@@ -42,8 +42,6 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 	yCenter = snap(yCenter)
 	width := gtx.Constraints.Max.X + waveEdgePadding
 
-	ColorBox(gtx, image.Rect(0, int(yCenter), width, int(yCenter)+1), th.Palette.Editor.SoundWave)
-
 	var path clip.Path
 	path.Begin(gtx.Ops)
 
@@ -51,6 +49,7 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 
 	// --- TOP ---
 	lastI0, lastI1 := -1, -1
+	var prevY float32
 	for px := range width {
 		sample0 := s.leftB + int(float32(px)*s.samplesPerPx)
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
@@ -70,12 +69,17 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 			path.MoveTo(f32.Pt(x, y))
 			started = true
 		} else {
+			if y > prevY {
+				path.LineTo(f32.Pt(x, prevY))
+			}
+			prevY = y
 			path.LineTo(f32.Pt(x, y))
 		}
 	}
 
 	// --- BOTTOM ---
 	lastI0, lastI1 = -1, -1
+	prevY = 0
 	for px := width - 1; px >= 0; px-- {
 		sample0 := s.leftB + int(float32(px)*s.samplesPerPx)
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
@@ -91,6 +95,14 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 		y := snap(yCenter - low*yCenter)
 		x := float32(px)
 
+		if y < prevY {
+			path.LineTo(f32.Pt(x, prevY))
+		}
+		prevY = y
+		// Add silence line
+		if y == yCenter {
+			y += 1
+		}
 		path.LineTo(f32.Pt(x, y))
 	}
 
