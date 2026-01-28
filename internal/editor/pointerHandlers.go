@@ -75,8 +75,8 @@ func (ed *Editor) handleDragMarker(p pointerEvent) {
 	case pointer.Drag:
 		dSamples := ed.scroll.samplesPerPx * p.Event.Position.X
 		m := p.Target.Marker
-		m.Samples = int(dSamples)
-		m.Samples = clamp(0, m.Samples, ed.scroll.rightB)
+		m.Samples = ed.scroll.leftB + int(dSamples)
+		m.Samples = clamp(ed.scroll.leftB, m.Samples, ed.scroll.rightB)
 	case pointer.Release:
 		ed.mode = modeHitWave
 	}
