@@ -66,13 +66,10 @@ func (ed *Editor) handleWave(p pointerEvent) {
 
 func (ed *Editor) handleHitMarker(p pointerEvent) {
 	switch p.Event.Kind {
-	case pointer.Press:
-		switch p.Event.Buttons {
-		case pointer.ButtonPrimary:
-			pcm := int64(p.Target.Marker.Samples*ed.audio.channels) * constants.BytesPerSample
-			ed.playhead.set(pcm)
-			ed.p.Set(pcm)
-		}
+	case pointer.Release:
+		pcm := int64(p.Target.Marker.Samples*ed.audio.channels) * constants.BytesPerSample
+		ed.playhead.set(pcm)
+		ed.p.Set(pcm)
 	case pointer.Drag:
 		ed.mode = modeDragMarker
 		ed.setCursor(pointer.CursorGrabbing)
