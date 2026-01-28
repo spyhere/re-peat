@@ -18,7 +18,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	registerTag(gtx, ed, image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Min.Y))
 
 	yCenter := gtx.Constraints.Max.Y / 2
-	offsetBy(gtx, image.Pt(0, ed.waveM), func() {
+	offsetBy(gtx, image.Pt(-1, ed.waveM), func() {
 		soundWavesComp(gtx, ed.th, float32(yCenter-ed.waveM), ed.getRenderableWaves(), ed.scroll, ed.cache)
 	})
 	registerTag(gtx, ed.waveTag, image.Rect(0, ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.waveM))

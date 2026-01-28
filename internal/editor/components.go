@@ -37,34 +37,66 @@ func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, aud
 	ColorBox(gtx, image.Rect(x, 0, x+th.Sizing.Editor.PlayheadW, gtx.Constraints.Max.Y), th.Palette.Editor.Playhead)
 }
 
+// TODO: Improve visuals
 func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
+	yCenter = snap(yCenter)
+	width := gtx.Constraints.Max.X + waveEdgePadding
+
+	ColorBox(gtx, image.Rect(0, int(yCenter), width, int(yCenter)+1), th.Palette.Editor.SoundWave)
+
 	var path clip.Path
 	path.Begin(gtx.Ops)
-	path.MoveTo(f32.Pt(0, yCenter))
-	lastI0 := -1
-	lastI1 := -1
-	for px := range gtx.Constraints.Max.X + waveEdgePadding {
+
+	started := false
+
+	// --- TOP ---
+	lastI0, lastI1 := -1, -1
+	for px := range width {
 		sample0 := s.leftB + int(float32(px)*s.samplesPerPx)
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
 		i0 := (sample0 / c.curLvl) - c.leftB
 		i1 := (sample1 / c.curLvl) - c.leftB
-		i1 = min(i1+1, len(waves))
+		i1 = clamp(i0+1, i1, len(waves))
 		if i0 == lastI0 && i1 == lastI1 {
 			continue
 		}
-		lastI0 = i0
-		lastI1 = i1
-		low, high := reducePeaks(waves[i0:i1])
-		high = yCenter - high*yCenter
-		low = yCenter - low*yCenter
-		path.LineTo(f32.Pt(float32(px), high))
-		path.LineTo(f32.Pt(float32(px), low))
+		lastI0, lastI1 = i0, i1
+
+		_, high := reducePeaks(waves[i0:i1])
+		y := snap(yCenter - high*yCenter)
+		x := float32(px)
+
+		if !started {
+			path.MoveTo(f32.Pt(x, y))
+			started = true
+		} else {
+			path.LineTo(f32.Pt(x, y))
+		}
 	}
+
+	// --- BOTTOM ---
+	lastI0, lastI1 = -1, -1
+	for px := width - 1; px >= 0; px-- {
+		sample0 := s.leftB + int(float32(px)*s.samplesPerPx)
+		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
+		i0 := (sample0 / c.curLvl) - c.leftB
+		i1 := (sample1 / c.curLvl) - c.leftB
+		i1 = clamp(i0+1, i1, len(waves))
+		if i0 == lastI0 && i1 == lastI1 {
+			continue
+		}
+		lastI0, lastI1 = i0, i1
+
+		low, _ := reducePeaks(waves[i0:i1])
+		y := snap(yCenter - low*yCenter)
+		x := float32(px)
+
+		path.LineTo(f32.Pt(x, y))
+	}
+
+	path.Close()
 	paint.FillShape(gtx.Ops, th.Palette.Editor.SoundWave,
-		clip.Stroke{
-			Path:  path.End(),
-			Width: 1,
-		}.Op(),
+		clip.Outline{Path: path.End()}.Op(),
 	)
 }
 

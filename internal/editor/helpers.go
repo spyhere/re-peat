@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"log"
+	"math"
 	"strconv"
 	"strings"
 
@@ -117,6 +118,10 @@ func handlePointerEvents(gtx layout.Context, tag event.Tag, pKind pointer.Kind, 
 		}
 		cb(e)
 	}
+}
+
+func snap(v float32) float32 {
+	return float32(math.Round(float64(v)))
 }
 
 func registerTag(gtx layout.Context, tag event.Tag, area image.Rectangle) {
