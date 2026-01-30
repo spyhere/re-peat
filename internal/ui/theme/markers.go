@@ -10,7 +10,7 @@ var markers = markersSizing{
 		InvisPadE: 5,
 	},
 	Pole: poleSizing{
-		W:          4,
+		W:          2,
 		ActiveWPad: 10,
 		Pad:        "40%",
 		FlagW:      30,

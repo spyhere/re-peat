@@ -2,7 +2,7 @@ package theme
 
 var repeatSizing = sizing{
 	Editor: editorSizing{
-		PlayheadW: 2,
+		PlayheadW: 4,
 		WaveM:     "32%",
 		Grid: gridSizing{
 			MargT:           "-15%",
