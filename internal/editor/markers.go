@@ -13,34 +13,17 @@ func newMarkers() *markers {
 }
 
 type markers struct {
-	arr   []*marker
-	idx   int8
-	draft struct {
-		isVisible bool
-		pointerX  float32
-	}
+	arr []*marker
+	idx int8
 }
 
 type marker struct {
-	Samples int
-	Name    string
-	Tag     struct{}
+	Pcm  int64
+	Name string
+	Tag  *struct{}
 }
 
-func (m *markers) enableDraft(x float32) {
-	m.draft.isVisible = true
-	m.draft.pointerX = x
-}
-
-func (m *markers) disableDraft() {
-	m.draft.isVisible = false
-}
-
-func (m *markers) isDraftVisible() bool {
-	return m.draft.isVisible
-}
-
-func (m *markers) newMarker(samples int) {
+func (m *markers) newMarker(pcm int64) {
 	if m.idx+1 > markersLimit {
 		// TODO: display error
 		return
@@ -52,12 +35,16 @@ func (m *markers) newMarker(samples int) {
 	} else {
 		name = "Chorus"
 	}
-	m.arr = append(m.arr, &marker{Samples: samples, Name: name})
+	m.arr = append(m.arr, &marker{
+		Pcm:  pcm,
+		Name: name,
+		Tag:  &struct{}{},
+	})
 	m.idx++
 }
 
 func (m *markers) sortCb(a, b *marker) int {
-	return b.Samples - a.Samples
+	return int(b.Pcm - a.Pcm)
 }
 
 func (m *markers) getSortedMarkers() []*marker {

@@ -6,15 +6,50 @@ import (
 )
 
 func (ed *Editor) dispatch(gtx layout.Context) {
-	ed.dispatchEditorEvents(gtx)
-	ed.dispatchWaveEvents(gtx)
+	ed.dispatchMLifeEvent(gtx)
+	ed.dispatchSoundWaveEvent(gtx)
+	ed.dispatchNoneEvent(gtx)
+
+	ed.dispatchMCreateButtonEvent(gtx)
 	ed.dispatchMarkerEvent(gtx)
 }
 
-func (ed *Editor) dispatchEditorEvents(gtx layout.Context) {
+func (ed *Editor) dispatchMLifeEvent(gtx layout.Context) {
 	handlePointerEvents(
 		gtx,
-		ed,
+		&ed.tags.mLife,
+		pointer.Move,
+		func(e pointer.Event) {
+			ed.handlePointer(pointerEvent{
+				Event: e,
+				Target: hitTarget{
+					Kind: hitMLifeArea,
+				},
+			})
+		},
+	)
+}
+
+func (ed *Editor) dispatchSoundWaveEvent(gtx layout.Context) {
+	handlePointerEvents(
+		gtx,
+		&ed.tags.soundWave,
+		pointer.Enter|pointer.Press|pointer.Scroll|pointer.Move,
+		func(e pointer.Event) {
+			ed.handlePointer(pointerEvent{
+				Event: e,
+				Target: hitTarget{
+					Kind: hitSoundWave,
+				},
+			})
+		},
+	)
+}
+
+func (ed *Editor) dispatchNoneEvent(gtx layout.Context) {
+	handlePointerEvents(
+		gtx,
+		&ed.tags.noneArea,
 		pointer.Enter|pointer.Press|pointer.Move,
 		func(e pointer.Event) {
 			ed.handlePointer(pointerEvent{
@@ -27,37 +62,37 @@ func (ed *Editor) dispatchEditorEvents(gtx layout.Context) {
 	)
 }
 
-func (ed *Editor) dispatchWaveEvents(gtx layout.Context) {
-	handlePointerEvents(
-		gtx,
-		ed.waveTag,
-		pointer.Enter|pointer.Press|pointer.Scroll|pointer.Move,
-		func(e pointer.Event) {
-			ed.handlePointer(pointerEvent{
-				Event: e,
-				Target: hitTarget{
-					Kind: hitWave,
-				},
-			})
-		},
-	)
-}
-
 func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 	for _, marker := range ed.markers.arr {
 		handlePointerEvents(
 			gtx,
-			marker,
+			&marker.Tag,
 			pointer.Enter|pointer.Press|pointer.Move|pointer.Drag|pointer.Release,
 			func(e pointer.Event) {
 				ed.handlePointer(pointerEvent{
 					Event: e,
 					Target: hitTarget{
-						Kind:   hitMarker,
+						Kind:   hitM,
 						Marker: marker,
 					},
 				})
 			},
 		)
 	}
+}
+
+func (ed *Editor) dispatchMCreateButtonEvent(gtx layout.Context) {
+	handlePointerEvents(
+		gtx,
+		&ed.tags.mCreateButton,
+		pointer.Move|pointer.Press,
+		func(e pointer.Event) {
+			ed.handlePointer(pointerEvent{
+				Event: e,
+				Target: hitTarget{
+					Kind: hitMCreateArea,
+				},
+			})
+		},
+	)
 }

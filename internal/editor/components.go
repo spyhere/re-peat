@@ -7,6 +7,7 @@ import (
 	"math"
 
 	"gioui.org/f32"
+	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -27,14 +28,36 @@ func backgroundComp(gtx layout.Context, col color.NRGBA) {
 	ColorBox(gtx, image.Rectangle{Max: image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)}, col)
 }
 
-func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio, scroll scroll) {
+func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio, scroll scroll) layout.Dimensions {
 	maxX := gtx.Constraints.Max.X
 	currSamples := audio.getSamplesFromPCM(playhead) - scroll.leftB
 	x := int(float32(currSamples) * float32(maxX) / float32(scroll.rightB-scroll.leftB))
 	if x < 0 || x > maxX {
-		return
+		return layout.Dimensions{Size: image.Pt(x, 0)}
 	}
 	ColorBox(gtx, image.Rect(x, 0, x+th.Sizing.Editor.PlayheadW, gtx.Constraints.Max.Y), th.Palette.Editor.Playhead)
+	return layout.Dimensions{Size: image.Pt(x, gtx.Constraints.Max.Y)}
+}
+
+func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag, waveMT int, playheadDim layout.Dimensions) {
+	mrkSz := th.Sizing.Editor.Markers
+	c := th.Palette.Editor.AddMarker
+	iconSize := th.Sizing.Editor.Markers.Lbl.IconW
+	x := playheadDim.Size.X
+
+	if x < 0 || x > gtx.Constraints.Max.X {
+		return
+	}
+
+	y := waveMT - prcToPx(waveMT, th.Sizing.Editor.PlayheadButtMB)
+	lblW := th.Sizing.Editor.Markers.Lbl.MinW
+	labelArea := image.Rect(x, y, x+lblW, y+mrkSz.Lbl.H)
+	ColorBoxR(gtx, labelArea, c, cornerR(10, 0, 0, 10))
+	offsetBy(gtx, image.Pt(x+(lblW/2-iconSize/2), y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func() {
+		gtx.Constraints.Min.X = iconSize
+		micons.ContentAddCircle.Layout(gtx, th.Palette.Editor.SoundWave)
+	})
+	registerTag(gtx, tag, labelArea)
 }
 
 // TODO: Improve visuals
@@ -181,17 +204,7 @@ func setCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
-func newMarkerComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, m *markers) {
-	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
-	if m.isDraftVisible() {
-		x := int(m.draft.pointerX)
-		offsetBy(gtx, image.Pt(x, wavePadding), func() {
-			markerComp(gtx, th, markerDraft, soundWaveH, 0, "", 0)
-		})
-	}
-}
-
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, m *markers, isInteresting bool) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, a audio, m *markers, isInteresting bool) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -199,7 +212,8 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s s
 	prevLblX, bPad, colDeviation := maxX, 0, 0
 	for _, marker := range m.getSortedMarkers() {
 		// TODO: Implement proper culling
-		x := int(float32(marker.Samples-s.leftB) / s.samplesPerPx)
+		curSamples := a.getSamplesFromPCM(marker.Pcm)
+		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)
 		// TODO: Calculate label's name width for real
 		lblW := clamp(mrkSz.Lbl.MinW, 120, mrkSz.Lbl.MaxW)
 		if x+lblW+10 >= prevLblX && prevLblX != maxX {
@@ -210,49 +224,32 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s s
 			colDeviation = 0
 		}
 		offsetBy(gtx, image.Pt(x, wavePadding), func() {
-			markerComp(gtx, th, markerReal, soundWaveH, bPad, marker.Name, uint8(colDeviation))
+			markerComp(gtx, th, soundWaveH, bPad, marker.Name, uint8(colDeviation))
 			if isInteresting {
 				activeWPad := mrkSz.Pole.ActiveWPad
 				area := image.Rectangle{
 					Min: image.Pt(-activeWPad, 0),
 					Max: image.Pt(mrkSz.Pole.W+activeWPad, soundWaveH),
 				}
-				registerTag(gtx, marker, area)
+				registerTag(gtx, &marker.Tag, area)
 			}
 		})
 		prevLblX = x
 	}
 }
 
-type markerType int
-
-const (
-	markerDraft markerType = iota
-	markerReal
-)
-
-func markerComp(gtx layout.Context, th *theme.RepeatTheme, mType markerType, h, bPad int, name string, colDeviation uint8) {
+func markerComp(gtx layout.Context, th *theme.RepeatTheme, h, bPad int, name string, colDeviation uint8) {
 	var col color.NRGBA
-	if mType == markerDraft {
-		col = th.Palette.Editor.AddMarker
-	} else {
-		col = th.Palette.Editor.Playhead
-		col.R -= colDeviation
-		col.G -= colDeviation
-		col.B -= colDeviation
-	}
+	col = th.Palette.Editor.Playhead
+	col.R -= colDeviation
+	col.G -= colDeviation
+	col.B -= colDeviation
 	mrkSz := th.Sizing.Editor.Markers
 	// Pole
 	poleYPad := prcToPx(h, mrkSz.Pole.Pad)
 	poleH := poleYPad*2 + h
 	y := -poleYPad
-	if mType == markerDraft {
-		offsetBy(gtx, image.Pt(0, y), func() {
-			dashedLineComp(gtx, mrkSz.Pole.W, poleH, mrkSz.Pole.Dash, col)
-		})
-	} else {
-		ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+bPad+poleH), col)
-	}
+	ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+bPad+poleH), col)
 
 	// Flag
 	var path clip.Path
@@ -290,32 +287,14 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mType markerType, h, 
 	lblMargB := prcToPx(poleH, mrkSz.Lbl.MargB)
 	y = y + bPad + poleH - lblMargB
 	var lblWInit int
-	if mType == markerDraft {
-		lblWInit = 50
-	} else {
-		lblWInit = 120
-	}
+	lblWInit = 120
 	lblW := clamp(mrkSz.Lbl.MinW, lblWInit, mrkSz.Lbl.MaxW)
 	ColorBoxR(gtx, image.Rect(0, y, lblW, y+mrkSz.Lbl.H), col, cornerR(10, 0, 0, 10))
 	// Label Name
 	// TODO: Calculate label's width properly
-	if mType == markerDraft {
-		iconSize := th.Sizing.Editor.Markers.Lbl.IconW
-		offsetBy(gtx, image.Pt(iconSize/2, y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func() {
-			gtx.Constraints.Min.X = iconSize
-			micons.ContentAddCircle.Layout(gtx, th.Palette.Editor.SoundWave)
-		})
-	} else {
-		mrkName := material.Body2(th.Theme, name)
-		nameW := int(mrkName.TextSize * unit.Sp(len(name)))
-		offsetBy(gtx, image.Pt((lblW-nameW-15)/2, y+8), func() {
-			mrkName.Layout(gtx)
-		})
-	}
-}
-
-func dashedLineComp(gtx layout.Context, w, h, dashGap int, col color.NRGBA) {
-	for y := 0; y < h; y += dashGap * 2 {
-		ColorBox(gtx, image.Rect(0, y, w, y+dashGap), col)
-	}
+	mrkName := material.Body2(th.Theme, name)
+	nameW := int(mrkName.TextSize * unit.Sp(len(name)))
+	offsetBy(gtx, image.Pt((lblW-nameW-15)/2, y+8), func() {
+		mrkName.Layout(gtx)
+	})
 }

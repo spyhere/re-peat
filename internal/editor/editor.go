@@ -39,6 +39,7 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 		markers:     newMarkers(),
 		scroll:      newScroll(),
 		th:          th,
+		tags:        newTags(),
 	}, nil
 }
 
@@ -47,9 +48,13 @@ type interactionMode int
 const (
 	modeIdle interactionMode = iota
 	modeHitWave
-	modeSetMarker
-	modeHitMarker
-	modeDragMarker
+	modeMLife
+	modeMCreateIntent
+	modeMDeleteIntent
+	modeMHit
+	modeMEditIntent
+	modeMEdit
+	modeMDrag
 )
 
 type Editor struct {
@@ -62,7 +67,7 @@ type Editor struct {
 	markers     *markers
 	p           *player.Player
 	waveM       int // wave margin
-	waveTag     struct{}
+	tags        tags
 	size        image.Point
 	scroll      scroll
 	th          *theme.RepeatTheme
@@ -140,30 +145,7 @@ func (ed *Editor) handleWaveClick(pCoords f32.Point, buttons pointer.Buttons) {
 		switch ed.mode {
 		case modeHitWave:
 			ed.setPlayhead(pCoords.X)
-		case modeSetMarker:
-			samples := ed.scroll.getSamplesFromPx(ed.markers.draft.pointerX)
-			ed.markers.newMarker(samples)
 		}
-	case pointer.ButtonSecondary:
-		switch ed.mode {
-		case modeHitWave:
-			ed.mode = modeSetMarker
-			ed.markers.enableDraft(pCoords.X)
-		case modeSetMarker:
-			ed.mode = modeHitWave
-			ed.markers.disableDraft()
-		}
-	}
-}
-
-func (ed *Editor) handleWaveMove(m *marker, pCoord f32.Point) {
-	switch ed.mode {
-	case modeSetMarker:
-		ed.markers.enableDraft(pCoord.X)
-	case modeDragMarker:
-		dSamples := ed.scroll.samplesPerPx * pCoord.X
-		m.Samples += int(dSamples)
-		m.Samples = clamp(0, m.Samples, ed.scroll.rightB)
 	}
 }
 
@@ -231,7 +213,7 @@ func (ed *Editor) listenToPlayerUpdates() {
 }
 
 func (ed *Editor) shouldMarkersInterest() bool {
-	return ed.mode != modeSetMarker && ed.mode != modeDragMarker
+	return ed.mode != modeMDeleteIntent && ed.mode != modeMDrag
 }
 
 func (ed *Editor) setCursor(c pointer.Cursor) {

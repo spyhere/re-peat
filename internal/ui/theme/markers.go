@@ -16,7 +16,6 @@ var markers = markersSizing{
 		FlagW:      30,
 		FlagH:      50,
 		FlagCorn:   45,
-		Dash:       8,
 	},
 }
 
@@ -38,7 +37,6 @@ type poleSizing struct {
 	Pad        string
 	W          int
 	ActiveWPad int // padding for width to make grabbing easier
-	Dash       int
 	FlagH      int
 	FlagW      int
 	FlagCorn   float64 // flag's notch corner
