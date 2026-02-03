@@ -7,8 +7,8 @@ type tags struct {
 	mCreateButton *struct{}
 }
 
-func newTags() tags {
-	return tags{
+func newTags() *tags {
+	return &tags{
 		mLife:         &struct{}{},
 		soundWave:     &struct{}{},
 		noneArea:      &struct{}{},
