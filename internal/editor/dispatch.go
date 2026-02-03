@@ -66,13 +66,41 @@ func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 	for _, marker := range ed.markers.arr {
 		handlePointerEvents(
 			gtx,
-			&marker.Tag,
+			&marker.tags.flag,
+			pointer.Press|pointer.Move,
+			func(e pointer.Event) {
+				ed.handlePointer(pointerEvent{
+					Event: e,
+					Target: hitTarget{
+						Kind:   hitMDeleteArea,
+						Marker: marker,
+					},
+				})
+			},
+		)
+		handlePointerEvents(
+			gtx,
+			&marker.tags.pole,
 			pointer.Enter|pointer.Press|pointer.Move|pointer.Drag|pointer.Release,
 			func(e pointer.Event) {
 				ed.handlePointer(pointerEvent{
 					Event: e,
 					Target: hitTarget{
 						Kind:   hitM,
+						Marker: marker,
+					},
+				})
+			},
+		)
+		handlePointerEvents(
+			gtx,
+			&marker.tags.label,
+			pointer.Move|pointer.Press,
+			func(e pointer.Event) {
+				ed.handlePointer(pointerEvent{
+					Event: e,
+					Target: hitTarget{
+						Kind:   hitMName,
 						Marker: marker,
 					},
 				})

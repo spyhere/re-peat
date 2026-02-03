@@ -204,7 +204,7 @@ func setCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, a audio, m *markers, isInteresting bool) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, a audio, m *markers, mI9n mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -212,7 +212,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s s
 	prevLblX, bPad, colDeviation := maxX, 0, 0
 	for _, marker := range m.getSortedMarkers() {
 		// TODO: Implement proper culling
-		curSamples := a.getSamplesFromPCM(marker.Pcm)
+		curSamples := a.getSamplesFromPCM(marker.pcm)
 		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)
 		// TODO: Calculate label's name width for real
 		lblW := clamp(mrkSz.Lbl.MinW, 120, mrkSz.Lbl.MaxW)
@@ -224,21 +224,13 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s s
 			colDeviation = 0
 		}
 		offsetBy(gtx, image.Pt(x, wavePadding), func() {
-			markerComp(gtx, th, soundWaveH, bPad, marker.Name, uint8(colDeviation))
-			if isInteresting {
-				activeWPad := mrkSz.Pole.ActiveWPad
-				area := image.Rectangle{
-					Min: image.Pt(-activeWPad, 0),
-					Max: image.Pt(mrkSz.Pole.W+activeWPad, soundWaveH),
-				}
-				registerTag(gtx, &marker.Tag, area)
-			}
+			markerComp(gtx, th, marker.tags, mI9n, soundWaveH, bPad, marker.name, uint8(colDeviation))
 		})
 		prevLblX = x
 	}
 }
 
-func markerComp(gtx layout.Context, th *theme.RepeatTheme, h, bPad int, name string, colDeviation uint8) {
+func markerComp(gtx layout.Context, th *theme.RepeatTheme, tags *markerTags, mI9n mInteraction, h, bPad int, name string, colDeviation uint8) {
 	var col color.NRGBA
 	col = th.Palette.Editor.Playhead
 	col.R -= colDeviation
@@ -250,23 +242,30 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, h, bPad int, name str
 	poleH := poleYPad*2 + h
 	y := -poleYPad
 	ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+bPad+poleH), col)
+	if mI9n.pole {
+		activePadding := th.Sizing.Editor.Markers.Pole.ActiveWPad
+		activeArea := image.Rect(0, 0, mrkSz.Pole.W, poleH-poleYPad)
+		activeArea.Min.X -= activePadding
+		activeArea.Max.X += activePadding
+		registerTag(gtx, &tags.pole, activeArea)
+	}
 
 	// Flag
 	var path clip.Path
 	path.Begin(gtx.Ops)
-	flagHalf := float32(mrkSz.Pole.FlagW) / 2
+	flagHalfW := float32(mrkSz.Pole.FlagW) / 2
 	// N
 	poleCenter := float32(mrkSz.Pole.W) / 2
 	yF := float32(-poleYPad)
 	path.MoveTo(f32.Pt(poleCenter, yF))
 	// NE
-	path.Line(f32.Pt(flagHalf, 0))
+	path.Line(f32.Pt(flagHalfW, 0))
 	// SE
 	// tan(corner) = flagH / flagW
-	notchVrtxY := int(math.Tan(mrkSz.Pole.FlagCorn) * float64(flagHalf))
+	notchVrtxY := int(math.Tan(mrkSz.Pole.FlagCorn) * float64(flagHalfW))
 	path.Line(f32.Pt(0, float32(mrkSz.Pole.FlagH-notchVrtxY)))
 	// S
-	path.Line(f32.Pt(-flagHalf, float32(notchVrtxY)))
+	path.Line(f32.Pt(-flagHalfW, float32(notchVrtxY)))
 	path.Close()
 	pathSpec := path.End()
 	paint.FillShape(gtx.Ops, col,
@@ -282,6 +281,15 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, h, bPad int, name str
 		clip.Outline{Path: pathSpec}.Op(),
 	)
 	mir.Pop()
+	if mI9n.flag {
+		iconSize := th.Sizing.Editor.Markers.Lbl.IconW
+		offsetBy(gtx, image.Pt(-int(flagHalfW), int(yF)), func() {
+			gtx.Constraints.Min.X = iconSize
+			micons.Delete.Layout(gtx, th.Palette.Editor.SoundWave)
+		})
+		flagArea := image.Rect(-int(flagHalfW), int(yF), int(flagHalfW), int(yF)+mrkSz.Pole.FlagH)
+		registerTag(gtx, &tags.flag, flagArea)
+	}
 
 	// Label
 	lblMargB := prcToPx(poleH, mrkSz.Lbl.MargB)
@@ -289,7 +297,11 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, h, bPad int, name str
 	var lblWInit int
 	lblWInit = 120
 	lblW := clamp(mrkSz.Lbl.MinW, lblWInit, mrkSz.Lbl.MaxW)
-	ColorBoxR(gtx, image.Rect(0, y, lblW, y+mrkSz.Lbl.H), col, cornerR(10, 0, 0, 10))
+	lblArea := image.Rect(0, y, lblW, y+mrkSz.Lbl.H)
+	ColorBoxR(gtx, lblArea, col, cornerR(10, 0, 0, 10))
+	if mI9n.label {
+		registerTag(gtx, &tags.label, lblArea)
+	}
 	// Label Name
 	// TODO: Calculate label's width properly
 	mrkName := material.Body2(th.Theme, name)

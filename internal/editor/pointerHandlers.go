@@ -94,6 +94,14 @@ func (ed *Editor) handleMCreateIntent(p pointerEvent) {
 	ed.transition(p)
 }
 
+func (ed *Editor) handleMDeleteIntent(p pointerEvent) {
+	switch p.Event.Kind {
+	case pointer.Press:
+		p.Target.Marker.markDead()
+	}
+	ed.transition(p)
+}
+
 func (ed *Editor) handleMHit(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Drag:
@@ -103,13 +111,21 @@ func (ed *Editor) handleMHit(p pointerEvent) {
 	ed.transition(p)
 }
 
+func (ed *Editor) handleMEditIntent(p pointerEvent) {
+	switch p.Event.Kind {
+	case pointer.Press:
+		//
+	}
+	ed.transition(p)
+}
+
 func (ed *Editor) handleDragMarker(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Drag:
 		dSamples := int(ed.scroll.samplesPerPx * p.Event.Position.X)
 		m := p.Target.Marker
-		m.Pcm = ed.audio.getPcmFromSamples(ed.scroll.leftB + int(dSamples))
-		m.Pcm = clamp(0, m.Pcm, ed.audio.pcmLen)
+		m.pcm = ed.audio.getPcmFromSamples(ed.scroll.leftB + int(dSamples))
+		m.pcm = clamp(0, m.pcm, ed.audio.pcmLen)
 	case pointer.Release:
 		ed.mode = modeHitWave
 	}
@@ -127,11 +143,11 @@ func (ed *Editor) handlePointer(p pointerEvent) {
 	case modeMCreateIntent:
 		ed.handleMCreateIntent(p)
 	case modeMDeleteIntent:
-	//
+		ed.handleMDeleteIntent(p)
 	case modeMHit:
 		ed.handleMHit(p)
 	case modeMEditIntent:
-	//
+		ed.handleMEditIntent(p)
 	case modeMEdit:
 	//
 	case modeMDrag:

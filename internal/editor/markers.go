@@ -14,37 +14,55 @@ func newMarkers() *markers {
 
 type markers struct {
 	arr []*marker
-	idx int8
 }
 
 type marker struct {
-	Pcm  int64
-	Name string
-	Tag  *struct{}
+	pcm    int64
+	name   string
+	tags   *markerTags
+	isDead bool
+}
+type markerTags struct {
+	flag  *struct{}
+	pole  *struct{}
+	label *struct{}
+}
+type mInteraction struct {
+	flag  bool
+	pole  bool
+	label bool
 }
 
 func (m *markers) newMarker(pcm int64) {
-	if m.idx+1 > markersLimit {
+	if len(m.arr)+1 > markersLimit {
 		// TODO: display error
 		return
 	}
 	// TODO: Remove placeholder name
 	name := "Chorus"
-	if m.idx == 7 {
-		name = "Eugene"
-	} else {
-		name = "Chorus"
-	}
 	m.arr = append(m.arr, &marker{
-		Pcm:  pcm,
-		Name: name,
-		Tag:  &struct{}{},
+		pcm:  pcm,
+		name: name,
+		tags: &markerTags{
+			flag:  &struct{}{},
+			pole:  &struct{}{},
+			label: &struct{}{},
+		},
 	})
-	m.idx++
+}
+
+func (m *marker) markDead() {
+	m.isDead = true
+}
+
+func (m *markers) deleteDead() {
+	m.arr = slices.DeleteFunc(m.arr, func(it *marker) bool {
+		return it.isDead
+	})
 }
 
 func (m *markers) sortCb(a, b *marker) int {
-	return int(b.Pcm - a.Pcm)
+	return int(b.pcm - a.pcm)
 }
 
 func (m *markers) getSortedMarkers() []*marker {

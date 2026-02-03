@@ -67,7 +67,7 @@ type Editor struct {
 	markers     *markers
 	p           *player.Player
 	waveM       int // wave margin
-	tags        tags
+	tags        *tags
 	size        image.Point
 	scroll      scroll
 	th          *theme.RepeatTheme
@@ -169,7 +169,7 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.leftB += panSamples
 }
 
-func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
+func (ed *Editor) handleKey(gtx layout.Context) {
 	for {
 		evt, ok := gtx.Event(key.Filter{
 			Name: key.NameSpace,
@@ -183,8 +183,7 @@ func (ed *Editor) handleKey(gtx layout.Context, isPlaying bool) {
 		}
 		if e.State == key.Press {
 			if e.Name == key.NameSpace {
-				isPlaying = !isPlaying
-				if isPlaying {
+				if !ed.p.IsPlaying() {
 					if ed.playhead.bytes >= ed.audio.pcmLen {
 						continue
 					}
@@ -212,10 +211,22 @@ func (ed *Editor) listenToPlayerUpdates() {
 	}
 }
 
-func (ed *Editor) shouldMarkersInterest() bool {
-	return ed.mode != modeMDeleteIntent && ed.mode != modeMDrag
+func (ed *Editor) isCreateButtonVisible() bool {
+	return ed.mode == modeMLife || ed.mode == modeMCreateIntent || ed.mode == modeMDeleteIntent
+}
+
+func (ed *Editor) getMI9n() mInteraction {
+	return mInteraction{
+		flag:  ed.mode == modeMLife || ed.mode == modeMDeleteIntent || ed.mode == modeMCreateIntent,
+		pole:  ed.mode != modeMDrag,
+		label: ed.mode != modeMDrag,
+	}
 }
 
 func (ed *Editor) setCursor(c pointer.Cursor) {
 	ed.cursor = c
+}
+
+func (ed *Editor) updateDifferedState() {
+	ed.markers.deleteDead()
 }
