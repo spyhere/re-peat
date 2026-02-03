@@ -131,7 +131,7 @@ func (ed *Editor) MakePeakMap() {
 	ed.cache.isPopulated = true
 }
 
-func (ed *Editor) setPlayhead(posX float32) {
+func (ed *Editor) playheadPosFromX(posX float32) {
 	pxPerSec := float32(ed.audio.sampleRate) / float32(ed.scroll.samplesPerPx)
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.sampleRate))
 	// TODO: handle error here
@@ -139,12 +139,18 @@ func (ed *Editor) setPlayhead(posX float32) {
 	ed.playhead.set(seekVal)
 }
 
+func (ed *Editor) setPlayhead(pcmValue int64) {
+	// TODO: handle error here
+	seekValue, _ := ed.p.Set(pcmValue)
+	ed.playhead.set(seekValue)
+}
+
 func (ed *Editor) handleWaveClick(pCoords f32.Point, buttons pointer.Buttons) {
 	switch buttons {
 	case pointer.ButtonPrimary:
 		switch ed.mode {
 		case modeHitWave:
-			ed.setPlayhead(pCoords.X)
+			ed.playheadPosFromX(pCoords.X)
 		}
 	}
 }

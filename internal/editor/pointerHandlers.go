@@ -104,6 +104,8 @@ func (ed *Editor) handleMDeleteIntent(p pointerEvent) {
 
 func (ed *Editor) handleMHit(p pointerEvent) {
 	switch p.Event.Kind {
+	case pointer.Release:
+		ed.setPlayhead(p.Target.Marker.pcm)
 	case pointer.Drag:
 		ed.mode = modeMDrag
 		ed.setCursor(pointer.CursorGrabbing)
