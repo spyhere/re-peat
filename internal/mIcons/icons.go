@@ -17,4 +17,5 @@ func newIcon(i []byte) *widget.Icon {
 
 var (
 	ContentAddCircle = newIcon(icons.ContentAddCircle)
+	Delete           = newIcon(icons.ActionDelete)
 )
