@@ -211,9 +211,16 @@ func (ed *Editor) cancelEdit() {
 	ed.mode = modeIdle
 }
 
+func (ed *Editor) nudgePlayhead(forward bool) {
+	dPcm := ed.audio.getPcmFromSamples(int(ed.scroll.samplesPerPx))
+	if !forward {
+		dPcm *= -1
+	}
+	ed.setPlayhead(ed.playhead.bytes + dPcm*4)
+}
+
 // TODO: Make it the same way as pointer dispatchers and handlers.
 // This is just for player (handlePlayerDispatch)
-// Add arrows to move playhead conveniently
 func (ed *Editor) handleKey(gtx layout.Context) {
 	for {
 		evt, ok := gtx.Event(
@@ -222,6 +229,12 @@ func (ed *Editor) handleKey(gtx layout.Context) {
 			},
 			key.Filter{
 				Name: key.NameEscape,
+			},
+			key.Filter{
+				Name: key.NameLeftArrow,
+			},
+			key.Filter{
+				Name: key.NameRightArrow,
 			},
 		)
 		if !ok {
@@ -237,6 +250,10 @@ func (ed *Editor) handleKey(gtx layout.Context) {
 				ed.switchPlayerState()
 			case key.NameEscape:
 				ed.cancelEdit()
+			case key.NameLeftArrow:
+				ed.nudgePlayhead(false)
+			case key.NameRightArrow:
+				ed.nudgePlayhead(true)
 			}
 		}
 	}
