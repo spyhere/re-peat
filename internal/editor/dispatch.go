@@ -139,10 +139,7 @@ func (ed *Editor) dispatchRenamerEvent(gtx layout.Context) {
 			if e.Text == "" {
 				return
 			}
-			ed.markers.editing.name = e.Text
-			ed.markers.stopEdit()
-			ed.renamer.SetText("")
-			ed.mode = modeIdle
+			ed.confirmEdit(e.Text)
 		}
 	}
 }

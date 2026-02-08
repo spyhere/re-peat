@@ -178,18 +178,52 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.leftB += panSamples
 }
 
-// TODO: Make it the same way as pointer dispatchers and handlers.
-// This is just for player (handlePlayerDispatch)
-// Add arrows to move playhead conveniently
-// Create another handler for `Esc` for renaming markers
-func (ed *Editor) handleKey(gtx layout.Context) {
+func (ed *Editor) switchPlayerState() {
 	if ed.mode == modeMEdit {
 		return
 	}
+	if !ed.p.IsPlaying() {
+		if ed.playhead.bytes >= ed.audio.pcmLen {
+			return
+		}
+		ed.p.Play()
+		ed.p.WaitUntilReady()
+	} else {
+		ed.p.Pause()
+		ed.playhead.reset()
+		ed.p.Set(ed.playhead.bytes)
+	}
+}
+
+func (ed *Editor) confirmEdit(newName string) {
+	ed.markers.editing.name = newName
+	ed.markers.stopEdit()
+	ed.renamer.SetText("")
+	ed.mode = modeIdle
+}
+
+func (ed *Editor) cancelEdit() {
+	if !ed.markers.isEditing() || ed.markers.editing.name == "" {
+		return
+	}
+	ed.markers.stopEdit()
+	ed.renamer.SetText("")
+	ed.mode = modeIdle
+}
+
+// TODO: Make it the same way as pointer dispatchers and handlers.
+// This is just for player (handlePlayerDispatch)
+// Add arrows to move playhead conveniently
+func (ed *Editor) handleKey(gtx layout.Context) {
 	for {
-		evt, ok := gtx.Event(key.Filter{
-			Name: key.NameSpace,
-		})
+		evt, ok := gtx.Event(
+			key.Filter{
+				Name: key.NameSpace,
+			},
+			key.Filter{
+				Name: key.NameEscape,
+			},
+		)
 		if !ok {
 			break
 		}
@@ -198,18 +232,11 @@ func (ed *Editor) handleKey(gtx layout.Context) {
 			continue
 		}
 		if e.State == key.Press {
-			if e.Name == key.NameSpace {
-				if !ed.p.IsPlaying() {
-					if ed.playhead.bytes >= ed.audio.pcmLen {
-						continue
-					}
-					ed.p.Play()
-					ed.p.WaitUntilReady()
-				} else {
-					ed.p.Pause()
-					ed.playhead.reset()
-					ed.p.Set(ed.playhead.bytes)
-				}
+			switch e.Name {
+			case key.NameSpace:
+				ed.switchPlayerState()
+			case key.NameEscape:
+				ed.cancelEdit()
 			}
 		}
 	}

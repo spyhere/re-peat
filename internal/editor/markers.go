@@ -81,3 +81,7 @@ func (m *markers) startEdit(curMarker *marker) {
 func (m *markers) stopEdit() {
 	m.editing = nil
 }
+
+func (m *markers) isEditing() bool {
+	return m.editing != nil
+}
