@@ -212,6 +212,9 @@ func (ed *Editor) cancelEdit() {
 }
 
 func (ed *Editor) nudgePlayhead(forward bool) {
+	if ed.markers.isEditing() {
+		return
+	}
 	dPcm := ed.audio.getPcmFromSamples(int(ed.scroll.samplesPerPx))
 	if !forward {
 		dPcm *= -1
