@@ -222,6 +222,16 @@ func (ed *Editor) nudgePlayhead(forward bool) {
 	ed.setPlayhead(ed.playhead.bytes + dPcm*4)
 }
 
+func (ed *Editor) collapseRenamerSelection() {
+	if !ed.markers.isEditing() {
+		return
+	}
+	start, end := ed.renamer.Selection()
+	if start != end {
+		ed.renamer.SetCaret(start, start)
+	}
+}
+
 // TODO: Make it the same way as pointer dispatchers and handlers.
 // This is just for player (handlePlayerDispatch)
 func (ed *Editor) handleKey(gtx layout.Context) {
@@ -256,6 +266,7 @@ func (ed *Editor) handleKey(gtx layout.Context) {
 			case key.NameLeftArrow:
 				ed.nudgePlayhead(false)
 			case key.NameRightArrow:
+				ed.collapseRenamerSelection()
 				ed.nudgePlayhead(true)
 			}
 		}
