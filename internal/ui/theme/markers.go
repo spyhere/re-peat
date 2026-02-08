@@ -2,12 +2,15 @@ package theme
 
 var markers = markersSizing{
 	Lbl: labelSizing{
-		MinW:      70,
+		MinW:      30,
 		MaxW:      150,
 		H:         50,
-		MargB:     "18%",
+		Margin:    10,
+		OffsetY:   "18%",
 		IconW:     35,
-		InvisPadE: 5,
+		InvisPad:  5,
+		MaxGlyphs: 12,
+		CRound:    CornerR(10, 0, 0, 10),
 	},
 	Pole: poleSizing{
 		W:          2,
@@ -28,9 +31,12 @@ type labelSizing struct {
 	MinW      int
 	MaxW      int
 	H         int
-	MargB     string
+	Margin    int
+	OffsetY   string
 	IconW     int
-	InvisPadE int // invisible padding for East to make overlapping more smooth
+	InvisPad  int // invisible padding primarily for East and North to make overlapping more smooth
+	MaxGlyphs int
+	CRound    CornerRadii
 }
 
 type poleSizing struct {

@@ -8,12 +8,13 @@ import (
 
 	"gioui.org/f32"
 	"gioui.org/io/event"
+	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/unit"
+	"gioui.org/widget"
 	"gioui.org/widget/material"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -50,9 +51,9 @@ func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag,
 	}
 
 	y := waveMT - prcToPx(waveMT, th.Sizing.Editor.PlayheadButtMB)
-	lblW := th.Sizing.Editor.Markers.Lbl.MinW
+	lblW := mrkSz.Lbl.MinW + iconSize
 	labelArea := image.Rect(x, y, x+lblW, y+mrkSz.Lbl.H)
-	ColorBoxR(gtx, labelArea, c, cornerR(10, 0, 0, 10))
+	ColorBoxR(gtx, labelArea, c, mrkSz.Lbl.CRound)
 	offsetBy(gtx, image.Pt(x+(lblW/2-iconSize/2), y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func() {
 		gtx.Constraints.Min.X = iconSize
 		micons.ContentAddCircle.Layout(gtx, th.Palette.Editor.SoundWave)
@@ -60,7 +61,6 @@ func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag,
 	registerTag(gtx, tag, labelArea)
 }
 
-// TODO: Improve visuals
 func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
 	yCenter = snap(yCenter)
 	width := gtx.Constraints.Max.X + waveEdgePadding
@@ -178,15 +178,7 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, sc
 	}
 }
 
-type cornerRadii struct {
-	SE, SW, NW, NE int
-}
-
-func cornerR(se, sw, nw, ne int) cornerRadii {
-	return cornerRadii{SE: se, SW: sw, NW: nw, NE: ne}
-}
-
-func ColorBoxR(gtx layout.Context, size image.Rectangle, color color.NRGBA, r cornerRadii) layout.Dimensions {
+func ColorBoxR(gtx layout.Context, size image.Rectangle, color color.NRGBA, r theme.CornerRadii) layout.Dimensions {
 	defer clip.RRect{Rect: size, SE: r.SE, SW: r.SW, NE: r.NE, NW: r.NW}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: color}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
@@ -204,50 +196,89 @@ func setCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, wavePadding int, s scroll, a audio, m *markers, mI9n mInteraction) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, mI9n mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
 
-	prevLblX, bPad, colDeviation := maxX, 0, 0
+	prevLblX, yOffset, colDeviation := maxX, 0, 0
 	for _, marker := range m.getSortedMarkers() {
 		// TODO: Implement proper culling
+		var nameWidth int
+		isEditing := m.editing == marker && mode == modeMEdit
+		nameOp := makeMacro(gtx.Ops, func() {
+			// TODO: Fix name width calculation
+			if isEditing {
+				ed := material.Editor(th.Theme, r, "")
+				ed.Layout(gtx)
+				gtx.Execute(key.FocusCmd{Tag: r})
+				nameWidth = len(ed.Editor.Text()) * int(ed.TextSize)
+			} else {
+				name := truncName(marker.name, mrkSz.Lbl.MaxGlyphs)
+				lblName := material.Body2(th.Theme, name)
+				lblName.Layout(gtx)
+				nameWidth = len(marker.name) * int(lblName.TextSize)
+				nameWidth = clamp(mrkSz.Lbl.MinW, nameWidth, mrkSz.Lbl.MaxW)
+			}
+		})
 		curSamples := a.getSamplesFromPCM(marker.pcm)
 		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)
-		// TODO: Calculate label's name width for real
-		lblW := clamp(mrkSz.Lbl.MinW, 120, mrkSz.Lbl.MaxW)
-		if x+lblW+10 >= prevLblX && prevLblX != maxX {
-			bPad += mrkSz.Lbl.H + mrkSz.Lbl.InvisPadE
+		if x+nameWidth+mrkSz.Lbl.InvisPad+mrkSz.Lbl.Margin >= prevLblX && prevLblX != maxX {
+			yOffset += mrkSz.Lbl.H + mrkSz.Lbl.InvisPad
 			colDeviation += th.Palette.Editor.MarkerDev
 		} else {
-			bPad = 0
+			yOffset = 0
 			colDeviation = 0
 		}
 		offsetBy(gtx, image.Pt(x, wavePadding), func() {
-			markerComp(gtx, th, marker.tags, mI9n, soundWaveH, bPad, marker.name, uint8(colDeviation))
+			markerComp(gtx, th,
+				markerProps{
+					isEditing:    isEditing,
+					tags:         marker.tags,
+					i9n:          mI9n,
+					height:       soundWaveH,
+					yOffset:      yOffset,
+					nameOp:       nameOp,
+					nameWidth:    nameWidth,
+					colDeviation: uint8(colDeviation),
+				},
+			)
 		})
 		prevLblX = x
 	}
 }
 
-func markerComp(gtx layout.Context, th *theme.RepeatTheme, tags *markerTags, mI9n mInteraction, h, bPad int, name string, colDeviation uint8) {
+type markerProps struct {
+	isEditing    bool
+	tags         *markerTags
+	i9n          mInteraction
+	height       int
+	yOffset      int
+	nameOp       op.CallOp
+	nameWidth    int
+	colDeviation uint8
+}
+
+func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) layout.Dimensions {
 	var col color.NRGBA
 	col = th.Palette.Editor.Playhead
-	col.R -= colDeviation
-	col.G -= colDeviation
-	col.B -= colDeviation
+	col.R -= mProps.colDeviation
+	col.G -= mProps.colDeviation
+	col.B -= mProps.colDeviation
 	mrkSz := th.Sizing.Editor.Markers
 	// Pole
-	poleYPad := prcToPx(h, mrkSz.Pole.Pad)
-	poleH := poleYPad*2 + h
+	poleYPad := prcToPx(mProps.height, mrkSz.Pole.Pad)
+	poleH := poleYPad*2 + mProps.height
 	y := -poleYPad
-	ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+bPad+poleH), col)
-	if mI9n.pole {
+	ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+mProps.yOffset+poleH), col)
+	if mProps.i9n.pole {
+		passOp := pointer.PassOp{}.Push(gtx.Ops)
 		activePadding := th.Sizing.Editor.Markers.Pole.ActiveWPad
 		activeArea := image.Rect(0, 0, mrkSz.Pole.W, poleH-poleYPad)
 		activeArea.Min.X -= activePadding
 		activeArea.Max.X += activePadding
-		registerTag(gtx, &tags.pole, activeArea)
+		registerTag(gtx, &mProps.tags.pole, activeArea)
+		passOp.Pop()
 	}
 
 	// Flag
@@ -281,32 +312,29 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, tags *markerTags, mI9
 		clip.Outline{Path: pathSpec}.Op(),
 	)
 	mir.Pop()
-	if mI9n.flag {
+	if mProps.i9n.flag {
 		iconSize := th.Sizing.Editor.Markers.Lbl.IconW
 		offsetBy(gtx, image.Pt(-int(flagHalfW), int(yF)), func() {
 			gtx.Constraints.Min.X = iconSize
 			micons.Delete.Layout(gtx, th.Palette.Editor.SoundWave)
 		})
 		flagArea := image.Rect(-int(flagHalfW), int(yF), int(flagHalfW), int(yF)+mrkSz.Pole.FlagH)
-		registerTag(gtx, &tags.flag, flagArea)
+		registerTag(gtx, &mProps.tags.flag, flagArea)
 	}
 
 	// Label
-	lblMargB := prcToPx(poleH, mrkSz.Lbl.MargB)
-	y = y + bPad + poleH - lblMargB
-	var lblWInit int
-	lblWInit = 120
-	lblW := clamp(mrkSz.Lbl.MinW, lblWInit, mrkSz.Lbl.MaxW)
+	lblOffset := prcToPx(poleH, mrkSz.Lbl.OffsetY)
+	y = y + mProps.yOffset + poleH - lblOffset
+	lblW := mProps.nameWidth + mrkSz.Lbl.Margin
+	lblW = max(mrkSz.Lbl.MinW, lblW)
 	lblArea := image.Rect(0, y, lblW, y+mrkSz.Lbl.H)
-	ColorBoxR(gtx, lblArea, col, cornerR(10, 0, 0, 10))
-	if mI9n.label {
-		registerTag(gtx, &tags.label, lblArea)
+	ColorBoxR(gtx, lblArea, col, mrkSz.Lbl.CRound)
+	if mProps.i9n.label {
+		registerTag(gtx, &mProps.tags.label, lblArea)
 	}
-	// Label Name
-	// TODO: Calculate label's width properly
-	mrkName := material.Body2(th.Theme, name)
-	nameW := int(mrkName.TextSize * unit.Sp(len(name)))
-	offsetBy(gtx, image.Pt((lblW-nameW-15)/2, y+8), func() {
-		mrkName.Layout(gtx)
+	halfMargin := mrkSz.Lbl.Margin / 2
+	offsetBy(gtx, image.Pt(halfMargin, y+halfMargin), func() {
+		mProps.nameOp.Add(gtx.Ops)
 	})
+	return layout.Dimensions{Size: image.Pt(lblW, poleH)}
 }

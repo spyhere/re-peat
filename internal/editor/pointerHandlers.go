@@ -27,6 +27,9 @@ type pointerEvent struct {
 }
 
 func (ed *Editor) transition(p pointerEvent) {
+	if ed.mode == modeMEdit {
+		return
+	}
 	isDraggingMarker := ed.mode == modeMDrag
 	switch p.Target.Kind {
 	case hitNone:
@@ -77,7 +80,9 @@ func (ed *Editor) handleHitWave(p pointerEvent) {
 	case pointer.Scroll:
 		ed.handleWaveScroll(p.Event.Scroll, p.Event.Position)
 	case pointer.Press:
-		ed.handleWaveClick(p.Event.Position, p.Event.Buttons)
+		if p.Target.Marker == nil {
+			ed.handleWaveClick(p.Event.Position, p.Event.Buttons)
+		}
 	}
 	ed.transition(p)
 }
@@ -90,6 +95,8 @@ func (ed *Editor) handleMCreateIntent(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Press:
 		ed.markers.newMarker(ed.playhead.bytes)
+		ed.setCursor(pointer.CursorText)
+		ed.mode = modeMEdit
 	}
 	ed.transition(p)
 }
@@ -116,8 +123,16 @@ func (ed *Editor) handleMHit(p pointerEvent) {
 func (ed *Editor) handleMEditIntent(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Press:
-		//
+		ed.mode = modeMEdit
+		m := p.Target.Marker
+		ed.renamer.SetText(m.name)
+		ed.renamer.SetCaret(len(m.name), 0)
+		ed.markers.startEdit(m)
 	}
+	ed.transition(p)
+}
+
+func (ed *Editor) handleMEdit(p pointerEvent) {
 	ed.transition(p)
 }
 
@@ -151,7 +166,7 @@ func (ed *Editor) handlePointer(p pointerEvent) {
 	case modeMEditIntent:
 		ed.handleMEditIntent(p)
 	case modeMEdit:
-	//
+		ed.handleMEdit(p)
 	case modeMDrag:
 		ed.handleDragMarker(p)
 	}

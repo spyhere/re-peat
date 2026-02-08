@@ -3,6 +3,7 @@ package editor
 import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/widget"
 )
 
 func (ed *Editor) dispatch(gtx layout.Context) {
@@ -12,6 +13,8 @@ func (ed *Editor) dispatch(gtx layout.Context) {
 
 	ed.dispatchMCreateButtonEvent(gtx)
 	ed.dispatchMarkerEvent(gtx)
+
+	ed.dispatchRenamerEvent(gtx)
 }
 
 func (ed *Editor) dispatchMLifeEvent(gtx layout.Context) {
@@ -123,4 +126,23 @@ func (ed *Editor) dispatchMCreateButtonEvent(gtx layout.Context) {
 			})
 		},
 	)
+}
+
+// TODO: This shouldn't be here!
+func (ed *Editor) dispatchRenamerEvent(gtx layout.Context) {
+	for {
+		we, ok := ed.renamer.Update(gtx)
+		if !ok {
+			break
+		}
+		if e, ok := we.(widget.SubmitEvent); ok {
+			if e.Text == "" {
+				return
+			}
+			ed.markers.editing.name = e.Text
+			ed.markers.stopEdit()
+			ed.renamer.SetText("")
+			ed.mode = modeIdle
+		}
+	}
 }

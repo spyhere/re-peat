@@ -13,7 +13,8 @@ func newMarkers() *markers {
 }
 
 type markers struct {
-	arr []*marker
+	arr     []*marker
+	editing *marker
 }
 
 type marker struct {
@@ -39,16 +40,16 @@ func (m *markers) newMarker(pcm int64) {
 		return
 	}
 	// TODO: Remove placeholder name
-	name := "Chorus"
-	m.arr = append(m.arr, &marker{
-		pcm:  pcm,
-		name: name,
+	newM := &marker{
+		pcm: pcm,
 		tags: &markerTags{
 			flag:  &struct{}{},
 			pole:  &struct{}{},
 			label: &struct{}{},
 		},
-	})
+	}
+	m.arr = append(m.arr, newM)
+	m.editing = newM
 }
 
 func (m *marker) markDead() {
@@ -71,4 +72,12 @@ func (m *markers) getSortedMarkers() []*marker {
 	}
 	seq := slices.Values(m.arr)
 	return slices.SortedStableFunc(seq, m.sortCb)
+}
+
+func (m *markers) startEdit(curMarker *marker) {
+	m.editing = curMarker
+}
+
+func (m *markers) stopEdit() {
+	m.editing = nil
 }

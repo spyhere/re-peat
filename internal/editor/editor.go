@@ -10,6 +10,7 @@ import (
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 	"github.com/tosone/minimp3"
@@ -37,6 +38,7 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 		playhead:    newPlayhead(playheadInitDur),
 		cache:       newCache(),
 		markers:     newMarkers(),
+		renamer:     newRenamer(),
 		scroll:      newScroll(),
 		th:          th,
 		tags:        newTags(),
@@ -65,6 +67,7 @@ type Editor struct {
 	monoSamples []float32
 	cache       cache
 	markers     *markers
+	renamer     *widget.Editor
 	p           *player.Player
 	waveM       int // wave margin
 	tags        *tags
@@ -175,7 +178,14 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.leftB += panSamples
 }
 
+// TODO: Make it the same way as pointer dispatchers and handlers.
+// This is just for player (handlePlayerDispatch)
+// Add arrows to move playhead conveniently
+// Create another handler for `Esc` for renaming markers
 func (ed *Editor) handleKey(gtx layout.Context) {
+	if ed.mode == modeMEdit {
+		return
+	}
 	for {
 		evt, ok := gtx.Event(key.Filter{
 			Name: key.NameSpace,

@@ -37,3 +37,11 @@ type gridSizing struct {
 	Tick10s         int
 	Tick5s          int
 }
+
+type CornerRadii struct {
+	SE, SW, NW, NE int
+}
+
+func CornerR(se, sw, nw, ne int) CornerRadii {
+	return CornerRadii{SE: se, SW: sw, NW: nw, NE: ne}
+}

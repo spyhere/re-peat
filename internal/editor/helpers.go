@@ -13,6 +13,7 @@ import (
 	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/op/clip"
 )
 
@@ -127,4 +128,17 @@ func snap(v float32) float32 {
 func registerTag(gtx layout.Context, tag event.Tag, area image.Rectangle) {
 	defer clip.Rect(area).Push(gtx.Ops).Pop()
 	event.Op(gtx.Ops, tag)
+}
+
+func makeMacro(ops *op.Ops, cb func()) op.CallOp {
+	macro := op.Record(ops)
+	cb()
+	return macro.Stop()
+}
+
+func truncName(name string, limit int) string {
+	if len(name) < limit {
+		return name
+	}
+	return name[:limit-3] + "..."
 }
