@@ -232,6 +232,15 @@ func (ed *Editor) collapseRenamerSelection() {
 	}
 }
 
+func (ed *Editor) handleRenamer(we widget.EditorEvent) {
+	if e, ok := we.(widget.SubmitEvent); ok {
+		if e.Text == "" {
+			return
+		}
+		ed.confirmEdit(e.Text)
+	}
+}
+
 // TODO: Make it the same way as pointer dispatchers and handlers.
 // This is just for player (handlePlayerDispatch)
 func (ed *Editor) handleKey(gtx layout.Context) {
