@@ -136,9 +136,24 @@ func makeMacro(ops *op.Ops, cb func()) op.CallOp {
 	return macro.Stop()
 }
 
+func strlen(input string) int {
+	return strings.Count(input, "") - 1
+}
+
+// Since non-lating letters are taking more then 1 byte `strlen` and manual idx in range is required
 func truncName(name string, limit int) string {
-	if len(name) < limit {
+	if strlen(name) < limit {
 		return name
 	}
-	return name[:limit-3] + "..."
+	var newName strings.Builder
+	idx := 0
+	for _, r := range name {
+		if idx >= limit-3 {
+			break
+		}
+		newName.WriteRune(r)
+		idx++
+	}
+	newName.WriteString("...")
+	return newName.String()
 }

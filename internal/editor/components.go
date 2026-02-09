@@ -14,6 +14,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
@@ -196,6 +197,10 @@ func setCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
+type renderable interface {
+	Layout(gtx layout.Context) layout.Dimensions
+}
+
 func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, mI9n mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
@@ -204,26 +209,24 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mo
 	prevLblX, yOffset, colDeviation := maxX, 0, 0
 	for _, marker := range m.getSortedMarkers() {
 		// TODO: Implement proper culling
-		var nameWidth int
+		var nameDim layout.Dimensions
 		isEditing := m.editing == marker && mode == modeMEdit
 		nameOp := makeMacro(gtx.Ops, func() {
-			// TODO: Fix name width calculation
+			var renderable renderable
 			if isEditing {
-				ed := material.Editor(th.Theme, r, "")
-				ed.Layout(gtx)
+				renderable = material.Editor(th.Theme, r, "")
 				gtx.Execute(key.FocusCmd{Tag: r})
-				nameWidth = len(ed.Editor.Text()) * int(ed.TextSize)
 			} else {
 				name := truncName(marker.name, mrkSz.Lbl.MaxGlyphs)
-				lblName := material.Body2(th.Theme, name)
-				lblName.Layout(gtx)
-				nameWidth = len(marker.name) * int(lblName.TextSize)
-				nameWidth = clamp(mrkSz.Lbl.MinW, nameWidth, mrkSz.Lbl.MaxW)
+				renderable = material.Body2(th.Theme, name)
 			}
+			inset := unit.Dp(mrkSz.Lbl.Margin)
+			gtx.Constraints.Min = image.Point{}
+			nameDim = layout.UniformInset(inset).Layout(gtx, renderable.Layout)
 		})
 		curSamples := a.getSamplesFromPCM(marker.pcm)
 		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)
-		if x+nameWidth+mrkSz.Lbl.InvisPad+mrkSz.Lbl.Margin >= prevLblX && prevLblX != maxX {
+		if x+nameDim.Size.X+mrkSz.Lbl.InvisPad >= prevLblX && prevLblX != maxX {
 			yOffset += mrkSz.Lbl.H + mrkSz.Lbl.InvisPad
 			colDeviation += th.Palette.Editor.MarkerDev
 		} else {
@@ -239,7 +242,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mo
 					height:       soundWaveH,
 					yOffset:      yOffset,
 					nameOp:       nameOp,
-					nameWidth:    nameWidth,
+					nameDim:      nameDim,
 					colDeviation: uint8(colDeviation),
 				},
 			)
@@ -255,7 +258,7 @@ type markerProps struct {
 	height       int
 	yOffset      int
 	nameOp       op.CallOp
-	nameWidth    int
+	nameDim      layout.Dimensions
 	colDeviation uint8
 }
 
@@ -325,9 +328,10 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 	// Label
 	lblOffset := prcToPx(poleH, mrkSz.Lbl.OffsetY)
 	y = y + mProps.yOffset + poleH - lblOffset
-	lblW := mProps.nameWidth + mrkSz.Lbl.Margin
+	lblW := mProps.nameDim.Size.X + mrkSz.Lbl.Margin
 	lblW = max(mrkSz.Lbl.MinW, lblW)
-	lblArea := image.Rect(0, y, lblW, y+mrkSz.Lbl.H)
+	lblH := max(mrkSz.Lbl.H, mProps.nameDim.Size.Y)
+	lblArea := image.Rect(0, y, lblW, y+lblH)
 	ColorBoxR(gtx, lblArea, col, mrkSz.Lbl.CRound)
 	if mProps.i9n.label {
 		registerTag(gtx, &mProps.tags.label, lblArea)

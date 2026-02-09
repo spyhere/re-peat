@@ -5,7 +5,7 @@ var markers = markersSizing{
 		MinW:      30,
 		MaxW:      150,
 		H:         50,
-		Margin:    10,
+		Margin:    4,
 		OffsetY:   "18%",
 		IconW:     35,
 		InvisPad:  5,
