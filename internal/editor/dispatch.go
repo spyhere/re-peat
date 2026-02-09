@@ -1,11 +1,14 @@
 package editor
 
 import (
+	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 )
 
 func (ed *Editor) dispatch(gtx layout.Context) {
+	ed.dispatchKeyEvents(gtx)
+
 	ed.dispatchMLifeEvent(gtx)
 	ed.dispatchSoundWaveEvent(gtx)
 	ed.dispatchNoneEvent(gtx)
@@ -14,6 +17,23 @@ func (ed *Editor) dispatch(gtx layout.Context) {
 	ed.dispatchMarkerEvent(gtx)
 
 	ed.dispatchRenamerEvent(gtx)
+}
+
+func (ed *Editor) dispatchKeyEvents(gtx layout.Context) {
+	handleKeyEvents(gtx, ed.handleKeyEvents,
+		key.Filter{
+			Name: key.NameSpace,
+		},
+		key.Filter{
+			Name: key.NameEscape,
+		},
+		key.Filter{
+			Name: key.NameLeftArrow,
+		},
+		key.Filter{
+			Name: key.NameRightArrow,
+		},
+	)
 }
 
 func (ed *Editor) dispatchMLifeEvent(gtx layout.Context) {

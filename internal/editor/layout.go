@@ -10,7 +10,6 @@ import (
 
 func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	ed.dispatch(gtx)
-	ed.handleKey(gtx)
 	ed.updateDifferedState()
 
 	backgroundComp(gtx, ed.th.Palette.Editor.Bg)

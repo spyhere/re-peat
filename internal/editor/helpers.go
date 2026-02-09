@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"gioui.org/io/event"
+	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -114,6 +115,20 @@ func handlePointerEvents(gtx layout.Context, tag event.Tag, pKind pointer.Kind, 
 			break
 		}
 		e, ok := evt.(pointer.Event)
+		if !ok {
+			continue
+		}
+		cb(e)
+	}
+}
+
+func handleKeyEvents(gtx layout.Context, cb func(e key.Event), filters ...event.Filter) {
+	for {
+		evt, ok := gtx.Event(filters...)
+		if !ok {
+			break
+		}
+		e, ok := evt.(key.Event)
 		if !ok {
 			continue
 		}
