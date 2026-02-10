@@ -30,9 +30,10 @@ type markerTags struct {
 	label *struct{}
 }
 type mInteraction struct {
-	flag  bool
-	pole  bool
-	label bool
+	flag    bool
+	pole    bool
+	label   bool
+	hovered bool
 }
 
 func (m *markers) newMarker(pcm int64) {

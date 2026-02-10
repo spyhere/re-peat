@@ -157,7 +157,7 @@ func strlen(input string) int {
 
 // Since non-lating letters are taking more then 1 byte `strlen` and manual idx in range is required
 func truncName(name string, limit int) string {
-	if strlen(name) < limit {
+	if limit == 0 || strlen(name) < limit {
 		return name
 	}
 	var newName strings.Builder

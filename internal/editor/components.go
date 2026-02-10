@@ -211,13 +211,18 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mo
 		// TODO: Implement proper culling
 		var nameDim layout.Dimensions
 		isEditing := m.editing == marker && mode == modeMEdit
+		i9n := getMI9n(marker)
 		nameOp := makeMacro(gtx.Ops, func() {
 			var renderable renderable
 			if isEditing {
 				renderable = material.Editor(th.Theme, r, "")
 				gtx.Execute(key.FocusCmd{Tag: r})
 			} else {
-				name := truncName(marker.name, mrkSz.Lbl.MaxGlyphs)
+				var nameLimit int
+				if !i9n.hovered {
+					nameLimit = mrkSz.Lbl.MaxGlyphs
+				}
+				name := truncName(marker.name, nameLimit)
 				renderable = material.Body2(th.Theme, name)
 			}
 			inset := unit.Dp(mrkSz.Lbl.Margin)
@@ -238,7 +243,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mo
 				markerProps{
 					isEditing:    isEditing,
 					tags:         marker.tags,
-					i9n:          getMI9n(marker),
+					i9n:          i9n,
 					height:       soundWaveH,
 					yOffset:      yOffset,
 					nameOp:       nameOp,

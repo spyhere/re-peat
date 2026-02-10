@@ -73,7 +73,6 @@ func (ed *Editor) transition(p pointerEvent) {
 			return
 		}
 		ed.setCursor(pointer.CursorText)
-		ed.markers.startHover(p.Target.Marker)
 		ed.mode = modeMEditIntent
 	}
 }

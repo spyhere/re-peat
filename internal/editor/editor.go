@@ -213,9 +213,10 @@ func (ed *Editor) getMI9n(m *marker) mInteraction {
 	hoveringOverThis := isHovering && ed.markers.hovering == m
 	isDragging := ed.mode == modeMDrag
 	return mInteraction{
-		flag:  ed.mode == modeMLife || ed.mode == modeMDeleteIntent || ed.mode == modeMCreateIntent,
-		pole:  (!isHovering || hoveringOverThis) && !isDragging,
-		label: !isDragging,
+		flag:    ed.mode == modeMLife || ed.mode == modeMDeleteIntent || ed.mode == modeMCreateIntent,
+		pole:    (!isHovering || hoveringOverThis) && !isDragging,
+		label:   !isDragging,
+		hovered: hoveringOverThis,
 	}
 }
 
