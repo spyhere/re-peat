@@ -16,7 +16,7 @@ func (ed *Editor) dispatch(gtx layout.Context) {
 	ed.dispatchMCreateButtonEvent(gtx)
 	ed.dispatchMarkerEvent(gtx)
 
-	ed.dispatchRenamerEvent(gtx)
+	ed.dispatchMEditorEvent(gtx)
 }
 
 func (ed *Editor) dispatchKeyEvents(gtx layout.Context) {
@@ -147,9 +147,9 @@ func (ed *Editor) dispatchMCreateButtonEvent(gtx layout.Context) {
 	)
 }
 
-func (ed *Editor) dispatchRenamerEvent(gtx layout.Context) {
+func (ed *Editor) dispatchMEditorEvent(gtx layout.Context) {
 	for {
-		we, ok := ed.renamer.Update(gtx)
+		we, ok := ed.mEditor.Update(gtx)
 		if !ok {
 			break
 		}

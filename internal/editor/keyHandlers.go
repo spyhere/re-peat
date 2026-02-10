@@ -24,7 +24,7 @@ func (ed *Editor) cancelEdit() {
 		return
 	}
 	ed.markers.stopEdit()
-	ed.renamer.SetText("")
+	ed.mEditor.SetText("")
 	ed.mode = modeIdle
 }
 
@@ -43,9 +43,9 @@ func (ed *Editor) collapseRenamerSelection() {
 	if !ed.markers.isEditing() {
 		return
 	}
-	start, end := ed.renamer.Selection()
+	start, end := ed.mEditor.Selection()
 	if start != end {
-		ed.renamer.SetCaret(start, start)
+		ed.mEditor.SetCaret(start, start)
 	}
 }
 

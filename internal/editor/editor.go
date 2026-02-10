@@ -36,7 +36,7 @@ func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *
 		playhead:    newPlayhead(playheadInitDur),
 		cache:       newCache(),
 		markers:     newMarkers(),
-		renamer:     newRenamer(),
+		mEditor:     newMEditor(),
 		scroll:      newScroll(),
 		th:          th,
 		tags:        newTags(),
@@ -65,7 +65,7 @@ type Editor struct {
 	monoSamples []float32
 	cache       cache
 	markers     *markers
-	renamer     *widget.Editor
+	mEditor     *widget.Editor
 	p           *player.Player
 	waveM       int // wave margin
 	tags        *tags
@@ -179,7 +179,7 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 func (ed *Editor) confirmEdit(newName string) {
 	ed.markers.editing.name = newName
 	ed.markers.stopEdit()
-	ed.renamer.SetText("")
+	ed.mEditor.SetText("")
 	ed.mode = modeIdle
 }
 

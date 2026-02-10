@@ -131,8 +131,8 @@ func (ed *Editor) handleMEditIntent(p pointerEvent) {
 	case pointer.Press:
 		ed.mode = modeMEdit
 		m := p.Target.Marker
-		ed.renamer.SetText(m.name)
-		ed.renamer.SetCaret(len(m.name), 0)
+		ed.mEditor.SetText(m.name)
+		ed.mEditor.SetCaret(len(m.name), 0)
 		ed.markers.startEdit(m)
 	}
 	ed.transition(p)

@@ -30,7 +30,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 		}
 		ed.listenToPlayerUpdates()
 	}
-	markersComp(gtx, ed.th, ed.renamer, ed.mode, ed.waveM, ed.scroll, ed.audio, ed.markers, ed.getMI9n)
+	markersComp(gtx, ed.th, ed.mEditor, ed.mode, ed.waveM, ed.scroll, ed.audio, ed.markers, ed.getMI9n)
 	offsetBy(gtx, image.Pt(0, ed.waveM+prcToPx(ed.waveM, ed.th.Sizing.Editor.Grid.MargT)), func() {
 		secondsRulerComp(gtx, ed.th, ed.audio, ed.scroll)
 	})

@@ -5,7 +5,7 @@ import (
 	"gioui.org/widget"
 )
 
-func newRenamer() *widget.Editor {
+func newMEditor() *widget.Editor {
 	e := &widget.Editor{}
 	e.MaxLen = 30
 	e.SingleLine = true

@@ -201,7 +201,7 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, getMI9n func(*marker) mInteraction) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, getMI9n func(*marker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -215,8 +215,8 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mo
 		nameOp := makeMacro(gtx.Ops, func() {
 			var renderable renderable
 			if isEditing {
-				renderable = material.Editor(th.Theme, r, "")
-				gtx.Execute(key.FocusCmd{Tag: r})
+				renderable = material.Editor(th.Theme, mE, "")
+				gtx.Execute(key.FocusCmd{Tag: mE})
 			} else {
 				var nameLimit int
 				if !i9n.hovered {
