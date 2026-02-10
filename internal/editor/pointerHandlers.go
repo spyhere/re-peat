@@ -38,35 +38,42 @@ func (ed *Editor) transition(p pointerEvent) {
 		}
 		ed.setCursor(pointer.CursorDefault)
 		ed.mode = modeIdle
+		ed.markers.stopHover()
 	case hitSoundWave:
 		if isDraggingMarker {
 			return
 		}
 		ed.setCursor(pointer.CursorCrosshair)
 		ed.mode = modeHitWave
+		ed.markers.stopHover()
 	case hitMLifeArea:
 		if isDraggingMarker {
 			return
 		}
 		ed.setCursor(pointer.CursorDefault)
 		ed.mode = modeMLife
+		ed.markers.stopHover()
 	case hitMCreateArea:
 		ed.setCursor(pointer.CursorPointer)
 		ed.mode = modeMCreateIntent
+		ed.markers.stopHover()
 	case hitMDeleteArea:
 		ed.setCursor(pointer.CursorPointer)
 		ed.mode = modeMDeleteIntent
+		ed.markers.startHover(p.Target.Marker)
 	case hitM:
 		if isDraggingMarker {
 			return
 		}
 		ed.setCursor(pointer.CursorGrab)
+		ed.markers.startHover(p.Target.Marker)
 		ed.mode = modeMHit
 	case hitMName:
 		if isDraggingMarker {
 			return
 		}
 		ed.setCursor(pointer.CursorText)
+		ed.markers.startHover(p.Target.Marker)
 		ed.mode = modeMEditIntent
 	}
 }

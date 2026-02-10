@@ -208,11 +208,14 @@ func (ed *Editor) isCreateButtonVisible() bool {
 	return ed.mode == modeMLife || ed.mode == modeMCreateIntent || ed.mode == modeMDeleteIntent
 }
 
-func (ed *Editor) getMI9n() mInteraction {
+func (ed *Editor) getMI9n(m *marker) mInteraction {
+	isHovering := ed.markers.isHovering()
+	hoveringOverThis := isHovering && ed.markers.hovering == m
+	isDragging := ed.mode == modeMDrag
 	return mInteraction{
 		flag:  ed.mode == modeMLife || ed.mode == modeMDeleteIntent || ed.mode == modeMCreateIntent,
-		pole:  ed.mode != modeMDrag,
-		label: ed.mode != modeMDrag,
+		pole:  (!isHovering || hoveringOverThis) && !isDragging,
+		label: !isDragging,
 	}
 }
 

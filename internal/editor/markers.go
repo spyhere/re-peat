@@ -13,8 +13,9 @@ func newMarkers() *markers {
 }
 
 type markers struct {
-	arr     []*marker
-	editing *marker
+	arr      []*marker
+	editing  *marker
+	hovering *marker
 }
 
 type marker struct {
@@ -84,4 +85,18 @@ func (m *markers) stopEdit() {
 
 func (m *markers) isEditing() bool {
 	return m.editing != nil
+}
+
+func (m *markers) startHover(curMarker *marker) {
+	if m.hovering == nil {
+		m.hovering = curMarker
+	}
+}
+
+func (m *markers) stopHover() {
+	m.hovering = nil
+}
+
+func (m *markers) isHovering() bool {
+	return m.hovering != nil
 }

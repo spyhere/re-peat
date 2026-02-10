@@ -201,7 +201,7 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, mI9n mInteraction) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, getMI9n func(*marker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -238,7 +238,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, r *widget.Editor, mo
 				markerProps{
 					isEditing:    isEditing,
 					tags:         marker.tags,
-					i9n:          mI9n,
+					i9n:          getMI9n(marker),
 					height:       soundWaveH,
 					yOffset:      yOffset,
 					nameOp:       nameOp,
