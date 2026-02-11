@@ -166,13 +166,15 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, sc
 		}
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
 		if curSec%intervalSec == 0 {
-			// TODO: You have to have proper text and/or widget dimension tool
-			secLabel := fmt.Sprintf("%d", curSec)
-			lbl := material.Body2(th.Theme, secLabel)
-			secSizeX := int(lbl.TextSize) * len(secLabel)
-			off := op.Offset(image.Pt(x-secSizeX/2, -30)).Push(gtx.Ops)
-			lbl.Layout(gtx)
-			off.Pop()
+			var secDim layout.Dimensions
+			secLayout := makeMacro(gtx.Ops, func() {
+				thatGtx := gtx
+				thatGtx.Constraints.Min = image.Point{}
+				secDim = material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(thatGtx)
+			})
+			offsetBy(gtx, image.Pt(x-secDim.Size.X/2, -secDim.Size.Y), func() {
+				secLayout.Add(gtx.Ops)
+			})
 		}
 		ColorBox(gtx, image.Rect(x, 0, x+th.Sizing.Editor.Grid.TickW, tickH), tickC)
 		curSec++
