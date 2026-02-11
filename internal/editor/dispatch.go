@@ -153,6 +153,6 @@ func (ed *Editor) dispatchMEditorEvent(gtx layout.Context) {
 		if !ok {
 			break
 		}
-		ed.handleRenamer(we)
+		ed.handleMEditor(we)
 	}
 }

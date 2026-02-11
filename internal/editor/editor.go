@@ -183,7 +183,7 @@ func (ed *Editor) confirmEdit(newName string) {
 	ed.mode = modeIdle
 }
 
-func (ed *Editor) handleRenamer(we widget.EditorEvent) {
+func (ed *Editor) handleMEditor(we widget.EditorEvent) {
 	if e, ok := we.(widget.SubmitEvent); ok {
 		if e.Text == "" {
 			return
