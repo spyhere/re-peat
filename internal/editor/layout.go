@@ -35,7 +35,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 		secondsRulerComp(gtx, ed.th, ed.audio, ed.scroll)
 	})
 	if ed.markers.isEditing() {
-		editingMarkerComp(gtx, ed.th, ed.markers.overlayParams)
+		editingMarkerComp(gtx, ed.th, &ed.tags.backdrop, ed.markers.overlayParams)
 	}
 	if ed.isCreateButtonVisible() {
 		mCreateButtonComp(gtx, ed.th, &ed.tags.mCreateButton, ed.waveM, pDim)

@@ -14,6 +14,7 @@ const (
 	hitMDeleteArea
 	hitM
 	hitMName
+	hitBackdrop
 )
 
 type hitTarget struct {
@@ -27,10 +28,8 @@ type pointerEvent struct {
 }
 
 func (ed *Editor) transition(p pointerEvent) {
-	if ed.mode == modeMEdit {
-		return
-	}
 	isDraggingMarker := ed.mode == modeMDrag
+	isEditingMarker := ed.mode == modeMEdit
 	switch p.Target.Kind {
 	case hitNone:
 		if isDraggingMarker {
@@ -69,11 +68,13 @@ func (ed *Editor) transition(p pointerEvent) {
 		ed.markers.startHover(p.Target.Marker)
 		ed.mode = modeMHit
 	case hitMName:
-		if isDraggingMarker {
+		if isDraggingMarker || isEditingMarker {
 			return
 		}
 		ed.setCursor(pointer.CursorText)
 		ed.mode = modeMEditIntent
+	case hitBackdrop:
+		ed.setCursor(pointer.CursorDefault)
 	}
 }
 
@@ -103,6 +104,7 @@ func (ed *Editor) handleMCreateIntent(p pointerEvent) {
 		ed.markers.newMarker(ed.playhead.bytes)
 		ed.setCursor(pointer.CursorText)
 		ed.mode = modeMEdit
+		return
 	}
 	ed.transition(p)
 }
@@ -139,6 +141,13 @@ func (ed *Editor) handleMEditIntent(p pointerEvent) {
 }
 
 func (ed *Editor) handleMEdit(p pointerEvent) {
+	switch p.Event.Kind {
+	case pointer.Press:
+		if p.Target.Kind == hitBackdrop {
+			ed.mode = modeIdle
+			ed.cancelEdit()
+		}
+	}
 	ed.transition(p)
 }
 

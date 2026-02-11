@@ -5,6 +5,7 @@ type tags struct {
 	soundWave     *struct{}
 	noneArea      *struct{}
 	mCreateButton *struct{}
+	backdrop      *struct{}
 }
 
 func newTags() *tags {
@@ -13,5 +14,6 @@ func newTags() *tags {
 		soundWave:     &struct{}{},
 		noneArea:      &struct{}{},
 		mCreateButton: &struct{}{},
+		backdrop:      &struct{}{},
 	}
 }

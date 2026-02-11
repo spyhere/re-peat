@@ -17,6 +17,7 @@ func (ed *Editor) dispatch(gtx layout.Context) {
 	ed.dispatchMCreateButtonEvent(gtx)
 	ed.dispatchMarkerEvent(gtx)
 
+	ed.dispatchBackdropEvent(gtx)
 }
 
 func (ed *Editor) dispatchKeyEvents(gtx layout.Context) {
@@ -155,4 +156,20 @@ func (ed *Editor) dispatchMEditorEvent(gtx layout.Context) {
 		}
 		ed.handleMEditor(we)
 	}
+}
+
+func (ed *Editor) dispatchBackdropEvent(gtx layout.Context) {
+	handlePointerEvents(
+		gtx,
+		&ed.tags.backdrop,
+		pointer.Enter|pointer.Move|pointer.Press,
+		func(e pointer.Event) {
+			ed.handlePointer(pointerEvent{
+				Event: e,
+				Target: hitTarget{
+					Kind: hitBackdrop,
+				},
+			})
+		},
+	)
 }
