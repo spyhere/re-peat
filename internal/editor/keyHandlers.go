@@ -20,8 +20,11 @@ func (ed *Editor) switchPlayerState() {
 }
 
 func (ed *Editor) cancelEdit() {
-	if !ed.markers.isEditing() || ed.markers.editing.name == "" {
+	if !ed.markers.isEditing() {
 		return
+	}
+	if ed.markers.editing.name == "" {
+		ed.markers.editing.markDead()
 	}
 	ed.markers.stopEdit()
 	ed.mEditor.SetText("")
