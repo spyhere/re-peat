@@ -3,7 +3,7 @@ package theme
 var repeatSizing = sizing{
 	Editor: editorSizing{
 		PlayheadW:    4,
-		CreateButtMT: "90%",
+		CreateButtMT: "85%",
 		WaveM:        "32%",
 		Grid: gridSizing{
 			MargT:           "85%",
