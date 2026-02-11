@@ -286,12 +286,12 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 	poleH := poleYPad*2 + mProps.height
 	y := -poleYPad
 	ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+mProps.yOffset+poleH), col)
+	poleActivePad := th.Sizing.Editor.Markers.Pole.ActiveWPad
 	if mProps.i9n.pole {
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
-		activePadding := th.Sizing.Editor.Markers.Pole.ActiveWPad
 		activeArea := image.Rect(0, 0, mrkSz.Pole.W, poleH-poleYPad)
-		activeArea.Min.X -= activePadding
-		activeArea.Max.X += activePadding
+		activeArea.Min.X -= poleActivePad
+		activeArea.Max.X += poleActivePad
 		registerTag(gtx, &mProps.tags.pole, activeArea)
 		passOp.Pop()
 	}
@@ -346,6 +346,7 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 	lblArea := image.Rect(0, y, lblW, y+lblH)
 	ColorBoxR(gtx, lblArea, col, mrkSz.Lbl.CRound)
 	if mProps.i9n.label {
+		lblArea.Min.X -= mrkSz.Pole.W + poleActivePad
 		registerTag(gtx, &mProps.tags.label, lblArea)
 	}
 	halfMargin := mrkSz.Lbl.Margin / 2
