@@ -59,7 +59,7 @@ const (
 
 type Editor struct {
 	mode        interactionMode
-	cursor      pointer.Cursor // TODO: Should it be stored or derived?
+	cursor      pointer.Cursor
 	playhead    *playhead
 	audio       audio
 	monoSamples []float32
