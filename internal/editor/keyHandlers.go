@@ -60,6 +60,7 @@ func (ed *Editor) handleKeyEvents(e key.Event) {
 		case key.NameEscape:
 			ed.cancelEdit()
 		case key.NameLeftArrow:
+			ed.collapseRenamerSelection()
 			ed.nudgePlayhead(false)
 		case key.NameRightArrow:
 			ed.collapseRenamerSelection()
