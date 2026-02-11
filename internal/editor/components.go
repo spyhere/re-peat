@@ -138,7 +138,7 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
-func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scroll scroll, waveM int) {
+func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scroll scroll, waveM int) {
 	pxPerSec := float32(audio.sampleRate) / scroll.samplesPerPx
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
 	var intervalSec int

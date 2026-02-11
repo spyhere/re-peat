@@ -31,7 +31,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 		ed.listenToPlayerUpdates()
 	}
 	markersComp(gtx, ed.th, ed.mEditor, ed.mode, ed.waveM, ed.scroll, ed.audio, ed.markers, ed.getMI9n)
-	secondsRulerComp(gtx, ed.th, ed.audio, ed.scroll, ed.waveM)
+	secondsGridComp(gtx, ed.th, ed.audio, ed.scroll, ed.waveM)
 	if ed.markers.isEditing() {
 		editingMarkerComp(gtx, ed.th, &ed.tags.backdrop, ed.markers.overlayParams)
 	}
