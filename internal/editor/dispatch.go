@@ -7,6 +7,7 @@ import (
 )
 
 func (ed *Editor) dispatch(gtx layout.Context) {
+	ed.dispatchMEditorEvent(gtx)
 	ed.dispatchKeyEvents(gtx)
 
 	ed.dispatchMLifeEvent(gtx)
@@ -16,7 +17,6 @@ func (ed *Editor) dispatch(gtx layout.Context) {
 	ed.dispatchMCreateButtonEvent(gtx)
 	ed.dispatchMarkerEvent(gtx)
 
-	ed.dispatchMEditorEvent(gtx)
 }
 
 func (ed *Editor) dispatchKeyEvents(gtx layout.Context) {
