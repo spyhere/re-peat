@@ -51,7 +51,7 @@ func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag,
 		return
 	}
 
-	y := waveMT - prcToPx(waveMT, th.Sizing.Editor.PlayheadButtMB)
+	y := prcToPx(waveMT, th.Sizing.Editor.CreateButtMT)
 	lblW := mrkSz.Lbl.MinW + iconSize
 	labelArea := image.Rect(x, y, x+lblW, y+mrkSz.Lbl.H)
 	ColorBoxR(gtx, labelArea, c, mrkSz.Lbl.CRound)
