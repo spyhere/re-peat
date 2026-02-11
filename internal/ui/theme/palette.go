@@ -3,6 +3,7 @@ package theme
 import "image/color"
 
 var repeatPalette = palette{
+	Backdrop: argb(0xdd000000),
 	Editor: editorPalette{
 		Bg:        tan,
 		SoundWave: blackRF,
@@ -30,7 +31,8 @@ var (
 )
 
 type palette struct {
-	Editor editorPalette
+	Backdrop color.NRGBA
+	Editor   editorPalette
 }
 
 type editorPalette struct {

@@ -362,7 +362,7 @@ func editingMarkerComp(gtx layout.Context, th *theme.RepeatTheme, backdropTag ev
 	maxX := gtx.Constraints.Max.X
 	maxY := gtx.Constraints.Max.Y
 	backdropArea := image.Rect(0, 0, maxX, maxY)
-	ColorBox(gtx, backdropArea, color.NRGBA{A: 0xdd})
+	ColorBox(gtx, backdropArea, th.Palette.Backdrop)
 	registerTag(gtx, backdropTag, backdropArea)
 	offsetBy(gtx, image.Pt(mProps.x, mProps.y), func() {
 		markerComp(gtx, th, mProps)
