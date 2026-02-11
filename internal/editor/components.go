@@ -238,25 +238,32 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 			yOffset = 0
 			colDeviation = 0
 		}
-		offsetBy(gtx, image.Pt(x, wavePadding), func() {
-			markerComp(gtx, th,
-				markerProps{
-					isEditing:    isEditing,
-					tags:         marker.tags,
-					i9n:          i9n,
-					height:       soundWaveH,
-					yOffset:      yOffset,
-					nameOp:       nameOp,
-					nameDim:      nameDim,
-					colDeviation: uint8(colDeviation),
-				},
-			)
-		})
+		props := markerProps{
+			x:            x,
+			y:            wavePadding,
+			isEditing:    isEditing,
+			tags:         marker.tags,
+			i9n:          i9n,
+			height:       soundWaveH,
+			yOffset:      yOffset,
+			nameOp:       nameOp,
+			nameDim:      nameDim,
+			colDeviation: uint8(colDeviation),
+		}
+		if isEditing {
+			m.overlayParams = props
+		} else {
+			offsetBy(gtx, image.Pt(x, wavePadding), func() {
+				markerComp(gtx, th, props)
+			})
+		}
 		prevLblX = x
 	}
 }
 
 type markerProps struct {
+	x            int
+	y            int
 	isEditing    bool
 	tags         *markerTags
 	i9n          mInteraction
@@ -346,4 +353,13 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 		mProps.nameOp.Add(gtx.Ops)
 	})
 	return layout.Dimensions{Size: image.Pt(lblW, poleH)}
+}
+
+func editingMarkerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) {
+	maxX := gtx.Constraints.Max.X
+	maxY := gtx.Constraints.Max.Y
+	ColorBox(gtx, image.Rect(0, 0, maxX, maxY), color.NRGBA{A: 0xdd})
+	offsetBy(gtx, image.Pt(mProps.x, mProps.y), func() {
+		markerComp(gtx, th, mProps)
+	})
 }

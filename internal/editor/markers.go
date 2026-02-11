@@ -13,9 +13,10 @@ func newMarkers() *markers {
 }
 
 type markers struct {
-	arr      []*marker
-	editing  *marker
-	hovering *marker
+	arr           []*marker
+	editing       *marker
+	hovering      *marker
+	overlayParams markerProps
 }
 
 type marker struct {
@@ -41,7 +42,6 @@ func (m *markers) newMarker(pcm int64) {
 		// TODO: display error
 		return
 	}
-	// TODO: Remove placeholder name
 	newM := &marker{
 		pcm: pcm,
 		tags: &markerTags{

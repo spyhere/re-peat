@@ -34,6 +34,9 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	offsetBy(gtx, image.Pt(0, ed.waveM+prcToPx(ed.waveM, ed.th.Sizing.Editor.Grid.MargT)), func() {
 		secondsRulerComp(gtx, ed.th, ed.audio, ed.scroll)
 	})
+	if ed.markers.isEditing() {
+		editingMarkerComp(gtx, ed.th, ed.markers.overlayParams)
+	}
 	if ed.isCreateButtonVisible() {
 		mCreateButtonComp(gtx, ed.th, &ed.tags.mCreateButton, ed.waveM, pDim)
 	}
