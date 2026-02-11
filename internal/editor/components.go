@@ -138,7 +138,7 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
-func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scroll scroll) {
+func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scroll scroll, waveM int) {
 	pxPerSec := float32(audio.sampleRate) / scroll.samplesPerPx
 	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
 	var intervalSec int
@@ -165,6 +165,7 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, sc
 			tickC = gridPalette.Tick5s
 		}
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
+		y := prcToPx(waveM, th.Sizing.Editor.Grid.MargT)
 		if curSec%intervalSec == 0 {
 			var secDim layout.Dimensions
 			secLayout := makeMacro(gtx.Ops, func() {
@@ -172,11 +173,11 @@ func secondsRulerComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, sc
 				thatGtx.Constraints.Min = image.Point{}
 				secDim = material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(thatGtx)
 			})
-			offsetBy(gtx, image.Pt(x-secDim.Size.X/2, -secDim.Size.Y), func() {
+			offsetBy(gtx, image.Pt(x-secDim.Size.X/2, y-secDim.Size.Y), func() {
 				secLayout.Add(gtx.Ops)
 			})
 		}
-		ColorBox(gtx, image.Rect(x, 0, x+th.Sizing.Editor.Grid.TickW, tickH), tickC)
+		ColorBox(gtx, image.Rect(x, y, x+th.Sizing.Editor.Grid.TickW, y+tickH), tickC)
 		curSec++
 	}
 }

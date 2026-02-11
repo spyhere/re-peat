@@ -6,7 +6,7 @@ var repeatSizing = sizing{
 		CreateButtMT: "90%",
 		WaveM:        "32%",
 		Grid: gridSizing{
-			MargT:           "-15%",
+			MargT:           "85%",
 			TickW:           2,
 			TickH:           10,
 			Tick5s:          20,
