@@ -7,7 +7,7 @@ var markers = markersSizing{
 		H:         50,
 		Margin:    4,
 		OffsetY:   "18%",
-		IconW:     35,
+		IconW:     32,
 		InvisPad:  5,
 		MaxGlyphs: 12,
 		CRound:    CornerR(10, 0, 0, 10),
