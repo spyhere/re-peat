@@ -4,6 +4,9 @@ import "image/color"
 
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
+	GrButtons: grButtonsPalette{
+		Outline: rgb(0x79747E),
+	},
 	Editor: editorPalette{
 		Bg:        tan,
 		SoundWave: blackRF,
@@ -31,8 +34,13 @@ var (
 )
 
 type palette struct {
-	Backdrop color.NRGBA
-	Editor   editorPalette
+	Backdrop  color.NRGBA
+	GrButtons grButtonsPalette
+	Editor    editorPalette
+}
+
+type grButtonsPalette struct {
+	Outline color.NRGBA
 }
 
 type editorPalette struct {
