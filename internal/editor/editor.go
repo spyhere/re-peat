@@ -9,6 +9,7 @@ import (
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/widget"
+	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 	"github.com/tosone/minimp3"
@@ -77,7 +78,7 @@ type Editor struct {
 func (ed *Editor) getRenderableWaves() [][2]float32 {
 	samplesPerPx := ed.scroll.samplesPerPx
 	visibleSamples := int(samplesPerPx * float32(ed.size.X))
-	leftB := clamp(0, ed.scroll.leftB, ed.audio.pcmMonoLen-visibleSamples)
+	leftB := common.Clamp(0, ed.scroll.leftB, ed.audio.pcmMonoLen-visibleSamples)
 	rightB := leftB + visibleSamples
 	if leftB == ed.scroll.leftB && rightB == ed.scroll.rightB {
 		return ed.cache.curSlice
@@ -100,7 +101,7 @@ func (ed *Editor) SetSize(size image.Point) {
 	size.X += waveEdgePadding
 	ed.size = size
 	if !prev.Eq(ed.size) {
-		ed.waveM = prcToPx(size.Y, ed.th.Sizing.Editor.WaveM)
+		ed.waveM = common.PrcToPx(size.Y, ed.th.Sizing.Editor.WaveM)
 		ed.cache.isPopulated = false
 	}
 }
@@ -165,11 +166,11 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	// Zoom
 	oldSPP := ed.scroll.samplesPerPx
 	ed.scroll.samplesPerPx *= float32(math.Exp(float64(-scroll.Y * zoomRate)))
-	ed.scroll.samplesPerPx = clamp(float32(ed.scroll.minSamplesPerPx), ed.scroll.samplesPerPx, float32(ed.scroll.maxSamplesPerPx))
+	ed.scroll.samplesPerPx = common.Clamp(float32(ed.scroll.minSamplesPerPx), ed.scroll.samplesPerPx, float32(ed.scroll.maxSamplesPerPx))
 	ed.scroll.leftB += int(pos.X * (oldSPP - ed.scroll.samplesPerPx))
 	zoomFactor := ed.scroll.maxSamplesPerPx / ed.scroll.samplesPerPx
 	playheadUpdate := time.Duration(float32(playheadInitDur) / zoomFactor)
-	ed.playhead.update = clamp(playheadMinDur, playheadUpdate, playheadInitDur)
+	ed.playhead.update = common.Clamp(playheadMinDur, playheadUpdate, playheadInitDur)
 	// Pan
 	curSamplesPerPx := ed.scroll.samplesPerPx
 	panSamples := int(scroll.X * panRate * float32(curSamplesPerPx))

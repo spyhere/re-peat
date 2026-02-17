@@ -2,6 +2,7 @@ package editor
 
 import (
 	"gioui.org/io/pointer"
+	"github.com/spyhere/re-peat/internal/common"
 )
 
 type hitKind int
@@ -157,7 +158,7 @@ func (ed *Editor) handleDragMarker(p pointerEvent) {
 		dSamples := int(ed.scroll.samplesPerPx * p.Event.Position.X)
 		m := p.Target.Marker
 		m.pcm = ed.audio.getPcmFromSamples(ed.scroll.leftB + int(dSamples))
-		m.pcm = clamp(0, m.pcm, ed.audio.pcmLen)
+		m.pcm = common.Clamp(0, m.pcm, ed.audio.pcmLen)
 	case pointer.Release:
 		ed.mode = modeHitWave
 	}

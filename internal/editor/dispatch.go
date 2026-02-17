@@ -4,6 +4,7 @@ import (
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"github.com/spyhere/re-peat/internal/common"
 )
 
 func (ed *Editor) dispatch(gtx layout.Context) {
@@ -21,7 +22,7 @@ func (ed *Editor) dispatch(gtx layout.Context) {
 }
 
 func (ed *Editor) dispatchKeyEvents(gtx layout.Context) {
-	handleKeyEvents(gtx, ed.handleKeyEvents,
+	common.HandleKeyEvents(gtx, ed.handleKeyEvents,
 		key.Filter{
 			Name: key.NameSpace,
 		},
@@ -38,7 +39,7 @@ func (ed *Editor) dispatchKeyEvents(gtx layout.Context) {
 }
 
 func (ed *Editor) dispatchMLifeEvent(gtx layout.Context) {
-	handlePointerEvents(
+	common.HandlePointerEvents(
 		gtx,
 		&ed.tags.mLife,
 		pointer.Move,
@@ -54,7 +55,7 @@ func (ed *Editor) dispatchMLifeEvent(gtx layout.Context) {
 }
 
 func (ed *Editor) dispatchSoundWaveEvent(gtx layout.Context) {
-	handlePointerEvents(
+	common.HandlePointerEvents(
 		gtx,
 		&ed.tags.soundWave,
 		pointer.Enter|pointer.Press|pointer.Scroll|pointer.Move,
@@ -70,7 +71,7 @@ func (ed *Editor) dispatchSoundWaveEvent(gtx layout.Context) {
 }
 
 func (ed *Editor) dispatchNoneEvent(gtx layout.Context) {
-	handlePointerEvents(
+	common.HandlePointerEvents(
 		gtx,
 		&ed.tags.noneArea,
 		pointer.Enter|pointer.Press|pointer.Move,
@@ -87,7 +88,7 @@ func (ed *Editor) dispatchNoneEvent(gtx layout.Context) {
 
 func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 	for _, marker := range ed.markers.arr {
-		handlePointerEvents(
+		common.HandlePointerEvents(
 			gtx,
 			&marker.tags.flag,
 			pointer.Press|pointer.Move,
@@ -101,7 +102,7 @@ func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 				})
 			},
 		)
-		handlePointerEvents(
+		common.HandlePointerEvents(
 			gtx,
 			&marker.tags.pole,
 			pointer.Enter|pointer.Press|pointer.Move|pointer.Drag|pointer.Release,
@@ -115,7 +116,7 @@ func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 				})
 			},
 		)
-		handlePointerEvents(
+		common.HandlePointerEvents(
 			gtx,
 			&marker.tags.label,
 			pointer.Move|pointer.Press,
@@ -133,7 +134,7 @@ func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 }
 
 func (ed *Editor) dispatchMCreateButtonEvent(gtx layout.Context) {
-	handlePointerEvents(
+	common.HandlePointerEvents(
 		gtx,
 		&ed.tags.mCreateButton,
 		pointer.Move|pointer.Press,
@@ -159,7 +160,7 @@ func (ed *Editor) dispatchMEditorEvent(gtx layout.Context) {
 }
 
 func (ed *Editor) dispatchBackdropEvent(gtx layout.Context) {
-	handlePointerEvents(
+	common.HandlePointerEvents(
 		gtx,
 		&ed.tags.backdrop,
 		pointer.Enter|pointer.Move|pointer.Press,

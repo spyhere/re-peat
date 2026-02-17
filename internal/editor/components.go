@@ -17,6 +17,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -27,7 +28,10 @@ func offsetBy(gtx layout.Context, amount image.Point, w func()) {
 }
 
 func backgroundComp(gtx layout.Context, col color.NRGBA) {
-	ColorBox(gtx, image.Rectangle{Max: image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)}, col)
+	common.DrawBox(gtx, common.Box{
+		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
+		Color: col,
+	})
 }
 
 func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio, scroll scroll) layout.Dimensions {
@@ -37,7 +41,10 @@ func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, aud
 	if x < 0 || x > maxX {
 		return layout.Dimensions{Size: image.Pt(x, 0)}
 	}
-	ColorBox(gtx, image.Rect(x, 0, x+th.Sizing.Editor.PlayheadW, gtx.Constraints.Max.Y), th.Palette.Editor.Playhead)
+	common.DrawBox(gtx, common.Box{
+		Size:  image.Rect(x, 0, x+th.Sizing.Editor.PlayheadW, gtx.Constraints.Max.Y),
+		Color: th.Palette.Editor.Playhead,
+	})
 	return layout.Dimensions{Size: image.Pt(x, gtx.Constraints.Max.Y)}
 }
 
@@ -51,19 +58,23 @@ func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag,
 		return
 	}
 
-	y := prcToPx(waveMT, th.Sizing.Editor.CreateButtMT)
+	y := common.PrcToPx(waveMT, th.Sizing.Editor.CreateButtMT)
 	lblW := mrkSz.Lbl.MinW + iconSize
 	labelArea := image.Rect(x, y, x+lblW, y+mrkSz.Lbl.H)
-	ColorBoxR(gtx, labelArea, c, mrkSz.Lbl.CRound)
-	offsetBy(gtx, image.Pt(x+(lblW/2-iconSize/2), y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func() {
+	common.DrawBox(gtx, common.Box{
+		Size:  labelArea,
+		Color: c,
+		R:     mrkSz.Lbl.CRound,
+	})
+	common.OffsetBy(gtx, image.Pt(x+(lblW/2-iconSize/2), y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func() {
 		gtx.Constraints.Min.X = iconSize
 		micons.ContentAddCircle.Layout(gtx, th.Palette.Editor.SoundWave)
 	})
-	registerTag(gtx, tag, labelArea)
+	common.RegisterTag(gtx, tag, labelArea)
 }
 
 func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
-	yCenter = snap(yCenter)
+	yCenter = common.Snap(yCenter)
 	width := gtx.Constraints.Max.X + waveEdgePadding
 
 	var path clip.Path
@@ -79,14 +90,14 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
 		i0 := (sample0 / c.curLvl) - c.leftB
 		i1 := (sample1 / c.curLvl) - c.leftB
-		i1 = clamp(i0+1, i1, len(waves))
+		i1 = common.Clamp(i0+1, i1, len(waves))
 		if i0 == lastI0 && i1 == lastI1 {
 			continue
 		}
 		lastI0, lastI1 = i0, i1
 
 		_, high := reducePeaks(waves[i0:i1])
-		y := snap(yCenter - high*yCenter)
+		y := common.Snap(yCenter - high*yCenter)
 		x := float32(px)
 
 		if !started {
@@ -109,14 +120,14 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
 		i0 := (sample0 / c.curLvl) - c.leftB
 		i1 := (sample1 / c.curLvl) - c.leftB
-		i1 = clamp(i0+1, i1, len(waves))
+		i1 = common.Clamp(i0+1, i1, len(waves))
 		if i0 == lastI0 && i1 == lastI1 {
 			continue
 		}
 		lastI0, lastI1 = i0, i1
 
 		low, _ := reducePeaks(waves[i0:i1])
-		y := snap(yCenter - low*yCenter)
+		y := common.Snap(yCenter - low*yCenter)
 		x := float32(px)
 
 		if y < prevY {
@@ -165,39 +176,24 @@ func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scr
 			tickC = gridPalette.Tick5s
 		}
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
-		y := prcToPx(waveM, th.Sizing.Editor.Grid.MargT)
+		y := common.PrcToPx(waveM, th.Sizing.Editor.Grid.MargT)
 		if curSec%intervalSec == 0 {
 			var secDim layout.Dimensions
-			secLayout := makeMacro(gtx.Ops, func() {
+			secLayout := common.MakeMacro(gtx.Ops, func() {
 				thatGtx := gtx
 				thatGtx.Constraints.Min = image.Point{}
 				secDim = material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(thatGtx)
 			})
-			offsetBy(gtx, image.Pt(x-secDim.Size.X/2, y-secDim.Size.Y), func() {
+			common.OffsetBy(gtx, image.Pt(x-secDim.Size.X/2, y-secDim.Size.Y), func() {
 				secLayout.Add(gtx.Ops)
 			})
 		}
-		ColorBox(gtx, image.Rect(x, y, x+th.Sizing.Editor.Grid.TickW, y+tickH), tickC)
+		common.DrawBox(gtx, common.Box{
+			Size:  image.Rect(x, y, x+th.Sizing.Editor.Grid.TickW, y+tickH),
+			Color: tickC,
+		})
 		curSec++
 	}
-}
-
-func ColorBoxR(gtx layout.Context, size image.Rectangle, color color.NRGBA, r theme.CornerRadii) layout.Dimensions {
-	defer clip.RRect{Rect: size, SE: r.SE, SW: r.SW, NE: r.NE, NW: r.NW}.Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: color}.Add(gtx.Ops)
-	paint.PaintOp{}.Add(gtx.Ops)
-	return layout.Dimensions{Size: size.Size()}
-}
-
-func ColorBox(gtx layout.Context, size image.Rectangle, color color.NRGBA) layout.Dimensions {
-	defer clip.Rect(size).Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: color}.Add(gtx.Ops)
-	paint.PaintOp{}.Add(gtx.Ops)
-	return layout.Dimensions{Size: size.Size()}
-}
-
-func setCursor(gtx layout.Context, cursor pointer.Cursor) {
-	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
 type renderable interface {
@@ -215,7 +211,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 		var nameDim layout.Dimensions
 		isEditing := m.editing == marker && mode == modeMEdit
 		i9n := getMI9n(marker)
-		nameOp := makeMacro(gtx.Ops, func() {
+		nameOp := common.MakeMacro(gtx.Ops, func() {
 			var renderable renderable
 			if isEditing {
 				renderable = material.Editor(th.Theme, mE, "")
@@ -225,7 +221,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 				if !i9n.hovered {
 					nameLimit = mrkSz.Lbl.MaxGlyphs
 				}
-				name := truncName(marker.name, nameLimit)
+				name := common.TruncName(marker.name, nameLimit)
 				renderable = material.Body2(th.Theme, name)
 			}
 			inset := unit.Dp(mrkSz.Lbl.Margin)
@@ -285,17 +281,20 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 	col.B -= mProps.colDeviation
 	mrkSz := th.Sizing.Editor.Markers
 	// Pole
-	poleYPad := prcToPx(mProps.height, mrkSz.Pole.Pad)
+	poleYPad := common.PrcToPx(mProps.height, mrkSz.Pole.Pad)
 	poleH := poleYPad*2 + mProps.height
 	y := -poleYPad
-	ColorBox(gtx, image.Rect(0, y, mrkSz.Pole.W, y+mProps.yOffset+poleH), col)
+	common.DrawBox(gtx, common.Box{
+		Size:  image.Rect(0, y, mrkSz.Pole.W, y+mProps.yOffset+poleH),
+		Color: col,
+	})
 	poleActivePad := th.Sizing.Editor.Markers.Pole.ActiveWPad
 	if mProps.i9n.pole {
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
 		activeArea := image.Rect(0, 0, mrkSz.Pole.W, poleH-poleYPad)
 		activeArea.Min.X -= poleActivePad
 		activeArea.Max.X += poleActivePad
-		registerTag(gtx, &mProps.tags.pole, activeArea)
+		common.RegisterTag(gtx, &mProps.tags.pole, activeArea)
 		passOp.Pop()
 	}
 
@@ -337,23 +336,27 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 			micons.Delete.Layout(gtx, th.Palette.Editor.SoundWave)
 		})
 		flagArea := image.Rect(-int(flagHalfW), int(yF), int(flagHalfW), int(yF)+mrkSz.Pole.FlagH)
-		registerTag(gtx, &mProps.tags.flag, flagArea)
+		common.RegisterTag(gtx, &mProps.tags.flag, flagArea)
 	}
 
 	// Label
-	lblOffset := prcToPx(poleH, mrkSz.Lbl.OffsetY)
+	lblOffset := common.PrcToPx(poleH, mrkSz.Lbl.OffsetY)
 	y = y + mProps.yOffset + poleH - lblOffset
 	lblW := mProps.nameDim.Size.X + mrkSz.Lbl.Margin
 	lblW = max(mrkSz.Lbl.MinW, lblW)
 	lblH := max(mrkSz.Lbl.H, mProps.nameDim.Size.Y)
 	lblArea := image.Rect(0, y, lblW, y+lblH)
-	ColorBoxR(gtx, lblArea, col, mrkSz.Lbl.CRound)
+	common.DrawBox(gtx, common.Box{
+		Size:  lblArea,
+		Color: col,
+		R:     mrkSz.Lbl.CRound,
+	})
 	if mProps.i9n.label {
 		lblArea.Min.X -= mrkSz.Pole.W + poleActivePad
-		registerTag(gtx, &mProps.tags.label, lblArea)
+		common.RegisterTag(gtx, &mProps.tags.label, lblArea)
 	}
 	halfMargin := mrkSz.Lbl.Margin / 2
-	offsetBy(gtx, image.Pt(halfMargin, y+halfMargin), func() {
+	common.OffsetBy(gtx, image.Pt(halfMargin, y+halfMargin), func() {
 		mProps.nameOp.Add(gtx.Ops)
 	})
 	return layout.Dimensions{Size: image.Pt(lblW, poleH)}
@@ -363,9 +366,12 @@ func editingMarkerComp(gtx layout.Context, th *theme.RepeatTheme, backdropTag ev
 	maxX := gtx.Constraints.Max.X
 	maxY := gtx.Constraints.Max.Y
 	backdropArea := image.Rect(0, 0, maxX, maxY)
-	ColorBox(gtx, backdropArea, th.Palette.Backdrop)
-	registerTag(gtx, backdropTag, backdropArea)
-	offsetBy(gtx, image.Pt(mProps.x, mProps.y), func() {
+	common.DrawBox(gtx, common.Box{
+		Size:  backdropArea,
+		Color: th.Palette.Backdrop,
+	})
+	common.RegisterTag(gtx, backdropTag, backdropArea)
+	common.OffsetBy(gtx, image.Pt(mProps.x, mProps.y), func() {
 		markerComp(gtx, th, mProps)
 	})
 }

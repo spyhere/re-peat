@@ -6,6 +6,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"github.com/spyhere/re-peat/internal/common"
 )
 
 func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
@@ -13,15 +14,15 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	ed.updateDifferedState()
 
 	backgroundComp(gtx, ed.th.Palette.Editor.Bg)
-	registerTag(gtx, &ed.tags.mLife, image.Rect(0, 0, gtx.Constraints.Max.X, ed.waveM))
+	common.RegisterTag(gtx, &ed.tags.mLife, image.Rect(0, 0, gtx.Constraints.Max.X, ed.waveM))
 
 	yCenter := gtx.Constraints.Max.Y / 2
 	offsetBy(gtx, image.Pt(-1, ed.waveM), func() {
 		soundWavesComp(gtx, ed.th, float32(yCenter-ed.waveM), ed.getRenderableWaves(), ed.scroll, ed.cache)
 	})
-	registerTag(gtx, &ed.tags.soundWave, image.Rect(0, ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.waveM))
+	common.RegisterTag(gtx, &ed.tags.soundWave, image.Rect(0, ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y-ed.waveM))
 
-	registerTag(gtx, &ed.tags.noneArea, image.Rect(0, gtx.Constraints.Max.Y-ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y))
+	common.RegisterTag(gtx, &ed.tags.noneArea, image.Rect(0, gtx.Constraints.Max.Y-ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y))
 
 	pDim := playheadComp(gtx, ed.th, ed.playhead.bytes, ed.audio, ed.scroll)
 	if ed.p.IsPlaying() {
@@ -38,6 +39,6 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	if ed.isCreateButtonVisible() {
 		mCreateButtonComp(gtx, ed.th, &ed.tags.mCreateButton, ed.waveM, pDim)
 	}
-	setCursor(gtx, ed.cursor)
+	common.SetCursor(gtx, ed.cursor)
 	return layout.Dimensions{}
 }
