@@ -102,9 +102,8 @@ func (ed *Editor) handleMLife(p pointerEvent) {
 func (ed *Editor) handleMCreateIntent(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Press:
-		ed.markers.newMarker(ed.playhead.bytes)
 		ed.setCursor(pointer.CursorText)
-		ed.mode = modeMEdit
+		ed.startEdit(nil)
 		return
 	}
 	ed.transition(p)
@@ -132,11 +131,8 @@ func (ed *Editor) handleMHit(p pointerEvent) {
 func (ed *Editor) handleMEditIntent(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Press:
-		ed.mode = modeMEdit
-		m := p.Target.Marker
-		ed.mEditor.SetText(m.name)
-		ed.mEditor.SetCaret(len(m.name), 0)
-		ed.markers.startEdit(m)
+		ed.startEdit(p.Target.Marker)
+		return
 	}
 	ed.transition(p)
 }

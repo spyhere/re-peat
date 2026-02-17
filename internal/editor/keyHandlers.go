@@ -19,18 +19,6 @@ func (ed *Editor) switchPlayerState() {
 	}
 }
 
-func (ed *Editor) cancelEdit() {
-	if !ed.markers.isEditing() {
-		return
-	}
-	if ed.markers.editing.name == "" {
-		ed.markers.editing.markDead()
-	}
-	ed.markers.stopEdit()
-	ed.mEditor.SetText("")
-	ed.mode = modeIdle
-}
-
 func (ed *Editor) nudgePlayhead(forward bool) {
 	if ed.markers.isEditing() {
 		return

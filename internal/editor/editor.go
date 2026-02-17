@@ -177,6 +177,32 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.leftB += panSamples
 }
 
+func (ed *Editor) startEdit(m *marker) {
+	ed.mode = modeMEdit
+	ed.mEditor.SetText(m.name)
+	ed.mEditor.SetCaret(len(m.name), 0)
+	ed.markers.startEdit(m)
+	if m == nil {
+		ed.markers.newMarker(ed.playhead.bytes)
+	} else {
+		ed.mEditor.SetText(m.name)
+		ed.mEditor.SetCaret(len(m.name), 0)
+		ed.markers.startEdit(m)
+	}
+}
+
+func (ed *Editor) cancelEdit() {
+	if !ed.markers.isEditing() {
+		return
+	}
+	if ed.markers.editing.name == "" {
+		ed.markers.editing.markDead()
+	}
+	ed.markers.stopEdit()
+	ed.mEditor.SetText("")
+	ed.mode = modeIdle
+}
+
 func (ed *Editor) confirmEdit(newName string) {
 	ed.markers.editing.name = newName
 	ed.markers.stopEdit()
