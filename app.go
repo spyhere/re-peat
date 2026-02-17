@@ -15,6 +15,10 @@ import (
 )
 
 func newApp() *App {
+	th, err := theme.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 	decoder, pcm, err := decodeFile(audioFilePath)
 	if err != nil {
 		log.Fatal(err)
@@ -24,7 +28,6 @@ func newApp() *App {
 		log.Fatal(err)
 	}
 	player.SetVolume(0.7)
-	th := theme.New()
 	ed, err := editor.NewEditor(th, decoder, pcm, player)
 	if err != nil {
 		log.Fatal(err)
