@@ -88,7 +88,7 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 				col = th.Palette.SegButtons.Selected
 			}
 			buttArea := image.Rect(0, 0, maxDim.Size.X, containerH)
-			common.ColorBox(gtx, common.Box{
+			common.DrawBox(gtx, common.Box{
 				Size:    buttArea,
 				Color:   col,
 				R:       corner,

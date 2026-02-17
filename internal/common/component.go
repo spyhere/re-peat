@@ -19,7 +19,7 @@ type Box struct {
 	StrokeW unit.Dp
 }
 
-func ColorBox(gtx layout.Context, b Box) layout.Dimensions {
+func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
 	r := b.R
 	rrect := clip.RRect{Rect: b.Size, SE: r.SE, SW: r.SW, NE: r.NE, NW: r.NW}
 	rrectStack := rrect.Push(gtx.Ops)
