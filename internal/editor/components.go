@@ -221,7 +221,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 				if !i9n.hovered {
 					nameLimit = mrkSz.Lbl.MaxGlyphs
 				}
-				name := common.TruncName(marker.name, nameLimit)
+				name := common.StrTrunc(marker.name, nameLimit)
 				renderable = material.Body2(th.Theme, name)
 			}
 			inset := unit.Dp(mrkSz.Lbl.Margin)

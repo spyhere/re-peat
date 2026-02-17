@@ -104,7 +104,7 @@ func strlen(input string) int {
 }
 
 // Since non-lating letters are taking more then 1 byte `strlen` and manual idx in range is required
-func TruncName(name string, limit int) string {
+func StrTrunc(name string, limit int) string {
 	if limit == 0 || strlen(name) < limit {
 		return name
 	}
