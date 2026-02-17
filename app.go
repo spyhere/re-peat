@@ -1,7 +1,6 @@
 package main
 
 import (
-	"image"
 	"log"
 
 	"gioui.org/app"
@@ -66,9 +65,8 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 		a.editor.MakePeakMap()
 		a.editor.Layout(gtx, e)
 	}
-	xCenter := gtx.Constraints.Max.X / 2
-	common.OffsetBy(gtx, image.Pt(xCenter, 20), func() {
-		groupedButtons(gtx, a.th, a.buttons)
+	common.CenteredX(gtx, func() layout.Dimensions {
+		return groupedButtons(gtx, a.th, a.selectedTab, a.buttons)
 	})
 	if a.buttons.isPointerHitting {
 		common.SetCursor(gtx, pointer.CursorPointer)
