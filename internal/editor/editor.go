@@ -21,26 +21,37 @@ const (
 	playheadMinDur  = time.Millisecond * 20
 )
 
-func NewEditor(th *theme.RepeatTheme, dec *minimp3.Decoder, pcm []byte, player *player.Player) (*Editor, error) {
-	normSamples, err := getNormalisedSamples(pcm)
+type EditorProps struct {
+	Dec           *minimp3.Decoder
+	Player        *player.Player
+	Th            *theme.RepeatTheme
+	OnStartEditCb func()
+	OnStopEditCb  func()
+	Pcm           []byte
+}
+
+func NewEditor(props EditorProps) (*Editor, error) {
+	normSamples, err := getNormalisedSamples(props.Pcm)
 	if err != nil {
 		return &Editor{}, err
 	}
 	fmt.Println("Audio data is normalised")
-	frames := len(normSamples) / dec.Channels
-	monoSamples := makeSamplesMono(normSamples, dec.Channels)
+	frames := len(normSamples) / props.Dec.Channels
+	monoSamples := makeSamplesMono(normSamples, props.Dec.Channels)
 	fmt.Println("WaveRenderer received mono samples")
 	return &Editor{
-		p:           player,
-		monoSamples: monoSamples,
-		audio:       newAudio(dec, pcm, monoSamples, frames),
-		playhead:    newPlayhead(playheadInitDur),
-		cache:       newCache(),
-		markers:     newMarkers(),
-		mEditor:     newMEditor(),
-		scroll:      newScroll(),
-		th:          th,
-		tags:        newTags(),
+		p:             props.Player,
+		monoSamples:   monoSamples,
+		audio:         newAudio(props.Dec, props.Pcm, monoSamples, frames),
+		playhead:      newPlayhead(playheadInitDur),
+		cache:         newCache(),
+		markers:       newMarkers(),
+		mEditor:       newMEditor(),
+		scroll:        newScroll(),
+		th:            props.Th,
+		tags:          newTags(),
+		onStartEditCb: props.OnStartEditCb,
+		onStopEditCb:  props.OnStopEditCb,
 	}, nil
 }
 
@@ -59,20 +70,22 @@ const (
 )
 
 type Editor struct {
-	mode        interactionMode
-	cursor      pointer.Cursor
-	playhead    *playhead
-	audio       audio
-	monoSamples []float32
-	cache       cache
-	markers     *markers
-	mEditor     *widget.Editor
-	p           *player.Player
-	waveM       int // wave margin
-	tags        *tags
-	size        image.Point
-	scroll      scroll
-	th          *theme.RepeatTheme
+	mode          interactionMode
+	cursor        pointer.Cursor
+	playhead      *playhead
+	audio         audio
+	monoSamples   []float32
+	cache         cache
+	markers       *markers
+	mEditor       *widget.Editor
+	p             *player.Player
+	waveM         int // wave margin
+	tags          *tags
+	size          image.Point
+	scroll        scroll
+	th            *theme.RepeatTheme
+	onStartEditCb func()
+	onStopEditCb  func()
 }
 
 func (ed *Editor) getRenderableWaves() [][2]float32 {
@@ -179,9 +192,6 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 
 func (ed *Editor) startEdit(m *marker) {
 	ed.mode = modeMEdit
-	ed.mEditor.SetText(m.name)
-	ed.mEditor.SetCaret(len(m.name), 0)
-	ed.markers.startEdit(m)
 	if m == nil {
 		ed.markers.newMarker(ed.playhead.bytes)
 	} else {
@@ -189,6 +199,7 @@ func (ed *Editor) startEdit(m *marker) {
 		ed.mEditor.SetCaret(len(m.name), 0)
 		ed.markers.startEdit(m)
 	}
+	ed.onStartEditCb()
 }
 
 func (ed *Editor) cancelEdit() {
@@ -201,6 +212,7 @@ func (ed *Editor) cancelEdit() {
 	ed.markers.stopEdit()
 	ed.mEditor.SetText("")
 	ed.mode = modeIdle
+	ed.onStopEditCb()
 }
 
 func (ed *Editor) confirmEdit(newName string) {
@@ -208,6 +220,7 @@ func (ed *Editor) confirmEdit(newName string) {
 	ed.markers.stopEdit()
 	ed.mEditor.SetText("")
 	ed.mode = modeIdle
+	ed.onStopEditCb()
 }
 
 func (ed *Editor) handleMEditor(we widget.EditorEvent) {

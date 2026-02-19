@@ -47,15 +47,19 @@ var buttTextOps [3]buttonText = [3]buttonText{}
 
 func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, buttons *buttons) layout.Dimensions {
 	var maxDim layout.Dimensions
+	segButtonP := th.Palette.SegButtons.Enabled
+	if buttons.isDisabled {
+		segButtonP = th.Palette.SegButtons.Disabled
+	}
 	for idx, it := range buttons.arr {
 		var textDim layout.Dimensions
 		textOp := common.MakeMacro(gtx.Ops, func() {
 			gtx.Constraints.Min = image.Point{}
 			textBody2 := material.Body2(th.Theme, it.name)
 			if buttons.arr[idx].tab == selectedT {
-				textBody2.Color = th.Palette.SegButtons.SelText
+				textBody2.Color = segButtonP.SelText
 			} else {
-				textBody2.Color = th.Palette.SegButtons.UnSelText
+				textBody2.Color = segButtonP.UnSelText
 			}
 			textBody2.Font.Typeface = segButtSpecs.fontFace
 			textBody2.Font.Weight = segButtSpecs.fontWeight
@@ -72,49 +76,80 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 		gtx.Dp(segButtSpecs.iconSize), gtx.Dp(segButtSpecs.elementsGap), gtx.Dp(segButtSpecs.height)
 	maxDim.Size.X += iconSize + elementsGap + gtx.Dp(segButtSpecs.minPad)*2
 
-	containerHHalf := containerH / 2
 	var xOffset int
 	for idx, it := range buttTextOps {
 		curButt := buttons.arr[idx]
 		common.OffsetBy(gtx, image.Pt(xOffset, 0), func() {
-			var corner theme.CornerRadii
-			if idx == 0 {
-				corner = theme.CornerR(0, containerHHalf, containerHHalf, 0)
-			} else if idx == len(buttons.arr)-1 {
-				corner = theme.CornerR(containerHHalf, 0, 0, containerHHalf)
-			}
-			var col color.NRGBA
-			if curButt.tab == selectedT {
-				col = th.Palette.SegButtons.Selected
-			}
-			buttArea := image.Rect(0, 0, maxDim.Size.X, containerH)
-			common.DrawBox(gtx, common.Box{
-				Size:    buttArea,
-				Color:   col,
-				R:       corner,
-				StrokeW: segButtSpecs.outline,
-				StrokeC: th.Palette.SegButtons.Outline,
+			segmentedButtonComp(gtx, segmentedBProps{
+				b:           curButt,
+				height:      containerH,
+				isFirst:     idx == 0,
+				isLast:      idx == len(buttons.arr)-1,
+				isSelected:  curButt.tab == selectedT,
+				isDisabled:  buttons.isDisabled,
+				iconSize:    iconSize,
+				elementsGap: elementsGap,
+				text:        it,
+				textDim:     maxDim,
+				palette:     segButtonP,
 			})
-			common.RegisterTag(gtx, &curButt.tag, buttArea)
-
-			y := (containerH - maxDim.Size.Y) / 2
-			if curButt.tab == selectedT {
-				x := (maxDim.Size.X - it.width - iconSize - elementsGap) / 2
-				common.OffsetBy(gtx, image.Pt(x, y), func() {
-					gtx.Constraints.Min.X = iconSize
-					micons.Check.Layout(gtx, th.Palette.SegButtons.SelText)
-					common.OffsetBy(gtx, image.Pt(iconSize+elementsGap, 0), func() {
-						it.op.Add(gtx.Ops)
-					})
-				})
-			} else {
-				x := (maxDim.Size.X - it.width) / 2
-				common.OffsetBy(gtx, image.Pt(x, y), func() {
-					it.op.Add(gtx.Ops)
-				})
-			}
 		})
 		xOffset += maxDim.Size.X
 	}
 	return layout.Dimensions{Size: image.Pt(xOffset, containerH)}
+}
+
+type segmentedBProps struct {
+	b           *button
+	height      int
+	isFirst     bool
+	isLast      bool
+	isSelected  bool
+	isDisabled  bool
+	iconSize    int
+	elementsGap int
+	text        buttonText
+	textDim     layout.Dimensions
+	palette     theme.SegButtonsPalette
+}
+
+func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
+	var corner theme.CornerRadii
+	containerHHalf := props.height / 2
+	if props.isFirst {
+		corner = theme.CornerR(0, containerHHalf, containerHHalf, 0)
+	} else if props.isLast {
+		corner = theme.CornerR(containerHHalf, 0, 0, containerHHalf)
+	}
+	var col color.NRGBA
+	if props.isSelected {
+		col = props.palette.Selected
+	}
+	buttArea := image.Rect(0, 0, props.textDim.Size.X, props.height)
+	common.DrawBox(gtx, common.Box{
+		Size:    buttArea,
+		Color:   col,
+		R:       corner,
+		StrokeW: segButtSpecs.outline,
+		StrokeC: props.palette.Outline,
+	})
+	if !props.isDisabled {
+		common.RegisterTag(gtx, &props.b.tag, buttArea)
+	}
+	y := (props.height - props.textDim.Size.Y) / 2
+	if props.isSelected {
+		x := (props.textDim.Size.X - props.text.width - props.iconSize - props.elementsGap) / 2
+		common.OffsetBy(gtx, image.Pt(x, y), func() {
+			gtx.Constraints.Min.X = props.iconSize
+			micons.Check.Layout(gtx, props.palette.SelText)
+			common.OffsetBy(gtx, image.Pt(props.iconSize+props.elementsGap, 0), func() {
+				props.text.op.Add(gtx.Ops)
+			})
+		})
+	} else {
+		x := (props.textDim.Size.X - props.text.width) / 2
+		common.OffsetBy(gtx, image.Pt(x, y), func() {
+			props.text.op.Add(gtx.Ops)
+		})
+	}
 }

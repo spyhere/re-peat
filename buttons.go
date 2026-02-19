@@ -31,6 +31,7 @@ type button struct {
 type buttons struct {
 	arr              [3]*button
 	isPointerHitting bool
+	isDisabled       bool
 }
 
 func (b *buttons) setHover() {
@@ -39,4 +40,12 @@ func (b *buttons) setHover() {
 
 func (b *buttons) stopHover() {
 	b.isPointerHitting = false
+}
+
+func (b *buttons) disable() {
+	b.isDisabled = true
+}
+
+func (b *buttons) enable() {
+	b.isDisabled = false
 }

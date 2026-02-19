@@ -4,11 +4,19 @@ import "image/color"
 
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
-	SegButtons: segButtonsPalette{
-		Outline:   rgb(0x79747E),
-		Selected:  rgb(0xE8DEF8),
-		SelText:   rgb(0x4A4458),
-		UnSelText: rgb(0x1D1B20),
+	SegButtons: segButtonsStatesPalette{
+		Enabled: SegButtonsPalette{
+			Outline:   rgb(0x79747E),
+			Selected:  rgb(0xE8DEF8),
+			SelText:   rgb(0x4A4458),
+			UnSelText: rgb(0x1D1B20),
+		},
+		Disabled: SegButtonsPalette{
+			Outline:   argb(0x1f1D1B20),
+			Selected:  rgb(0x5C5863),
+			SelText:   rgb(0x4A4458),
+			UnSelText: argb(0x611D1B20),
+		},
 	},
 	Editor: editorPalette{
 		Bg:        tan,
@@ -38,11 +46,16 @@ var (
 
 type palette struct {
 	Backdrop   color.NRGBA
-	SegButtons segButtonsPalette
+	SegButtons segButtonsStatesPalette
 	Editor     editorPalette
 }
 
-type segButtonsPalette struct {
+type segButtonsStatesPalette struct {
+	Enabled  SegButtonsPalette
+	Disabled SegButtonsPalette
+}
+
+type SegButtonsPalette struct {
 	Outline   color.NRGBA
 	Selected  color.NRGBA
 	SelText   color.NRGBA

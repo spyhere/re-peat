@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	"log"
 
 	"gioui.org/app"
@@ -27,15 +28,23 @@ func newApp() *App {
 		log.Fatal(err)
 	}
 	player.SetVolume(0.7)
-	ed, err := editor.NewEditor(th, decoder, pcm, player)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return &App{
-		editor:  ed,
+	appInstance := &App{
 		th:      th,
 		buttons: newButtons(),
 	}
+	ed, err := editor.NewEditor(editor.EditorProps{
+		Dec:           decoder,
+		Player:        player,
+		Th:            th,
+		Pcm:           pcm,
+		OnStartEditCb: appInstance.onStartMarkerEdit,
+		OnStopEditCb:  appInstance.onStopMarkerEdit,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	appInstance.editor = ed
+	return appInstance
 }
 
 type tab int
@@ -51,6 +60,14 @@ type App struct {
 	selectedTab tab
 	th          *theme.RepeatTheme
 	*buttons
+}
+
+func (a *App) onStartMarkerEdit() {
+	a.buttons.disable()
+}
+
+func (a *App) onStopMarkerEdit() {
+	a.buttons.enable()
 }
 
 func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
