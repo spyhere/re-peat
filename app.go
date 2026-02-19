@@ -65,8 +65,10 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 		a.editor.MakePeakMap()
 		a.editor.Layout(gtx, e)
 	}
-	common.CenteredX(gtx, func() layout.Dimensions {
-		return groupedButtons(gtx, a.th, a.selectedTab, a.buttons)
+	common.OffsetBy(gtx, image.Pt(0, a.th.Sizing.SegButtonsTopM), func() {
+		common.CenteredX(gtx, func() layout.Dimensions {
+			return groupedButtons(gtx, a.th, a.selectedTab, a.buttons)
+		})
 	})
 	if a.buttons.isPointerHitting {
 		common.SetCursor(gtx, pointer.CursorPointer)

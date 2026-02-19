@@ -1,6 +1,7 @@
 package theme
 
 var repeatSizing = sizing{
+	SegButtonsTopM: 30,
 	Editor: editorSizing{
 		PlayheadW:    4,
 		CreateButtMT: "85%",
@@ -18,8 +19,10 @@ var repeatSizing = sizing{
 }
 
 type sizing struct {
-	Editor editorSizing
+	SegButtonsTopM int
+	Editor         editorSizing
 }
+
 type editorSizing struct {
 	PlayheadW    int
 	CreateButtMT string // create button margin top
