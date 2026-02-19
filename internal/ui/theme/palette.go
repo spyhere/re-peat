@@ -5,17 +5,21 @@ import "image/color"
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
 	SegButtons: segButtonsStatesPalette{
-		Enabled: SegButtonsPalette{
+		Enabled: segButtonsPalette{
 			Outline:   rgb(0x79747E),
 			Selected:  rgb(0xE8DEF8),
 			SelText:   rgb(0x4A4458),
 			UnSelText: rgb(0x1D1B20),
 		},
-		Disabled: SegButtonsPalette{
+		Disabled: segButtonsPalette{
 			Outline:   argb(0x1f1D1B20),
 			Selected:  rgb(0x5C5863),
 			SelText:   rgb(0x4A4458),
 			UnSelText: argb(0x611D1B20),
+		},
+		Hovered: segButtonsPalette{
+			Selected:   argb(0x141D1B20),
+			UnSelected: argb(0x141D1B20),
 		},
 	},
 	Editor: editorPalette{
@@ -51,15 +55,17 @@ type palette struct {
 }
 
 type segButtonsStatesPalette struct {
-	Enabled  SegButtonsPalette
-	Disabled SegButtonsPalette
+	Enabled  segButtonsPalette
+	Disabled segButtonsPalette
+	Hovered  segButtonsPalette
 }
 
-type SegButtonsPalette struct {
-	Outline   color.NRGBA
-	Selected  color.NRGBA
-	SelText   color.NRGBA
-	UnSelText color.NRGBA
+type segButtonsPalette struct {
+	Outline    color.NRGBA
+	Selected   color.NRGBA
+	UnSelected color.NRGBA
+	SelText    color.NRGBA
+	UnSelText  color.NRGBA
 }
 
 type editorPalette struct {

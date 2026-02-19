@@ -91,7 +91,7 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 				elementsGap: elementsGap,
 				text:        it,
 				textDim:     maxDim,
-				palette:     segButtonP,
+				th:          th,
 			})
 		})
 		xOffset += maxDim.Size.X
@@ -110,10 +110,16 @@ type segmentedBProps struct {
 	elementsGap int
 	text        buttonText
 	textDim     layout.Dimensions
-	palette     theme.SegButtonsPalette
+	th          *theme.RepeatTheme
 }
 
 func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
+	bPalette := props.th.Palette.SegButtons.Enabled
+	if props.isDisabled {
+		bPalette = props.th.Palette.SegButtons.Disabled
+	}
+	bHoveredPalette := props.th.Palette.SegButtons.Hovered
+
 	var corner theme.CornerRadii
 	containerHHalf := props.height / 2
 	if props.isFirst {
@@ -123,7 +129,7 @@ func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
 	}
 	var col color.NRGBA
 	if props.isSelected {
-		col = props.palette.Selected
+		col = bPalette.Selected
 	}
 	buttArea := image.Rect(0, 0, props.textDim.Size.X, props.height)
 	common.DrawBox(gtx, common.Box{
@@ -131,8 +137,21 @@ func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
 		Color:   col,
 		R:       corner,
 		StrokeW: segButtSpecs.outline,
-		StrokeC: props.palette.Outline,
+		StrokeC: bPalette.Outline,
 	})
+
+	if props.b.isHovered {
+		col = bHoveredPalette.UnSelected
+		if props.isSelected {
+			col = bHoveredPalette.Selected
+		}
+		common.DrawBox(gtx, common.Box{
+			Size:  buttArea,
+			Color: col,
+			R:     corner,
+		})
+	}
+
 	if !props.isDisabled {
 		common.RegisterTag(gtx, &props.b.tag, buttArea)
 	}
@@ -141,7 +160,7 @@ func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
 		x := (props.textDim.Size.X - props.text.width - props.iconSize - props.elementsGap) / 2
 		common.OffsetBy(gtx, image.Pt(x, y), func() {
 			gtx.Constraints.Min.X = props.iconSize
-			micons.Check.Layout(gtx, props.palette.SelText)
+			micons.Check.Layout(gtx, bPalette.SelText)
 			common.OffsetBy(gtx, image.Pt(props.iconSize+props.elementsGap, 0), func() {
 				props.text.op.Add(gtx.Ops)
 			})

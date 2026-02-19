@@ -25,7 +25,8 @@ func newButtons() *buttons {
 type button struct {
 	name string
 	tab
-	tag *struct{}
+	tag       *struct{}
+	isHovered bool
 }
 
 type buttons struct {
@@ -34,12 +35,14 @@ type buttons struct {
 	isDisabled       bool
 }
 
-func (b *buttons) setHover() {
+func (b *buttons) setHover(curButton *button) {
 	b.isPointerHitting = true
+	curButton.isHovered = true
 }
 
-func (b *buttons) stopHover() {
+func (b *buttons) stopHover(curButton *button) {
 	b.isPointerHitting = false
+	curButton.isHovered = false
 }
 
 func (b *buttons) disable() {

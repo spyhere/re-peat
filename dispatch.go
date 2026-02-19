@@ -19,11 +19,11 @@ func (a *App) dispatchButtonsEvents(gtx layout.Context) {
 			func(e pointer.Event) {
 				switch e.Kind {
 				case pointer.Enter:
-					a.buttons.setHover()
+					a.buttons.setHover(it)
 				case pointer.Move:
-					a.buttons.setHover()
+					a.buttons.setHover(it)
 				case pointer.Leave:
-					a.buttons.stopHover()
+					a.buttons.stopHover(it)
 				case pointer.Press:
 					a.selectedTab = it.tab
 				}
