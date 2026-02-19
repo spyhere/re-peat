@@ -166,6 +166,10 @@ func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scr
 	gridPalette := th.Palette.Editor.Grid
 	gridSizing := th.Sizing.Editor.Grid
 	for ; curSecIdx < scroll.rightB; curSecIdx += audio.sampleRate {
+		if curSec == 0 {
+			curSec++
+			continue
+		}
 		tickH := gridSizing.TickH
 		tickC := gridPalette.Tick
 		if curSec%10 == 0 {
