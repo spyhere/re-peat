@@ -1,22 +1,27 @@
 package main
 
+import "gioui.org/widget"
+
 func newButtons() *buttons {
 	return &buttons{
 		arr: [3]*button{
 			{
-				name: "Project",
-				tab:  Project,
-				tag:  &struct{}{},
+				name:      "Project",
+				tab:       Project,
+				tag:       &struct{}{},
+				clickable: &widget.Clickable{},
 			},
 			{
-				name: "Markers",
-				tab:  Markers,
-				tag:  &struct{}{},
+				name:      "Markers",
+				tab:       Markers,
+				tag:       &struct{}{},
+				clickable: &widget.Clickable{},
 			},
 			{
-				name: "Editor",
-				tab:  Editor,
-				tag:  &struct{}{},
+				name:      "Editor",
+				tab:       Editor,
+				tag:       &struct{}{},
+				clickable: &widget.Clickable{},
 			},
 		},
 	}
@@ -27,6 +32,7 @@ type button struct {
 	tab
 	tag       *struct{}
 	isHovered bool
+	clickable *widget.Clickable
 }
 
 type buttons struct {

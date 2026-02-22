@@ -5,6 +5,7 @@ import (
 	"image/color"
 
 	"gioui.org/font"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/unit"
@@ -132,12 +133,17 @@ func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
 		col = bPalette.Selected
 	}
 	buttArea := image.Rect(0, 0, props.textDim.Size.X, props.height)
+	cl := props.b.clickable
+	if props.isDisabled {
+		cl = nil
+	}
 	common.DrawBox(gtx, common.Box{
-		Size:    buttArea,
-		Color:   col,
-		R:       corner,
-		StrokeW: segButtSpecs.outline,
-		StrokeC: bPalette.Outline,
+		Size:      buttArea,
+		Color:     col,
+		R:         corner,
+		StrokeW:   segButtSpecs.outline,
+		StrokeC:   bPalette.Outline,
+		Clickable: cl,
 	})
 
 	if props.b.isHovered {
@@ -153,7 +159,9 @@ func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
 	}
 
 	if !props.isDisabled {
+		passOp := pointer.PassOp{}.Push(gtx.Ops)
 		common.RegisterTag(gtx, &props.b.tag, buttArea)
+		passOp.Pop()
 	}
 	y := (props.height - props.textDim.Size.Y) / 2
 	if props.isSelected {
