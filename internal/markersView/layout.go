@@ -26,5 +26,8 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			common.SetCursor(gtx, pointer.CursorPointer)
 		}
 	}
+	if searchable.Cancel.Hovered() {
+		common.SetCursor(gtx, pointer.CursorPointer)
+	}
 	return layout.Dimensions{}
 }

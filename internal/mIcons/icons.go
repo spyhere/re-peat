@@ -20,4 +20,5 @@ var (
 	Delete           = newIcon(icons.ActionDelete)
 	Check            = newIcon(icons.NavigationCheck)
 	Search           = newIcon(icons.ActionSearch)
+	Cancel           = newIcon(icons.NavigationCancel)
 )

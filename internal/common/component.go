@@ -209,11 +209,24 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	containerW := gtx.Dp(searchSpec.minWidth)
 	bDims := DrawBox(gtx, Box{
 		Size:       image.Rect(0, 0, containerW, containerH),
-		Color:      th.Palette.Search.Bg,
+		Color:      th.Palette.Search.Enabled.Bg,
 		R:          theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
 		Clickable:  &props.Clickable,
 		GeometryCb: func() { props.Searchable.Subscribe(gtx) },
 	})
+	if props.IsHovered() {
+		DrawBox(gtx, Box{
+			Size:  image.Rect(0, 0, containerW, containerH),
+			Color: th.Palette.Search.Hovered.Bg,
+			R:     theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
+		})
+	} else if props.IsFocused() {
+		DrawBox(gtx, Box{
+			Size:  image.Rect(0, 0, containerW, containerH),
+			Color: th.Palette.Search.Pressed.Bg,
+			R:     theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
+		})
+	}
 
 	xPadd := gtx.Dp(searchSpec.xPadding)
 
@@ -227,7 +240,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 			props.Editor.SingleLine = true
 			ed := material.Editor(th.Theme, &props.Editor, "")
 			ed.Font.Typeface = "Roboto"
-			ed.Color = th.Palette.Search.SupText
+			ed.Color = th.Palette.Search.Enabled.SupText
 			ed.LineHeight = searchSpec.fontLineHeight
 			ed.TextSize = searchSpec.fontSize
 			ed.Font.Weight = 400
@@ -242,7 +255,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 			}
 			txt := material.Body2(th.Theme, text)
 			txt.Font.Typeface = "Roboto"
-			txt.Color = th.Palette.Search.SupText
+			txt.Color = th.Palette.Search.Enabled.SupText
 			txt.LineHeight = searchSpec.fontLineHeight
 			txt.TextSize = searchSpec.fontSize
 			txt.Font.Weight = 400
@@ -252,7 +265,15 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 
 	OffsetBy(gtx, image.Pt(bDims.Size.X-iconPadding-xPadd-iconSz/2, bDims.Size.Y/2-iconSz/2), func() {
 		gtx.Constraints.Min.X = iconSz
-		micons.Search.Layout(gtx, th.Palette.Search.Icon)
+		if len(props.GetInput()) > 0 {
+			micons.Cancel.Layout(gtx, th.Palette.Search.Enabled.Icon)
+			DrawBox(gtx, Box{
+				Size:      image.Rect(0, 0, iconSz, iconSz),
+				Clickable: &props.Cancel,
+			})
+		} else {
+			micons.Search.Layout(gtx, th.Palette.Search.Enabled.Icon)
+		}
 	})
 	return layout.Dimensions{Size: image.Pt(containerW, containerH)}
 }

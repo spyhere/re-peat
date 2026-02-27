@@ -13,9 +13,14 @@ type Searchable struct {
 	isFocused bool
 	widget.Editor
 	widget.Clickable
+	Cancel widget.Clickable
 }
 
 func (s *Searchable) Update(gtx layout.Context) {
+	if s.Cancel.Clicked(gtx) {
+		s.Editor.SetText("")
+		s.Blur()
+	}
 	HandlePointerEvents(gtx, &s.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
 		switch e.Kind {
 		case pointer.Move:
