@@ -4,6 +4,11 @@ import "image/color"
 
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
+	Search: searchPalette{
+		Bg:      rgb(0xECE6F0),
+		Icon:    rgb(0x49454F),
+		SupText: rgb(0x49454F),
+	},
 	SegButtons: segButtonsStatesPalette{
 		Enabled: segButtonsPalette{
 			Outline:   rgb(0x79747E),
@@ -50,8 +55,15 @@ var (
 
 type palette struct {
 	Backdrop   color.NRGBA
+	Search     searchPalette
 	SegButtons segButtonsStatesPalette
 	Editor     editorPalette
+}
+
+type searchPalette struct {
+	Bg      color.NRGBA
+	Icon    color.NRGBA
+	SupText color.NRGBA
 }
 
 type segButtonsStatesPalette struct {

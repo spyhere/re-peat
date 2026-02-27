@@ -5,12 +5,17 @@ import (
 	"image/color"
 	"math"
 
+	"gioui.org/font"
+	"gioui.org/io/key"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
+	"gioui.org/widget/material"
+	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -163,4 +168,91 @@ func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
 		stroke.Pop()
 	}
 	return layout.Dimensions{Size: b.Size.Size()}
+}
+
+type searchSpecs struct {
+	height         unit.Dp
+	minWidth       unit.Dp
+	maxWidth       unit.Dp
+	xPadding       unit.Dp
+	iconXPadding   unit.Dp
+	iconSize       unit.Dp
+	fontFace       font.Typeface
+	fontWeight     font.Weight
+	fontSize       unit.Sp
+	fontLineHeight unit.Sp
+}
+
+var searchSpec = searchSpecs{
+	height:         56,
+	minWidth:       360,
+	maxWidth:       720,
+	xPadding:       16,
+	iconXPadding:   16,
+	iconSize:       24,
+	fontFace:       "Roboto",
+	fontWeight:     400,
+	fontSize:       16,
+	fontLineHeight: 24,
+}
+
+type SProps struct {
+	DefaultText string
+	*Searchable
+}
+
+func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.Dimensions {
+	props.Searchable.Update(gtx)
+
+	containerH := gtx.Dp(searchSpec.height)
+	containerHHalft := containerH / 2
+	containerW := gtx.Dp(searchSpec.minWidth)
+	bDims := DrawBox(gtx, Box{
+		Size:       image.Rect(0, 0, containerW, containerH),
+		Color:      th.Palette.Search.Bg,
+		R:          theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
+		Clickable:  &props.Clickable,
+		GeometryCb: func() { props.Searchable.Subscribe(gtx) },
+	})
+
+	xPadd := gtx.Dp(searchSpec.xPadding)
+
+	iconSz := gtx.Dp(searchSpec.iconSize)
+	iconPadding := gtx.Dp(searchSpec.iconXPadding)
+
+	textH := gtx.Sp(searchSpec.fontLineHeight)
+	OffsetBy(gtx, image.Pt(xPadd*2, bDims.Size.Y-textH-textH/2), func() {
+		gtx.Constraints.Max = image.Pt(bDims.Size.X-xPadd*2-iconSz-iconPadding*2, textH)
+		if props.isFocused {
+			props.Editor.SingleLine = true
+			ed := material.Editor(th.Theme, &props.Editor, "")
+			ed.Font.Typeface = "Roboto"
+			ed.Color = th.Palette.Search.SupText
+			ed.LineHeight = searchSpec.fontLineHeight
+			ed.TextSize = searchSpec.fontSize
+			ed.Font.Weight = 400
+			passOp := pointer.PassOp{}.Push(gtx.Ops)
+			ed.Layout(gtx)
+			passOp.Pop()
+			gtx.Execute(key.FocusCmd{Tag: &props.Editor})
+		} else {
+			text := props.GetInput()
+			if text == "" {
+				text = props.DefaultText
+			}
+			txt := material.Body2(th.Theme, text)
+			txt.Font.Typeface = "Roboto"
+			txt.Color = th.Palette.Search.SupText
+			txt.LineHeight = searchSpec.fontLineHeight
+			txt.TextSize = searchSpec.fontSize
+			txt.Font.Weight = 400
+			txt.Layout(gtx)
+		}
+	})
+
+	OffsetBy(gtx, image.Pt(bDims.Size.X-iconPadding-xPadd-iconSz/2, bDims.Size.Y/2-iconSz/2), func() {
+		gtx.Constraints.Min.X = iconSz
+		micons.Search.Layout(gtx, th.Palette.Search.Icon)
+	})
+	return layout.Dimensions{Size: image.Pt(containerW, containerH)}
 }

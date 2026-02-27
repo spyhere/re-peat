@@ -19,4 +19,5 @@ var (
 	ContentAddCircle = newIcon(icons.ContentAddCircle)
 	Delete           = newIcon(icons.ActionDelete)
 	Check            = newIcon(icons.NavigationCheck)
+	Search           = newIcon(icons.ActionSearch)
 )
