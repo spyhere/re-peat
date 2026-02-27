@@ -15,7 +15,7 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-type segmentedButtSpecs struct {
+type segButtMaterialSpecs struct {
 	height        unit.Dp
 	outline       unit.Dp
 	minPad        unit.Dp
@@ -27,7 +27,7 @@ type segmentedButtSpecs struct {
 	fontLineHeigt unit.Sp
 }
 
-var segButtSpecs segmentedButtSpecs = segmentedButtSpecs{
+var segButtSpecs segButtMaterialSpecs = segButtMaterialSpecs{
 	height:        40,
 	outline:       1,
 	minPad:        16,

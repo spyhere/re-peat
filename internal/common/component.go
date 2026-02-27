@@ -177,7 +177,7 @@ func DrawBackground(gtx layout.Context, col color.NRGBA) {
 	})
 }
 
-type searchSpecs struct {
+type searchMaterialSpecs struct {
 	height         unit.Dp
 	minWidth       unit.Dp
 	maxWidth       unit.Dp
@@ -190,7 +190,7 @@ type searchSpecs struct {
 	fontLineHeight unit.Sp
 }
 
-var searchSpec = searchSpecs{
+var searchSpecs = searchMaterialSpecs{
 	height:         56,
 	minWidth:       360,
 	maxWidth:       720,
@@ -211,9 +211,9 @@ type SProps struct {
 func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.Dimensions {
 	props.Searchable.Update(gtx)
 
-	containerH := gtx.Dp(searchSpec.height)
+	containerH := gtx.Dp(searchSpecs.height)
 	containerHHalft := containerH / 2
-	containerW := gtx.Dp(searchSpec.minWidth)
+	containerW := gtx.Dp(searchSpecs.minWidth)
 	bDims := DrawBox(gtx, Box{
 		Size:       image.Rect(0, 0, containerW, containerH),
 		Color:      th.Palette.Search.Enabled.Bg,
@@ -235,12 +235,12 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		})
 	}
 
-	xPadd := gtx.Dp(searchSpec.xPadding)
+	xPadd := gtx.Dp(searchSpecs.xPadding)
 
-	iconSz := gtx.Dp(searchSpec.iconSize)
-	iconPadding := gtx.Dp(searchSpec.iconXPadding)
+	iconSz := gtx.Dp(searchSpecs.iconSize)
+	iconPadding := gtx.Dp(searchSpecs.iconXPadding)
 
-	textH := gtx.Sp(searchSpec.fontLineHeight)
+	textH := gtx.Sp(searchSpecs.fontLineHeight)
 	OffsetBy(gtx, image.Pt(xPadd*2, bDims.Size.Y-textH-textH/2), func() {
 		gtx.Constraints.Max = image.Pt(bDims.Size.X-xPadd*2-iconSz-iconPadding*2, textH)
 		if props.isFocused {
@@ -248,8 +248,8 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 			ed := material.Editor(th.Theme, &props.Editor, "")
 			ed.Font.Typeface = "Roboto"
 			ed.Color = th.Palette.Search.Enabled.SupText
-			ed.LineHeight = searchSpec.fontLineHeight
-			ed.TextSize = searchSpec.fontSize
+			ed.LineHeight = searchSpecs.fontLineHeight
+			ed.TextSize = searchSpecs.fontSize
 			ed.Font.Weight = 400
 			passOp := pointer.PassOp{}.Push(gtx.Ops)
 			ed.Layout(gtx)
@@ -263,8 +263,8 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 			txt := material.Body2(th.Theme, text)
 			txt.Font.Typeface = "Roboto"
 			txt.Color = th.Palette.Search.Enabled.SupText
-			txt.LineHeight = searchSpec.fontLineHeight
-			txt.TextSize = searchSpec.fontSize
+			txt.LineHeight = searchSpecs.fontLineHeight
+			txt.TextSize = searchSpecs.fontSize
 			txt.Font.Weight = 400
 			txt.Layout(gtx)
 		}
