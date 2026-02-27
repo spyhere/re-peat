@@ -9,7 +9,7 @@ import (
 	"gioui.org/layout"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
-	"github.com/spyhere/re-peat/internal/editor"
+	"github.com/spyhere/re-peat/internal/editorView"
 	"github.com/spyhere/re-peat/internal/markersView"
 	p "github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -36,7 +36,7 @@ func newApp() *App {
 			Th: th,
 		}),
 	}
-	ed, err := editor.NewEditor(editor.EditorProps{
+	ed, err := editorview.NewEditor(editorview.EditorProps{
 		Dec:           decoder,
 		Player:        player,
 		Th:            th,
@@ -47,7 +47,7 @@ func newApp() *App {
 	if err != nil {
 		log.Fatal(err)
 	}
-	appInstance.editor = ed
+	appInstance.editorView = ed
 	return appInstance
 }
 
@@ -60,8 +60,8 @@ const (
 )
 
 type App struct {
-	editor      *editor.Editor
 	markersView *markersview.MarkersView
+	editorView  *editorview.Editor
 	selectedTab tab
 	th          *theme.RepeatTheme
 	*buttons
@@ -83,9 +83,9 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	case Markers:
 		a.markersView.Layout(gtx)
 	case Editor:
-		a.editor.SetSize(e.Size)
-		a.editor.MakePeakMap()
-		a.editor.Layout(gtx, e)
+		a.editorView.SetSize(e.Size)
+		a.editorView.MakePeakMap()
+		a.editorView.Layout(gtx, e)
 	}
 	common.OffsetBy(gtx, image.Pt(0, a.th.Sizing.SegButtonsTopM), func() {
 		common.CenteredX(gtx, func() layout.Dimensions {

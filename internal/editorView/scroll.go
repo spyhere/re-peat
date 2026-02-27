@@ -1,4 +1,4 @@
-package editor
+package editorview
 
 const maxScrollLvl = 5
 

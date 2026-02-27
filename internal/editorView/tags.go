@@ -1,4 +1,4 @@
-package editor
+package editorview
 
 type tags struct {
 	mLife         *struct{}
