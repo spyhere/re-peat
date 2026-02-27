@@ -10,6 +10,7 @@ import (
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/editor"
+	"github.com/spyhere/re-peat/internal/markersView"
 	p "github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -31,6 +32,9 @@ func newApp() *App {
 	appInstance := &App{
 		th:      th,
 		buttons: newButtons(),
+		markersView: markersview.NewMarkersView(markersview.Props{
+			Th: th,
+		}),
 	}
 	ed, err := editor.NewEditor(editor.EditorProps{
 		Dec:           decoder,
@@ -57,6 +61,7 @@ const (
 
 type App struct {
 	editor      *editor.Editor
+	markersView *markersview.MarkersView
 	selectedTab tab
 	th          *theme.RepeatTheme
 	*buttons
@@ -76,7 +81,7 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	case Project:
 		material.H1(a.th.Theme, "Project").Layout(gtx)
 	case Markers:
-		material.H1(a.th.Theme, "Markers").Layout(gtx)
+		a.markersView.Layout(gtx)
 	case Editor:
 		a.editor.SetSize(e.Size)
 		a.editor.MakePeakMap()
