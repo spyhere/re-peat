@@ -277,3 +277,58 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	})
 	return layout.Dimensions{Size: image.Pt(containerW, containerH)}
 }
+
+type dividerAxis int
+
+const (
+	Horizontal dividerAxis = iota
+	Vertical
+)
+
+type dividerInsetType int
+
+const (
+	DividerFullWidth dividerInsetType = iota
+	DividerInset
+	DividerMiddleInset
+)
+
+type dividerMaterialSpecs struct {
+	thickness    unit.Dp
+	margin       unit.Dp
+	bottomMargin unit.Dp
+}
+
+var dividerSpecs = dividerMaterialSpecs{
+	thickness:    1,
+	margin:       16,
+	bottomMargin: 8,
+}
+
+type DividerProps struct {
+	Axis  dividerAxis
+	Inset dividerInsetType
+}
+
+func DrawDivider(gtx layout.Context, th *theme.RepeatTheme, props DividerProps) {
+	var size image.Rectangle
+	margin, thickness := gtx.Dp(dividerSpecs.margin), gtx.Dp(dividerSpecs.thickness)
+
+	var margin0, margin1 int
+	switch props.Inset {
+	case DividerInset:
+		margin0 = margin
+	case DividerMiddleInset:
+		margin0, margin1 = margin, margin
+	}
+
+	if props.Axis == Horizontal {
+		size = image.Rect(margin0, 0, gtx.Constraints.Max.X-margin1, thickness)
+	} else {
+		size = image.Rect(0, margin0, thickness, gtx.Constraints.Max.Y-margin1)
+	}
+	DrawBox(gtx, Box{
+		Size:  size,
+		Color: th.Palette.Divider,
+	})
+}

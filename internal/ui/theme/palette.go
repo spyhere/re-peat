@@ -4,6 +4,7 @@ import "image/color"
 
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
+	Divider:  rgb(0xCAC4D0),
 	Search: searchStatesPalette{
 		Enabled: searchPalette{
 			Bg:      rgb(0xECE6F0),
@@ -67,6 +68,7 @@ var (
 
 type palette struct {
 	Backdrop   color.NRGBA
+	Divider    color.NRGBA
 	Search     searchStatesPalette
 	SegButtons segButtonsStatesPalette
 	Editor     editorPalette
