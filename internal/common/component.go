@@ -124,12 +124,13 @@ func drawInk(gtx layout.Context, c widget.Press) {
 }
 
 type Box struct {
-	Size      image.Rectangle
-	Color     color.NRGBA
-	R         theme.CornerRadii
-	StrokeC   color.NRGBA
-	StrokeW   unit.Dp
-	Clickable *widget.Clickable
+	Size       image.Rectangle
+	Color      color.NRGBA
+	R          theme.CornerRadii
+	StrokeC    color.NRGBA
+	StrokeW    unit.Dp
+	Clickable  *widget.Clickable
+	GeometryCb func()
 }
 
 func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
@@ -146,6 +147,9 @@ func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
 			gtx.Constraints.Min = rrect.Rect.Max
 			drawInk(gtx, it)
 		}
+	}
+	if b.GeometryCb != nil {
+		b.GeometryCb()
 	}
 	rrectStack.Pop()
 
