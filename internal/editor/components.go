@@ -27,13 +27,6 @@ func offsetBy(gtx layout.Context, amount image.Point, w func()) {
 	w()
 }
 
-func backgroundComp(gtx layout.Context, col color.NRGBA) {
-	common.DrawBox(gtx, common.Box{
-		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
-		Color: col,
-	})
-}
-
 func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio, scroll scroll) layout.Dimensions {
 	maxX := gtx.Constraints.Max.X
 	currSamples := audio.getSamplesFromPCM(playhead) - scroll.leftB

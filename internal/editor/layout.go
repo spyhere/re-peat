@@ -13,7 +13,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	ed.dispatch(gtx)
 	ed.updateDifferedState()
 
-	backgroundComp(gtx, ed.th.Palette.Editor.Bg)
+	common.DrawBackground(gtx, ed.th.Palette.Editor.Bg)
 	common.RegisterTag(gtx, &ed.tags.mLife, image.Rect(0, 0, gtx.Constraints.Max.X, ed.waveM))
 
 	yCenter := gtx.Constraints.Max.Y / 2

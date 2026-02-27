@@ -170,6 +170,13 @@ func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
 	return layout.Dimensions{Size: b.Size.Size()}
 }
 
+func DrawBackground(gtx layout.Context, col color.NRGBA) {
+	DrawBox(gtx, Box{
+		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
+		Color: col,
+	})
+}
+
 type searchSpecs struct {
 	height         unit.Dp
 	minWidth       unit.Dp
