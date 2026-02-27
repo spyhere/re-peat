@@ -11,6 +11,8 @@ import (
 var searchable = common.Searchable{}
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
+	common.DrawBackground(gtx, m.th.Palette.MarkersViewBg)
+
 	var searchDims layout.Dimensions
 	common.OffsetBy(gtx, image.Pt(0, 200), func() {
 		common.CenteredX(gtx, func() layout.Dimensions {

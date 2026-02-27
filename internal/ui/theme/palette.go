@@ -40,6 +40,7 @@ var repeatPalette = palette{
 			UnSelected: argb(0x141D1B20),
 		},
 	},
+	MarkersViewBg: rgb(0x7EB6D7),
 	Editor: editorPalette{
 		Bg:        tan,
 		SoundWave: blackRF,
@@ -67,11 +68,12 @@ var (
 )
 
 type palette struct {
-	Backdrop   color.NRGBA
-	Divider    color.NRGBA
-	Search     searchStatesPalette
-	SegButtons segButtonsStatesPalette
-	Editor     editorPalette
+	Backdrop      color.NRGBA
+	Divider       color.NRGBA
+	Search        searchStatesPalette
+	SegButtons    segButtonsStatesPalette
+	MarkersViewBg color.NRGBA
+	Editor        editorPalette
 }
 
 type searchPalette struct {
