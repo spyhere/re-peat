@@ -51,6 +51,13 @@ func (t *TimeMarkers) DeleteDead() {
 	})
 }
 
+func (t *TimeMarkers) GetAsc(idx int) *TimeMarker {
+	return (*t)[len(*t)-1-idx]
+}
+func (t *TimeMarkers) GetDesc(idx int) *TimeMarker {
+	return (*t)[idx]
+}
+
 func (t *TimeMarkers) sortCb(a, b *TimeMarker) int {
 	return int(b.Pcm - a.Pcm)
 }
