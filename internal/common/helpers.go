@@ -25,7 +25,7 @@ func OffsetBy(gtx layout.Context, amount image.Point, w func()) {
 	w()
 }
 
-func CenteredX(gtx layout.Context, w func() layout.Dimensions) {
+func CenteredX(gtx layout.Context, w func() layout.Dimensions) layout.Dimensions {
 	var dimensions layout.Dimensions
 	macro := MakeMacro(gtx.Ops, func() {
 		dimensions = w()
@@ -35,6 +35,7 @@ func CenteredX(gtx layout.Context, w func() layout.Dimensions) {
 	OffsetBy(gtx, image.Pt(xCenter-wCenter, 0), func() {
 		macro.Add(gtx.Ops)
 	})
+	return dimensions
 }
 
 func RegisterTag(gtx layout.Context, tag event.Tag, area image.Rectangle) {
