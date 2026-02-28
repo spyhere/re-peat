@@ -87,7 +87,7 @@ func (ed *Editor) dispatchNoneEvent(gtx layout.Context) {
 }
 
 func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
-	for _, marker := range ed.markers.arr {
+	for _, marker := range *ed.markers.arr {
 		common.HandlePointerEvents(
 			gtx,
 			&marker.Tags.Flag,

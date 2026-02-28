@@ -29,7 +29,7 @@ type EditorProps struct {
 	OnStartEditCb func()
 	OnStopEditCb  func()
 	Pcm           []byte
-	tm.TimeMarkers
+	*tm.TimeMarkers
 }
 
 func NewEditor(props EditorProps) (*Editor, error) {

@@ -4,14 +4,14 @@ import (
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
 
-func newMarkers(tmArray tm.TimeMarkers) *markers {
+func newMarkers(tmArray *tm.TimeMarkers) *markers {
 	return &markers{
 		arr: tmArray,
 	}
 }
 
 type markers struct {
-	arr           tm.TimeMarkers
+	arr           *tm.TimeMarkers
 	editing       *tm.TimeMarker
 	hovering      *tm.TimeMarker
 	overlayParams markerProps

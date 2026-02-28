@@ -9,8 +9,8 @@ import (
 	"gioui.org/layout"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
-	"github.com/spyhere/re-peat/internal/editorView"
-	"github.com/spyhere/re-peat/internal/markersView"
+	editorview "github.com/spyhere/re-peat/internal/editorView"
+	markersview "github.com/spyhere/re-peat/internal/markersView"
 	p "github.com/spyhere/re-peat/internal/player"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -30,12 +30,14 @@ func newApp() *App {
 		log.Fatal(err)
 	}
 	player.SetVolume(0.7)
+	// TODO: Create app state and put it there
 	timeMarkers := tm.NewTimeMarkers()
 	appInstance := &App{
 		th:      th,
 		buttons: newButtons(),
 		markersView: markersview.NewMarkersView(markersview.Props{
-			Th: th,
+			Th:          th,
+			TimeMarkers: &timeMarkers,
 		}),
 		timeMarkers: timeMarkers,
 	}
@@ -44,7 +46,7 @@ func newApp() *App {
 		Player:        player,
 		Th:            th,
 		Pcm:           pcm,
-		TimeMarkers:   timeMarkers,
+		TimeMarkers:   &timeMarkers,
 		OnStartEditCb: appInstance.onStartMarkerEdit,
 		OnStopEditCb:  appInstance.onStopMarkerEdit,
 	})
