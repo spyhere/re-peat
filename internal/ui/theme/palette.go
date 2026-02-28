@@ -22,6 +22,7 @@ var repeatPalette = palette{
 			SupText: rgb(0x49454F),
 		},
 	},
+	CardBg: rgb(0xF7F2FA),
 	SegButtons: segButtonsStatesPalette{
 		Enabled: segButtonsPalette{
 			Outline:   rgb(0x79747E),
@@ -71,6 +72,7 @@ type palette struct {
 	Backdrop      color.NRGBA
 	Divider       color.NRGBA
 	Search        searchStatesPalette
+	CardBg        color.NRGBA
 	SegButtons    segButtonsStatesPalette
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette

@@ -1,20 +1,40 @@
 package markersview
 
 import (
+	"fmt"
 	"image"
 
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/widget"
+	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
+	micons "github.com/spyhere/re-peat/internal/mIcons"
 )
 
 var searchable = common.Searchable{}
+var topM = 140
+
+var table = common.Table{
+	List:         &widget.List{},
+	ColumnWidths: []int{3, 4, 31, 6, 46, 3, 6},
+	Cells:        make([]layout.FlexChild, 7),
+	CellsAlligment: []layout.Direction{
+		layout.Center,
+		layout.Center,
+		layout.W,
+		layout.Center,
+		layout.Center,
+		layout.Center,
+		layout.Center,
+	},
+}
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	common.DrawBackground(gtx, m.th.Palette.MarkersViewBg)
 
 	var searchDims layout.Dimensions
-	common.OffsetBy(gtx, image.Pt(0, 200), func() {
+	common.OffsetBy(gtx, image.Pt(0, topM), func() {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
@@ -23,12 +43,61 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			return searchDims
 		})
 	})
-	common.OffsetBy(gtx, image.Pt(0, 200+searchDims.Size.Y+20), func() {
+	common.OffsetBy(gtx, image.Pt(0, topM+searchDims.Size.Y+20), func() {
 		common.DrawDivider(gtx, m.th, common.DividerProps{
 			Inset: common.DividerMiddleInset,
 		})
 	})
 
+	marginX := gtx.Dp(20)
+	common.OffsetBy(gtx, image.Pt(marginX, topM+searchDims.Size.Y+50), func() {
+		gtx.Constraints.Max.X -= marginX * 2
+		gtx.Constraints.Max.Y -= topM + searchDims.Size.Y + 50
+		table.List.Axis = layout.Vertical
+		table.Rows = len(*m.timeMarkers)
+		common.DrawTable(gtx, m.th, common.TableProps{Table: table},
+			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+				txt := material.Body2(m.th.Theme, fmt.Sprintf("%02d", rowIdx+1))
+				return txt.Layout(gtx)
+			},
+			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+				gtx.Constraints.Min.X = gtx.Dp(24)
+				return micons.Play.Layout(gtx, m.th.Palette.Backdrop)
+			},
+			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+				gtx.Constraints.Min = image.Point{}
+				txt := material.Body2(m.th.Theme, (*m.timeMarkers).GetAsc(rowIdx).Name)
+				return txt.Layout(gtx)
+			},
+			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+				txt := material.Body2(m.th.Theme, fmt.Sprint((*m.timeMarkers).GetAsc(rowIdx).Pcm))
+				return txt.Layout(gtx)
+			},
+			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+				gtx.Constraints.Min = image.Point{}
+				return common.DrawBox(gtx, common.Box{
+					Size:  image.Rectangle(gtx.Constraints),
+					Color: m.th.Palette.SegButtons.Disabled.Selected,
+				})
+			},
+			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+				gtx.Constraints.Min = image.Point{}
+				return common.DrawBox(gtx, common.Box{
+					Size:  image.Rectangle(gtx.Constraints),
+					Color: m.th.Palette.Editor.Bg,
+				})
+			},
+			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+				gtx.Constraints.Min = image.Point{}
+				return common.DrawBox(gtx, common.Box{
+					Size:  image.Rectangle(gtx.Constraints),
+					Color: m.th.Palette.Editor.SoundWave,
+				})
+			},
+		)
+	})
+
+	// TODO: Move this to Searchable
 	if searchable.IsHovered() {
 		if searchable.IsFocused() {
 			common.SetCursor(gtx, pointer.CursorText)

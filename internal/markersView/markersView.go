@@ -1,17 +1,23 @@
 package markersview
 
-import "github.com/spyhere/re-peat/internal/ui/theme"
+import (
+	tm "github.com/spyhere/re-peat/internal/timeMarkers"
+	"github.com/spyhere/re-peat/internal/ui/theme"
+)
 
 type Props struct {
-	Th *theme.RepeatTheme
+	Th          *theme.RepeatTheme
+	TimeMarkers *tm.TimeMarkers
 }
 
 func NewMarkersView(props Props) *MarkersView {
 	return &MarkersView{
-		th: props.Th,
+		th:          props.Th,
+		timeMarkers: props.TimeMarkers,
 	}
 }
 
 type MarkersView struct {
-	th *theme.RepeatTheme
+	th          *theme.RepeatTheme
+	timeMarkers *tm.TimeMarkers
 }
