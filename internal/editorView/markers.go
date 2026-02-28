@@ -1,35 +1,22 @@
 package editorview
 
 import (
-	"slices"
+	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
 
-const markersLimit = 100
-
-func newMarkers() *markers {
+func newMarkers(tmArray tm.TimeMarkers) *markers {
 	return &markers{
-		arr: make([]*marker, 0, markersLimit),
+		arr: tmArray,
 	}
 }
 
 type markers struct {
-	arr           []*marker
-	editing       *marker
-	hovering      *marker
+	arr           tm.TimeMarkers
+	editing       *tm.TimeMarker
+	hovering      *tm.TimeMarker
 	overlayParams markerProps
 }
 
-type marker struct {
-	pcm    int64
-	name   string
-	tags   *markerTags
-	isDead bool
-}
-type markerTags struct {
-	flag  *struct{}
-	pole  *struct{}
-	label *struct{}
-}
 type mInteraction struct {
 	flag    bool
 	pole    bool
@@ -38,45 +25,22 @@ type mInteraction struct {
 }
 
 func (m *markers) newMarker(pcm int64) {
-	if len(m.arr)+1 > markersLimit {
-		// TODO: display error
+	newM := m.arr.NewMarker(pcm)
+	if newM == nil {
 		return
 	}
-	newM := &marker{
-		pcm: pcm,
-		tags: &markerTags{
-			flag:  &struct{}{},
-			pole:  &struct{}{},
-			label: &struct{}{},
-		},
-	}
-	m.arr = append(m.arr, newM)
 	m.editing = newM
 }
 
-func (m *marker) markDead() {
-	m.isDead = true
-}
-
 func (m *markers) deleteDead() {
-	m.arr = slices.DeleteFunc(m.arr, func(it *marker) bool {
-		return it.isDead
-	})
+	m.arr.DeleteDead()
 }
 
-func (m *markers) sortCb(a, b *marker) int {
-	return int(b.pcm - a.pcm)
+func (m *markers) getSortedMarkers() tm.TimeMarkers {
+	return m.arr.Sorted()
 }
 
-func (m *markers) getSortedMarkers() []*marker {
-	if slices.IsSortedFunc(m.arr, m.sortCb) {
-		return m.arr
-	}
-	seq := slices.Values(m.arr)
-	return slices.SortedStableFunc(seq, m.sortCb)
-}
-
-func (m *markers) startEdit(curMarker *marker) {
+func (m *markers) startEdit(curMarker *tm.TimeMarker) {
 	m.editing = curMarker
 }
 
@@ -88,7 +52,7 @@ func (m *markers) isEditing() bool {
 	return m.editing != nil
 }
 
-func (m *markers) startHover(curMarker *marker) {
+func (m *markers) startHover(curMarker *tm.TimeMarker) {
 	if m.hovering == nil {
 		m.hovering = curMarker
 	}

@@ -90,7 +90,7 @@ func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 	for _, marker := range ed.markers.arr {
 		common.HandlePointerEvents(
 			gtx,
-			&marker.tags.flag,
+			&marker.Tags.Flag,
 			pointer.Press|pointer.Move,
 			func(e pointer.Event) {
 				ed.handlePointer(pointerEvent{
@@ -104,7 +104,7 @@ func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 		)
 		common.HandlePointerEvents(
 			gtx,
-			&marker.tags.pole,
+			&marker.Tags.Pole,
 			pointer.Enter|pointer.Press|pointer.Move|pointer.Drag|pointer.Release,
 			func(e pointer.Event) {
 				ed.handlePointer(pointerEvent{
@@ -118,7 +118,7 @@ func (ed *Editor) dispatchMarkerEvent(gtx layout.Context) {
 		)
 		common.HandlePointerEvents(
 			gtx,
-			&marker.tags.label,
+			&marker.Tags.Label,
 			pointer.Move|pointer.Press,
 			func(e pointer.Event) {
 				ed.handlePointer(pointerEvent{

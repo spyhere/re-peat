@@ -12,6 +12,7 @@ import (
 	"github.com/spyhere/re-peat/internal/editorView"
 	"github.com/spyhere/re-peat/internal/markersView"
 	p "github.com/spyhere/re-peat/internal/player"
+	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -29,18 +30,21 @@ func newApp() *App {
 		log.Fatal(err)
 	}
 	player.SetVolume(0.7)
+	timeMarkers := tm.NewTimeMarkers()
 	appInstance := &App{
 		th:      th,
 		buttons: newButtons(),
 		markersView: markersview.NewMarkersView(markersview.Props{
 			Th: th,
 		}),
+		timeMarkers: timeMarkers,
 	}
 	ed, err := editorview.NewEditor(editorview.EditorProps{
 		Dec:           decoder,
 		Player:        player,
 		Th:            th,
 		Pcm:           pcm,
+		TimeMarkers:   timeMarkers,
 		OnStartEditCb: appInstance.onStartMarkerEdit,
 		OnStopEditCb:  appInstance.onStopMarkerEdit,
 	})
@@ -64,6 +68,7 @@ type App struct {
 	editorView  *editorview.Editor
 	selectedTab tab
 	th          *theme.RepeatTheme
+	timeMarkers tm.TimeMarkers
 	*buttons
 }
 

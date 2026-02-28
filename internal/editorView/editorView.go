@@ -11,6 +11,7 @@ import (
 	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/player"
+	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 	"github.com/tosone/minimp3"
 )
@@ -28,6 +29,7 @@ type EditorProps struct {
 	OnStartEditCb func()
 	OnStopEditCb  func()
 	Pcm           []byte
+	tm.TimeMarkers
 }
 
 func NewEditor(props EditorProps) (*Editor, error) {
@@ -45,7 +47,7 @@ func NewEditor(props EditorProps) (*Editor, error) {
 		audio:         newAudio(props.Dec, props.Pcm, monoSamples, frames),
 		playhead:      newPlayhead(playheadInitDur),
 		cache:         newCache(),
-		markers:       newMarkers(),
+		markers:       newMarkers(props.TimeMarkers),
 		mEditor:       newMEditor(),
 		scroll:        newScroll(),
 		th:            props.Th,
@@ -190,13 +192,13 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.leftB += panSamples
 }
 
-func (ed *Editor) startEdit(m *marker) {
+func (ed *Editor) startEdit(m *tm.TimeMarker) {
 	ed.mode = modeMEdit
 	if m == nil {
 		ed.markers.newMarker(ed.playhead.bytes)
 	} else {
-		ed.mEditor.SetText(m.name)
-		ed.mEditor.SetCaret(len(m.name), 0)
+		ed.mEditor.SetText(m.Name)
+		ed.mEditor.SetCaret(len(m.Name), 0)
 		ed.markers.startEdit(m)
 	}
 	ed.onStartEditCb()
@@ -206,8 +208,8 @@ func (ed *Editor) cancelEdit() {
 	if !ed.markers.isEditing() {
 		return
 	}
-	if ed.markers.editing.name == "" {
-		ed.markers.editing.markDead()
+	if ed.markers.editing.Name == "" {
+		ed.markers.editing.MarkDead()
 	}
 	ed.markers.stopEdit()
 	ed.mEditor.SetText("")
@@ -216,7 +218,7 @@ func (ed *Editor) cancelEdit() {
 }
 
 func (ed *Editor) confirmEdit(newName string) {
-	ed.markers.editing.name = newName
+	ed.markers.editing.Name = newName
 	ed.markers.stopEdit()
 	ed.mEditor.SetText("")
 	ed.mode = modeIdle
@@ -248,7 +250,7 @@ func (ed *Editor) isCreateButtonVisible() bool {
 	return ed.mode == modeMLife || ed.mode == modeMCreateIntent || ed.mode == modeMDeleteIntent
 }
 
-func (ed *Editor) getMI9n(m *marker) mInteraction {
+func (ed *Editor) getMI9n(m *tm.TimeMarker) mInteraction {
 	isHovering := ed.markers.isHovering()
 	hoveringOverThis := isHovering && ed.markers.hovering == m
 	isDragging := ed.mode == modeMDrag

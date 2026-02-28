@@ -3,6 +3,7 @@ package editorview
 import (
 	"gioui.org/io/pointer"
 	"github.com/spyhere/re-peat/internal/common"
+	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
 
 type hitKind int
@@ -20,7 +21,7 @@ const (
 
 type hitTarget struct {
 	Kind   hitKind
-	Marker *marker
+	Marker *tm.TimeMarker
 }
 
 type pointerEvent struct {
@@ -112,7 +113,7 @@ func (ed *Editor) handleMCreateIntent(p pointerEvent) {
 func (ed *Editor) handleMDeleteIntent(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Press:
-		p.Target.Marker.markDead()
+		p.Target.Marker.MarkDead()
 	}
 	ed.transition(p)
 }
@@ -120,7 +121,7 @@ func (ed *Editor) handleMDeleteIntent(p pointerEvent) {
 func (ed *Editor) handleMHit(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Release:
-		ed.setPlayhead(p.Target.Marker.pcm)
+		ed.setPlayhead(p.Target.Marker.Pcm)
 	case pointer.Drag:
 		ed.mode = modeMDrag
 		ed.setCursor(pointer.CursorGrabbing)
@@ -153,8 +154,8 @@ func (ed *Editor) handleDragMarker(p pointerEvent) {
 	case pointer.Drag:
 		dSamples := int(ed.scroll.samplesPerPx * p.Event.Position.X)
 		m := p.Target.Marker
-		m.pcm = ed.audio.getPcmFromSamples(ed.scroll.leftB + int(dSamples))
-		m.pcm = common.Clamp(0, m.pcm, ed.audio.pcmLen)
+		m.Pcm = ed.audio.getPcmFromSamples(ed.scroll.leftB + int(dSamples))
+		m.Pcm = common.Clamp(0, m.Pcm, ed.audio.pcmLen)
 	case pointer.Release:
 		ed.mode = modeHitWave
 	}

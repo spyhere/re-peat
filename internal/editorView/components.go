@@ -19,6 +19,7 @@ import (
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
+	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -197,7 +198,7 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, getMI9n func(*marker) mInteraction) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -218,14 +219,14 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 				if !i9n.hovered {
 					nameLimit = mrkSz.Lbl.MaxGlyphs
 				}
-				name := common.StrTrunc(marker.name, nameLimit)
+				name := common.StrTrunc(marker.Name, nameLimit)
 				renderable = material.Body2(th.Theme, name)
 			}
 			inset := unit.Dp(mrkSz.Lbl.Margin)
 			gtx.Constraints.Min = image.Point{}
 			nameDim = layout.UniformInset(inset).Layout(gtx, renderable.Layout)
 		})
-		curSamples := a.getSamplesFromPCM(marker.pcm)
+		curSamples := a.getSamplesFromPCM(marker.Pcm)
 		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)
 		if x+nameDim.Size.X+mrkSz.Lbl.InvisPad >= prevLblX && prevLblX != maxX {
 			yOffset += mrkSz.Lbl.H + mrkSz.Lbl.InvisPad
@@ -238,7 +239,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 			x:            x,
 			y:            wavePadding,
 			isEditing:    isEditing,
-			tags:         marker.tags,
+			tags:         marker.Tags,
 			i9n:          i9n,
 			height:       soundWaveH,
 			yOffset:      yOffset,
@@ -261,7 +262,7 @@ type markerProps struct {
 	x            int
 	y            int
 	isEditing    bool
-	tags         *markerTags
+	tags         *tm.Tags
 	i9n          mInteraction
 	height       int
 	yOffset      int
@@ -291,7 +292,7 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 		activeArea := image.Rect(0, 0, mrkSz.Pole.W, poleH-poleYPad)
 		activeArea.Min.X -= poleActivePad
 		activeArea.Max.X += poleActivePad
-		common.RegisterTag(gtx, &mProps.tags.pole, activeArea)
+		common.RegisterTag(gtx, &mProps.tags.Pole, activeArea)
 		passOp.Pop()
 	}
 
@@ -333,7 +334,7 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 			micons.Delete.Layout(gtx, th.Palette.Editor.SoundWave)
 		})
 		flagArea := image.Rect(-int(flagHalfW), int(yF), int(flagHalfW), int(yF)+mrkSz.Pole.FlagH)
-		common.RegisterTag(gtx, &mProps.tags.flag, flagArea)
+		common.RegisterTag(gtx, &mProps.tags.Flag, flagArea)
 	}
 
 	// Label
@@ -350,7 +351,7 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 	})
 	if mProps.i9n.label {
 		lblArea.Min.X -= mrkSz.Pole.W + poleActivePad
-		common.RegisterTag(gtx, &mProps.tags.label, lblArea)
+		common.RegisterTag(gtx, &mProps.tags.Label, lblArea)
 	}
 	halfMargin := mrkSz.Lbl.Margin / 2
 	common.OffsetBy(gtx, image.Pt(halfMargin, y+halfMargin), func() {
