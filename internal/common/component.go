@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"math"
@@ -337,5 +338,44 @@ func DrawDivider(gtx layout.Context, th *theme.RepeatTheme, props DividerProps) 
 	DrawBox(gtx, Box{
 		Size:  size,
 		Color: th.Palette.Divider,
+	})
+}
+
+type TableProps struct {
+	Table
+}
+
+type CellComp func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions
+
+// Inside cellComp clear min constraints for proper Y text alignment
+func DrawTable(gtx layout.Context, th *theme.RepeatTheme, props TableProps, cellComps ...CellComp) {
+	DrawBox(gtx, Box{
+		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
+		Color: th.Palette.CardBg,
+		R:     theme.CornerR(0, 0, 20, 20),
+	})
+
+	maxX := gtx.Constraints.Max.X
+	ls := material.List(th.Theme, props.Table.List)
+	ls.Layout(gtx, props.Table.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
+		for colIdx, it := range cellComps {
+			props.Table.Cells[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				curWidth := PrcToPx(maxX, fmt.Sprintf("%d%", props.ColumnWidths[colIdx]))
+				columnDims := layout.Dimensions{Size: image.Pt(curWidth, gtx.Dp(30))}
+				cellAl := props.Table.CellsAlligment[colIdx]
+				gtx.Constraints.Max = columnDims.Size
+				gtx.Constraints.Min = columnDims.Size
+
+				cellAl.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					return it(gtx, rowIdx, colIdx)
+				})
+				DrawBox(gtx, Box{
+					Size:  image.Rect(gtx.Constraints.Max.X-2, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
+					Color: th.Palette.Backdrop,
+				})
+				return columnDims
+			})
+		}
+		return layout.Flex{}.Layout(gtx, props.Table.Cells...)
 	})
 }

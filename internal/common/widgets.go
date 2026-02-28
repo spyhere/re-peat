@@ -82,3 +82,12 @@ func (s *Searchable) IsHovered() bool {
 func (s *Searchable) IsFocused() bool {
 	return s.isFocused
 }
+
+type Table struct {
+	Columns        int
+	Rows           int
+	Cells          []layout.FlexChild
+	List           *widget.List
+	ColumnWidths   []int
+	CellsAlligment []layout.Direction
+}
