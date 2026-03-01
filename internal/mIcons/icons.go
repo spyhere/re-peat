@@ -23,4 +23,5 @@ var (
 	Cancel           = newIcon(icons.NavigationCancel)
 	Play             = newIcon(icons.AVPlayArrow)
 	Filter           = newIcon(icons.ContentFilterList)
+	Edit             = newIcon(icons.EditorModeEdit)
 )
