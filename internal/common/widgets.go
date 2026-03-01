@@ -140,38 +140,44 @@ func (t *Table) RowCells(rFuncs ...CellComp) {
 }
 
 const tableXMargin = 8
-const tableYMargin = 8
+const tableYMargin = 12
 
 func (t *Table) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths []int) {
+	DrawBox(gtx, Box{
+		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
+		Color: th.Palette.CardBg,
+		R:     theme.CornerR(0, 0, 20, 20),
+	})
+
+	xMargin, yMargin := gtx.Dp(tableXMargin), gtx.Dp(tableYMargin)
+	gtx.Constraints.Min = image.Point{}
+	gtx.Constraints.Max.X -= xMargin * 2
+	gtx.Constraints.Max.Y -= yMargin
+	if t.BottomMargin {
+		gtx.Constraints.Max.Y -= yMargin
+	}
 	var cellWidthSum int
 	maxX := gtx.Constraints.Max.X
 	for idx, it := range colWidths {
 		v := it * maxX / 100
 		cellWidthSum += v
 		t.columnWidths[idx] = v
+		if idx < len(colWidths)-1 {
+			OffsetBy(gtx, image.Pt(cellWidthSum+xMargin, yMargin), func() {
+				DrawDivider(gtx, th, DividerProps{Axis: Vertical})
+			})
+		}
+
 	}
 	if cellWidthSum < gtx.Constraints.Max.X {
 		t.columnWidths[len(t.columnWidths)-1] += gtx.Constraints.Max.X - cellWidthSum
 	}
-
-	gtx.Constraints.Min = image.Point{}
-	DrawBox(gtx, Box{
-		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
-		Color: th.Palette.CardBg,
-		R:     theme.CornerR(0, 0, 20, 20),
-	})
-	xMargin, yMargin := gtx.Dp(tableXMargin), gtx.Dp(tableYMargin)
 	OffsetBy(gtx, image.Pt(xMargin, yMargin), func() {
-		gtx.Constraints.Max.X -= xMargin * 2
-		gtx.Constraints.Max.Y -= yMargin
-		if t.BottomMargin {
-			gtx.Constraints.Max.Y -= yMargin
-		}
 		t.layout(gtx, th)
 	})
 }
 
-const headerHDP = 42
+const headerHDP = 40
 const cellMarginDP = 5
 const rowHeightDP = 38
 
