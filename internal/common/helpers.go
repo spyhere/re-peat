@@ -20,6 +20,7 @@ func SetCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
+// TODO: Make it return dimensions of the widget
 func OffsetBy(gtx layout.Context, amount image.Point, w func()) {
 	defer op.Offset(amount).Push(gtx.Ops).Pop()
 	w()
