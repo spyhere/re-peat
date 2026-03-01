@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 
+	"gioui.org/font"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/widget"
@@ -18,8 +19,8 @@ var topM = 140
 var table = common.Table{
 	List:         &widget.List{},
 	ColumnWidths: []int{3, 4, 31, 6, 46, 3, 6},
-	Cells:        make([]layout.FlexChild, 7),
-	CellsAlligment: []layout.Direction{
+	CellsBuf:     make([]layout.FlexChild, 7),
+	HCellsAllignment: []layout.Direction{
 		layout.Center,
 		layout.Center,
 		layout.W,
@@ -28,6 +29,17 @@ var table = common.Table{
 		layout.Center,
 		layout.Center,
 	},
+	RCellsAllignment: []layout.Direction{
+		layout.Center,
+		layout.Center,
+		layout.W,
+		layout.Center,
+		layout.Center,
+		layout.Center,
+		layout.Center,
+	},
+	HeadCellFuncs: make([]common.HeadCellComp, 7),
+	RowCellFuncs:  make([]common.CellComp, 7),
 }
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
@@ -55,7 +67,40 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.Y -= topM + searchDims.Size.Y + 50
 		table.List.Axis = layout.Vertical
 		table.Rows = len(*m.timeMarkers)
-		common.DrawTable(gtx, m.th, common.TableProps{Table: table},
+		table.HeadCells(
+			func(gtx layout.Context) layout.Dimensions {
+				txt := material.Body2(m.th.Theme, "#")
+				txt.Font.Weight = font.Bold
+				return txt.Layout(gtx)
+			},
+			func(gtx layout.Context) layout.Dimensions {
+				return layout.Dimensions{}
+			},
+			func(gtx layout.Context) layout.Dimensions {
+				gtx.Constraints.Min = image.Point{}
+				txt := material.Body2(m.th.Theme, "Name")
+				txt.Font.Weight = font.Bold
+				return txt.Layout(gtx)
+			},
+			func(gtx layout.Context) layout.Dimensions {
+				txt := material.Body2(m.th.Theme, "Time")
+				txt.Font.Weight = font.Bold
+				return txt.Layout(gtx)
+			},
+			func(gtx layout.Context) layout.Dimensions {
+				txt := material.Body2(m.th.Theme, "Tags")
+				txt.Font.Weight = font.Bold
+				return txt.Layout(gtx)
+			},
+			func(gtx layout.Context) layout.Dimensions {
+				return layout.Dimensions{}
+			},
+			func(gtx layout.Context) layout.Dimensions {
+				// Delete button
+				return layout.Dimensions{}
+			},
+		)
+		table.RowCells(
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
 				txt := material.Body2(m.th.Theme, fmt.Sprintf("%02d", rowIdx+1))
 				return txt.Layout(gtx)
@@ -95,6 +140,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				})
 			},
 		)
+		table.Layout(gtx, m.th)
 	})
 
 	// TODO: Move this to Searchable
