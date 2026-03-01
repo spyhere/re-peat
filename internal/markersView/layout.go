@@ -130,17 +130,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				return common.DrawBox(gtx, common.Box{
-					Size:  image.Rectangle(gtx.Constraints),
-					Color: m.th.Palette.Editor.Bg,
-				})
+				return micons.Edit.Layout(gtx, m.th.Palette.Backdrop)
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				return common.DrawBox(gtx, common.Box{
-					Size:  image.Rectangle(gtx.Constraints),
-					Color: m.th.Palette.Editor.SoundWave,
-				})
+				return micons.Delete.Layout(gtx, m.th.Palette.Backdrop)
 			},
 		)
 		table.Layout(gtx, m.th, []int{4, 4, 31, 6, 46, 3, 6})
