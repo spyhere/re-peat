@@ -64,7 +64,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		table.Rows = len(*m.timeMarkers)
 		table.HeadCells(
 			func(gtx layout.Context) layout.Dimensions {
-				txt := material.Body2(m.th.Theme, "#")
+				txt := material.Body2(m.th.Theme, "№")
 				txt.Font.Weight = font.Bold
 				return txt.Layout(gtx)
 			},
