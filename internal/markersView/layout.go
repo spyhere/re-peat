@@ -83,10 +83,17 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
+				iconSize := gtx.Dp(24)
+				gtx.Constraints.Min.X = iconSize
+				micons.Filter.Layout(gtx, m.th.Palette.Backdrop)
 				gtx.Constraints.Min = image.Point{}
 				txt := material.Body2(m.th.Theme, "Tags")
 				txt.Font.Weight = font.Bold
-				return txt.Layout(gtx)
+				var textDim layout.Dimensions
+				common.OffsetBy(gtx, image.Pt(iconSize, 0), func() {
+					textDim = txt.Layout(gtx)
+				})
+				return layout.Dimensions{Size: image.Pt(iconSize+textDim.Size.X, textDim.Size.Y)}
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				return layout.Dimensions{}

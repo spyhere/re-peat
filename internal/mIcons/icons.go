@@ -22,4 +22,5 @@ var (
 	Search           = newIcon(icons.ActionSearch)
 	Cancel           = newIcon(icons.NavigationCancel)
 	Play             = newIcon(icons.AVPlayArrow)
+	Filter           = newIcon(icons.ContentFilterList)
 )
