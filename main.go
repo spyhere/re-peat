@@ -16,7 +16,7 @@ func main() {
 	go func() {
 		window := new(app.Window)
 		window.Option(app.Title("re-peat"))
-		window.Option(app.Size(unit.Dp(900), unit.Dp(700)))
+		window.Option(app.Size(unit.Dp(1000), unit.Dp(700)))
 		err := run(window, repeatApp)
 		if err != nil {
 			log.Fatal(err)
