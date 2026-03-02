@@ -179,7 +179,7 @@ func (t *Table) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths []in
 
 const headerHDP = 40
 const cellMarginDP = 5
-const rowHeightDP = 38
+const rowHeightDP = 50
 
 func (t *Table) layout(gtx layout.Context, th *theme.RepeatTheme) {
 	ls := material.List(th.Theme, t.list)

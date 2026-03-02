@@ -32,7 +32,7 @@ var table = common.NewTable(common.TableProps{
 		layout.Center,
 		layout.W,
 		layout.Center,
-		layout.Center,
+		layout.W,
 		layout.Center,
 		layout.Center,
 	},
@@ -125,9 +125,16 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				return common.DrawBox(gtx, common.Box{
-					Size:  image.Rectangle(gtx.Constraints),
-					Color: m.th.Palette.SegButtons.Disabled.Selected,
+				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
+				tagsArr := curMarker.CategoryTags
+				return curMarker.List.Layout(gtx, len(tagsArr)+len(tagsArr)-1, func(gtx layout.Context, index int) layout.Dimensions {
+					if index%2 != 0 {
+						return layout.Dimensions{Size: image.Pt(gtx.Dp(5), 0)}
+					}
+					dim := common.DrawChip(gtx, m.th, common.ChipProps{
+						Text: tagsArr[index/2],
+					})
+					return dim
 				})
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
