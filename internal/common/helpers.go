@@ -2,6 +2,7 @@ package common
 
 import (
 	"cmp"
+	"fmt"
 	"image"
 	"log"
 	"math"
@@ -121,4 +122,16 @@ func StrTrunc(name string, limit int) string {
 	}
 	newName.WriteString("...")
 	return newName.String()
+}
+
+func FormatSeconds(seconds float64) string {
+	if seconds < 60 {
+		return fmt.Sprintf("00:%02d", int(seconds))
+	}
+	minutes := seconds / 60
+	if minutes < 60 {
+		return fmt.Sprintf("%02d:%02d", int(minutes), int(math.Mod(seconds, 60)))
+	}
+	hours := minutes / 60
+	return fmt.Sprintf("%d:%02d:%02d", int(hours), int(math.Mod(minutes, 60)), int(math.Mod(seconds, 60)))
 }
