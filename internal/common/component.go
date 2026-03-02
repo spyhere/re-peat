@@ -344,3 +344,53 @@ func DrawDivider(gtx layout.Context, th *theme.RepeatTheme, props DividerProps) 
 		Color: th.Palette.Divider,
 	})
 }
+
+type chipMaterialSpecs struct {
+	outline                unit.Dp
+	height                 unit.Dp
+	shape                  unit.Dp
+	iconSize               unit.Dp
+	xPadding               unit.Dp
+	iconsPadding           unit.Dp
+	betweenElementsPadding unit.Dp
+}
+
+var chipSpecs = chipMaterialSpecs{
+	outline:                1,
+	height:                 32,
+	shape:                  8,
+	iconSize:               18,
+	xPadding:               16,
+	betweenElementsPadding: 8,
+}
+
+type ChipProps struct {
+	Text string
+}
+
+func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout.Dimensions {
+	var textDim layout.Dimensions
+	textM := MakeMacro(gtx.Ops, func() {
+		txt := material.Body2(th.Theme, props.Text)
+		txt.Color = th.Palette.Chip.Enabled.Text
+		txt.Font.Typeface = "Roboto"
+		txt.LineHeight = 20
+		txt.TextSize = 14
+		txt.Font.Weight = 500
+		textDim = txt.Layout(gtx)
+	})
+	h := gtx.Dp(chipSpecs.height)
+	shape := gtx.Dp(chipSpecs.shape)
+	xPadding := gtx.Dp(chipSpecs.xPadding)
+	chipSize := image.Rect(0, 0, textDim.Size.X+xPadding*2, h)
+	chipDims := DrawBox(gtx, Box{
+		Size:    chipSize,
+		R:       theme.CornerR(shape, shape, shape, shape),
+		StrokeC: th.Palette.Chip.Enabled.Outline,
+		StrokeW: chipSpecs.outline,
+	})
+	OffsetBy(gtx, image.Pt(xPadding, textDim.Size.Y/2), func() {
+		textM.Add(gtx.Ops)
+	})
+	return chipDims
+}

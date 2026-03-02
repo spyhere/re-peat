@@ -5,6 +5,12 @@ import "image/color"
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
 	Divider:  rgb(0xCAC4D0),
+	Chip: chipStatesPalette{
+		Enabled: chipPalette{
+			Outline: rgb(0xCAC4D0),
+			Text:    rgb(0x1D1B20),
+		},
+	},
 	Search: searchStatesPalette{
 		Enabled: searchPalette{
 			Bg:      rgb(0xECE6F0),
@@ -71,11 +77,21 @@ var (
 type palette struct {
 	Backdrop      color.NRGBA
 	Divider       color.NRGBA
+	Chip          chipStatesPalette
 	Search        searchStatesPalette
 	CardBg        color.NRGBA
 	SegButtons    segButtonsStatesPalette
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette
+}
+
+type chipStatesPalette struct {
+	Enabled chipPalette
+}
+
+type chipPalette struct {
+	Outline color.NRGBA
+	Text    color.NRGBA
 }
 
 type searchPalette struct {
