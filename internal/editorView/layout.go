@@ -26,7 +26,7 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 
 	pDim := playheadComp(gtx, ed.th, ed.playhead.bytes, ed.audio, ed.scroll)
 	if ed.p.IsPlaying() {
-		if ed.playhead.bytes < ed.audio.pcmLen {
+		if ed.playhead.bytes < ed.audio.PcmLen {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playhead.update)})
 		}
 		ed.listenToPlayerUpdates()

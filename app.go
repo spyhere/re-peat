@@ -8,6 +8,7 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	editorview "github.com/spyhere/re-peat/internal/editorView"
 	markersview "github.com/spyhere/re-peat/internal/markersView"
@@ -32,6 +33,7 @@ func newApp() *App {
 	player.SetVolume(0.7)
 	// TODO: Create app state and put it there
 	timeMarkers := tm.NewTimeMarkers()
+	a := audio.NewAudio(decoder, pcm)
 	appInstance := &App{
 		th:      th,
 		buttons: newButtons(),
@@ -42,6 +44,7 @@ func newApp() *App {
 		timeMarkers: timeMarkers,
 	}
 	ed, err := editorview.NewEditor(editorview.EditorProps{
+		Audio:         a,
 		Dec:           decoder,
 		Player:        player,
 		Th:            th,

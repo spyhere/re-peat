@@ -7,7 +7,7 @@ func (ed *Editor) switchPlayerState() {
 		return
 	}
 	if !ed.p.IsPlaying() {
-		if ed.playhead.bytes >= ed.audio.pcmLen {
+		if ed.playhead.bytes >= ed.audio.PcmLen {
 			return
 		}
 		ed.p.Play()
@@ -23,7 +23,7 @@ func (ed *Editor) nudgePlayhead(forward bool) {
 	if ed.markers.isEditing() {
 		return
 	}
-	dPcm := ed.audio.getPcmFromSamples(int(ed.scroll.samplesPerPx))
+	dPcm := ed.audio.GetPcmFromSamples(int(ed.scroll.samplesPerPx))
 	if !forward {
 		dPcm *= -1
 	}

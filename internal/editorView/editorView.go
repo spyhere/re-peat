@@ -1,7 +1,6 @@
 package editorview
 
 import (
-	"fmt"
 	"image"
 	"math"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/widget"
+	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/player"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
@@ -28,6 +28,7 @@ type EditorProps struct {
 	Th            *theme.RepeatTheme
 	OnStartEditCb func()
 	OnStopEditCb  func()
+	Audio         audio.Audio
 	Pcm           []byte
 	*tm.TimeMarkers
 }
@@ -37,14 +38,11 @@ func NewEditor(props EditorProps) (*Editor, error) {
 	if err != nil {
 		return &Editor{}, err
 	}
-	fmt.Println("Audio data is normalised")
-	frames := len(normSamples) / props.Dec.Channels
 	monoSamples := makeSamplesMono(normSamples, props.Dec.Channels)
-	fmt.Println("WaveRenderer received mono samples")
 	return &Editor{
 		p:             props.Player,
 		monoSamples:   monoSamples,
-		audio:         newAudio(props.Dec, props.Pcm, monoSamples, frames),
+		audio:         props.Audio,
 		playhead:      newPlayhead(playheadInitDur),
 		cache:         newCache(),
 		markers:       newMarkers(props.TimeMarkers),
@@ -75,7 +73,7 @@ type Editor struct {
 	mode          interactionMode
 	cursor        pointer.Cursor
 	playhead      *playhead
-	audio         audio
+	audio         audio.Audio
 	monoSamples   []float32
 	cache         cache
 	markers       *markers
@@ -93,7 +91,7 @@ type Editor struct {
 func (ed *Editor) getRenderableWaves() [][2]float32 {
 	samplesPerPx := ed.scroll.samplesPerPx
 	visibleSamples := int(samplesPerPx * float32(ed.size.X))
-	leftB := common.Clamp(0, ed.scroll.leftB, ed.audio.pcmMonoLen-visibleSamples)
+	leftB := common.Clamp(0, ed.scroll.leftB, ed.audio.MonoSamplesLen-visibleSamples)
 	rightB := leftB + visibleSamples
 	if leftB == ed.scroll.leftB && rightB == ed.scroll.rightB {
 		return ed.cache.curSlice
@@ -126,7 +124,7 @@ func (ed *Editor) MakePeakMap() {
 	if ed.cache.isPopulated {
 		return
 	}
-	ed.scroll.maxSamplesPerPx = float32(ed.audio.sampleRate) / (float32(ed.size.X) / ed.audio.seconds)
+	ed.scroll.maxSamplesPerPx = float32(ed.audio.SampleRate) / (float32(ed.size.X) / float32(ed.audio.Seconds))
 	ed.scroll.minSamplesPerPx = ed.scroll.maxSamplesPerPx / float32(math.Exp2(float64(ed.scroll.maxLvl)))
 	ed.scroll.samplesPerPx = float32(ed.scroll.maxSamplesPerPx)
 
@@ -149,8 +147,8 @@ func (ed *Editor) MakePeakMap() {
 }
 
 func (ed *Editor) playheadPosFromX(posX float32) {
-	pxPerSec := float32(ed.audio.sampleRate) / float32(ed.scroll.samplesPerPx)
-	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.sampleRate))
+	pxPerSec := float32(ed.audio.SampleRate) / float32(ed.scroll.samplesPerPx)
+	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.SampleRate))
 	// TODO: handle error here
 	seekVal, _ := ed.p.Search(seconds)
 	ed.playhead.set(seekVal)
@@ -238,7 +236,7 @@ func (ed *Editor) listenToPlayerUpdates() {
 	player := ed.p
 	select {
 	case _ = <-player.IsDoneCh():
-		ed.playhead.bytes = ed.audio.pcmLen
+		ed.playhead.bytes = ed.audio.PcmLen
 		// We need to pause it after it's done to mitigate the potential bug. See [player.IsDoneCh] comment.
 		ed.p.Pause()
 	default:

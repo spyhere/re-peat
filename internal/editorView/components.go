@@ -17,6 +17,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
@@ -28,9 +29,9 @@ func offsetBy(gtx layout.Context, amount image.Point, w func()) {
 	w()
 }
 
-func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio, scroll scroll) layout.Dimensions {
+func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio.Audio, scroll scroll) layout.Dimensions {
 	maxX := gtx.Constraints.Max.X
-	currSamples := audio.getSamplesFromPCM(playhead) - scroll.leftB
+	currSamples := audio.GetSamplesFromPCM(playhead) - scroll.leftB
 	x := int(float32(currSamples) * float32(maxX) / float32(scroll.rightB-scroll.leftB))
 	if x < 0 || x > maxX {
 		return layout.Dimensions{Size: image.Pt(x, 0)}
@@ -143,9 +144,9 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
-func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scroll scroll, waveM int) {
-	pxPerSec := float32(audio.sampleRate) / scroll.samplesPerPx
-	leftBSec := audio.getSecondsFromSamples(scroll.leftB)
+func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio.Audio, scroll scroll, waveM int) {
+	pxPerSec := float32(audio.SampleRate) / scroll.samplesPerPx
+	leftBSec := audio.GetSecondsFromSamples(scroll.leftB)
 	var intervalSec int
 	for _, it := range timeIntervals {
 		if it*pxPerSec >= float32(th.Sizing.Editor.Grid.MinTimeInterval) {
@@ -154,12 +155,12 @@ func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio, scr
 		}
 	}
 
-	nextSec, nextSecIdx := audio.getNextSecond(leftBSec)
+	nextSec, nextSecIdx := audio.GetNextSecond(leftBSec)
 	curSecIdx := nextSecIdx
 	curSec := int(nextSec)
 	gridPalette := th.Palette.Editor.Grid
 	gridSizing := th.Sizing.Editor.Grid
-	for ; curSecIdx < scroll.rightB; curSecIdx += audio.sampleRate {
+	for ; curSecIdx < scroll.rightB; curSecIdx += audio.SampleRate {
 		if curSec == 0 {
 			curSec++
 			continue
@@ -198,7 +199,7 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio.Audio, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -226,7 +227,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 			gtx.Constraints.Min = image.Point{}
 			nameDim = layout.UniformInset(inset).Layout(gtx, renderable.Layout)
 		})
-		curSamples := a.getSamplesFromPCM(marker.Pcm)
+		curSamples := a.GetSamplesFromPCM(marker.Pcm)
 		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)
 		if x+nameDim.Size.X+mrkSz.Lbl.InvisPad >= prevLblX && prevLblX != maxX {
 			yOffset += mrkSz.Lbl.H + mrkSz.Lbl.InvisPad
