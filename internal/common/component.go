@@ -159,6 +159,11 @@ func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
 	rrectStack.Pop()
 
 	if b.StrokeW != 0 {
+		half := int(float32(gtx.Dp(b.StrokeW)) / 2)
+		rrect.Rect.Min.X += half
+		rrect.Rect.Min.Y += half
+		rrect.Rect.Max.X -= half
+		rrect.Rect.Max.Y -= half
 		stroke := clip.Stroke{
 			Path:  rrect.Path(gtx.Ops),
 			Width: float32(gtx.Dp(b.StrokeW)),
