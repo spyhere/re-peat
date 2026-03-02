@@ -1,8 +1,15 @@
 package timemarkers
 
-import "slices"
+import (
+	"slices"
 
-const Limit = 100
+	"gioui.org/widget"
+)
+
+const (
+	Limit     = 100
+	TagsLimit = 10
+)
 
 type TimeMarkers []*TimeMarker
 
@@ -11,10 +18,12 @@ func NewTimeMarkers() TimeMarkers {
 }
 
 type TimeMarker struct {
-	Pcm    int64
-	Name   string
-	Tags   *Tags
-	isDead bool
+	Pcm          int64
+	Name         string
+	Tags         *Tags
+	CategoryTags []string
+	List         widget.List
+	isDead       bool
 }
 
 // Gio geometry Tags for Editor view
@@ -35,6 +44,7 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 	}
 	newT := &TimeMarker{
 		Pcm: pcm,
+		CategoryTags: make([]string, 0, TagsLimit),
 		Tags: &Tags{
 			Flag:  &struct{}{},
 			Pole:  &struct{}{},
