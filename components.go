@@ -133,6 +133,9 @@ func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
 		col = bPalette.Selected
 	}
 	buttArea := image.Rect(0, 0, props.textDim.Size.X, props.height)
+	if !props.isLast {
+		buttArea.Max.X += gtx.Dp(segButtSpecs.outline)
+	}
 	cl := props.b.clickable
 	if props.isDisabled {
 		cl = nil
