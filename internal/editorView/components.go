@@ -240,7 +240,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 			x:            x,
 			y:            wavePadding,
 			isEditing:    isEditing,
-			tags:         marker.Tags,
+			tags:         marker.EditorTags,
 			i9n:          i9n,
 			height:       soundWaveH,
 			yOffset:      yOffset,
@@ -263,7 +263,7 @@ type markerProps struct {
 	x            int
 	y            int
 	isEditing    bool
-	tags         *tm.Tags
+	tags         *tm.EditorTags
 	i9n          mInteraction
 	height       int
 	yOffset      int

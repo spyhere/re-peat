@@ -20,14 +20,20 @@ func NewTimeMarkers() TimeMarkers {
 type TimeMarker struct {
 	Pcm          int64
 	Name         string
-	Tags         *Tags
+	isDead       bool
 	CategoryTags []string
 	List         widget.List
-	isDead       bool
+	*ListTags
+	*EditorTags
 }
 
-// Gio geometry Tags for Editor view
-type Tags struct {
+type ListTags struct {
+	Play   *struct{}
+	Edit   *struct{}
+	Delete *struct{}
+}
+
+type EditorTags struct {
 	Flag  *struct{}
 	Pole  *struct{}
 	Label *struct{}
@@ -45,10 +51,15 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 	newT := &TimeMarker{
 		Pcm: pcm,
 		CategoryTags: make([]string, 0, TagsLimit),
-		Tags: &Tags{
+		EditorTags: &EditorTags{
 			Flag:  &struct{}{},
 			Pole:  &struct{}{},
 			Label: &struct{}{},
+		},
+		ListTags: &ListTags{
+			Play:   &struct{}{},
+			Edit:   &struct{}{},
+			Delete: &struct{}{},
 		},
 	}
 	*t = append(*t, newT)
