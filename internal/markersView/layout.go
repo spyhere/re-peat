@@ -118,7 +118,9 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
-				txt := material.Body2(m.th.Theme, fmt.Sprint((*m.timeMarkers).GetAsc(rowIdx).Pcm))
+				curPcm := (*m.timeMarkers).GetAsc(rowIdx).Pcm
+				formattedSeconds := common.FormatSeconds(m.audio.GetSecondsFromSamples(m.audio.GetSamplesFromPCM(curPcm)))
+				txt := material.Body2(m.th.Theme, formattedSeconds)
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {

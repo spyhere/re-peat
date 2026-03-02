@@ -38,6 +38,7 @@ func newApp() *App {
 		th:      th,
 		buttons: newButtons(),
 		markersView: markersview.NewMarkersView(markersview.Props{
+			Audio:       a,
 			Th:          th,
 			TimeMarkers: &timeMarkers,
 		}),
