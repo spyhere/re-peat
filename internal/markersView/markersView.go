@@ -123,5 +123,5 @@ func (m *MarkersView) openTagsFilter() {
 }
 
 func (m *MarkersView) deleteMarkers() {
-	//
+	m.timeMarkers.MarkAllDead()
 }
