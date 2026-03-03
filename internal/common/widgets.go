@@ -16,12 +16,18 @@ import (
 type Searchable struct {
 	isHovered bool
 	isFocused bool
+	isDirty   bool
+	value     string
 	widget.Editor
 	widget.Clickable
 	Cancel widget.Clickable
 }
 
 func (s *Searchable) Update(gtx layout.Context) {
+	if s.gotDirty(gtx) {
+		s.isDirty = true
+	}
+
 	if s.Cancel.Clicked(gtx) {
 		s.Editor.SetText("")
 		s.Blur()
@@ -77,7 +83,11 @@ func (s *Searchable) Focus() (wasFocusedBefore bool) {
 }
 
 func (s *Searchable) GetInput() string {
-	return s.Editor.Text()
+	if s.isDirty {
+		s.value = s.Editor.Text()
+		s.isDirty = false
+	}
+	return s.value
 }
 
 func (s *Searchable) IsHovered() bool {
@@ -100,6 +110,19 @@ func (s *Searchable) GetCursorType() pointer.Cursor {
 		return pointer.CursorPointer
 	}
 	return pointer.CursorDefault
+}
+
+func (s *Searchable) gotDirty(gtx layout.Context) bool {
+	for {
+		we, ok := s.Editor.Update(gtx)
+		if !ok {
+			break
+		}
+		if _, ok := we.(widget.ChangeEvent); ok {
+			return true
+		}
+	}
+	return false
 }
 
 type TableProps[T any] struct {
