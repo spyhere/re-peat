@@ -168,7 +168,21 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				})
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
-				gtx.Constraints.Min = image.Point{}
+				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
+				if curMarker.Edit.Clicked(gtx) {
+					fmt.Println("Edit", rowIdx)
+				}
+				if curMarker.Edit.Hovered() {
+					common.SetCursor(gtx, pointer.CursorPointer)
+				}
+				iconSize := gtx.Dp(24)
+				gtx.Constraints.Min.X = iconSize
+				iconSizeHalf := iconSize / 2
+				common.DrawBox(gtx, common.Box{
+					Size:      image.Rect(0, 0, iconSize, iconSize),
+					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
+					Clickable: curMarker.Edit,
+				})
 				return micons.Edit.Layout(gtx, m.th.Palette.Backdrop)
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
@@ -190,7 +204,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return micons.Delete.Layout(gtx, m.th.Palette.Backdrop)
 			},
 		)
-		table.Layout(gtx, m.th, []int{4, 4, 31, 6, 46, 3, 6})
+		table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
 	})
 
 	// TODO: Move this to Searchable
