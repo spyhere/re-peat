@@ -43,6 +43,12 @@ func (tm *TimeMarker) MarkDead() {
 	tm.isDead = true
 }
 
+func (tm *TimeMarkers) MarkAllDead() {
+	for _, it := range *tm {
+		it.MarkDead()
+	}
+}
+
 func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 	if len(*t)+1 > Limit {
 		// TODO: display error
