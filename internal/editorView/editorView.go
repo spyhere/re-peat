@@ -232,16 +232,18 @@ func (ed *Editor) handleMEditor(we widget.EditorEvent) {
 	}
 }
 
+func (ed *Editor) startPlay() {
+	ed.p.Play()
+}
+
+func (ed *Editor) pausePlay() {
+	ed.p.Pause()
+	ed.playhead.reset()
+	ed.p.Set(ed.playhead.bytes)
+}
+
 func (ed *Editor) listenToPlayerUpdates() {
-	player := ed.p
-	select {
-	case _ = <-player.IsDoneCh():
-		ed.playhead.bytes = ed.audio.PcmLen
-		// We need to pause it after it's done to mitigate the potential bug. See [player.IsDoneCh] comment.
-		ed.p.Pause()
-	default:
-		ed.playhead.bytes = player.GetReadAmount()
-	}
+	ed.playhead.bytes = ed.p.GetReadAmount()
 }
 
 func (ed *Editor) isCreateButtonVisible() bool {

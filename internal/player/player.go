@@ -2,7 +2,6 @@ package player
 
 import (
 	"bytes"
-	"errors"
 	"io"
 
 	"github.com/ebitengine/oto/v3"
@@ -11,8 +10,8 @@ import (
 )
 
 type Player struct {
-	player  *oto.Player
-	cReader *countingReader
+	player *oto.Player
+	reader *bytes.Reader
 	// Amount of PCM bytes
 	dataLen  int
 	totalSec float32
@@ -24,7 +23,6 @@ func (p *Player) Play() {
 
 func (p *Player) Pause() {
 	p.player.Pause()
-	p.cReader.isActive = false
 }
 
 func (p *Player) IsPlaying() bool {
@@ -50,24 +48,8 @@ func (p *Player) BufferedSize() int {
 }
 
 func (p *Player) GetReadAmount() int64 {
-	return p.cReader.bytes - int64(p.player.BufferedSize())
-}
-
-func (p *Player) WaitUntilReady() bool {
-	return <-p.cReader.ready
-}
-
-/*
-You MUST(!) to pause the player when cReader tells it's done,
-otherwise there can be an edge case bug:
-When the player is playing the last portion of bytes and you are
-trying to seek, then player's native "Seek" method blocks forever.
-It's impossible to do it in this method, since we cannot read from
-the channel without emptying it and I need checking for state without
-blocking the thread (select clause).
-*/
-func (p *Player) IsDoneCh() chan bool {
-	return p.cReader.done
+	current, _ := p.reader.Seek(0, io.SeekCurrent)
+	return current - int64(p.player.BufferedSize())
 }
 
 func NewPlayer(dec *minimp3.Decoder, data []byte) (*Player, error) {
@@ -82,51 +64,12 @@ func NewPlayer(dec *minimp3.Decoder, data []byte) (*Player, error) {
 		return &Player{}, err
 	}
 	<-readyChan
-	cReader := &countingReader{
-		r:     bytes.NewReader(data),
-		ready: make(chan bool),
-		done:  make(chan bool),
-	}
-	player := otoCtx.NewPlayer(cReader)
+	reader := bytes.NewReader(data)
+	player := otoCtx.NewPlayer(reader)
 	return &Player{
 		player:   player,
-		cReader:  cReader,
+		reader:   reader,
 		dataLen:  len(data),
 		totalSec: float32(len(data)) / float32(dec.SampleRate) * 0.25,
 	}, nil
-}
-
-type countingReader struct {
-	r *bytes.Reader
-	// What's the current offset
-	bytes int64
-	// Is reading at the moment
-	isActive bool
-	// User of this reader has started to read
-	ready chan bool
-	// EOF is beaing reached
-	done chan bool
-}
-
-func (c *countingReader) Read(p []byte) (int, error) {
-	if !c.isActive {
-		c.isActive = true
-		c.ready <- true
-	}
-	// Should read after the check otherwise it can be janky sometimes
-	n, err := c.r.Read(p)
-	if err != nil {
-		if errors.Is(err, io.EOF) {
-			c.done <- true
-			c.isActive = false
-		}
-		return n, err
-	}
-	c.bytes += int64(n)
-	return n, err
-}
-
-func (c *countingReader) Seek(offset int64, whence int) (int64, error) {
-	c.bytes = offset
-	return c.r.Seek(offset, whence)
 }

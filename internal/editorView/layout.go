@@ -12,6 +12,12 @@ import (
 func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	ed.dispatch(gtx)
 	ed.updateDifferedState()
+	if ed.p.IsPlaying() {
+		if ed.playhead.bytes < ed.audio.PcmLen {
+			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playhead.update)})
+		}
+		ed.listenToPlayerUpdates()
+	}
 
 	common.DrawBackground(gtx, ed.th.Palette.Editor.Bg)
 	common.RegisterTag(gtx, &ed.tags.mLife, image.Rect(0, 0, gtx.Constraints.Max.X, ed.waveM))
@@ -25,12 +31,6 @@ func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions
 	common.RegisterTag(gtx, &ed.tags.noneArea, image.Rect(0, gtx.Constraints.Max.Y-ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y))
 
 	pDim := playheadComp(gtx, ed.th, ed.playhead.bytes, ed.audio, ed.scroll)
-	if ed.p.IsPlaying() {
-		if ed.playhead.bytes < ed.audio.PcmLen {
-			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playhead.update)})
-		}
-		ed.listenToPlayerUpdates()
-	}
 	markersComp(gtx, ed.th, ed.mEditor, ed.mode, ed.waveM, ed.scroll, ed.audio, ed.markers, ed.getMI9n)
 	secondsGridComp(gtx, ed.th, ed.audio, ed.scroll, ed.waveM)
 	if ed.markers.isEditing() {

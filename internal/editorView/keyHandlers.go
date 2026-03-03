@@ -10,12 +10,9 @@ func (ed *Editor) switchPlayerState() {
 		if ed.playhead.bytes >= ed.audio.PcmLen {
 			return
 		}
-		ed.p.Play()
-		ed.p.WaitUntilReady()
+		ed.startPlay()
 	} else {
-		ed.p.Pause()
-		ed.playhead.reset()
-		ed.p.Set(ed.playhead.bytes)
+		ed.pausePlay()
 	}
 }
 
