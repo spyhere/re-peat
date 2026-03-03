@@ -57,7 +57,21 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				return layout.Dimensions{}
+				iconSize := gtx.Dp(24)
+				gtx.Constraints.Min.X = iconSize
+				if m.replayButton.Clicked(gtx) {
+					m.replayMarkers()
+				}
+				if m.replayButton.Hovered() {
+					common.SetCursor(gtx, pointer.CursorPointer)
+				}
+				iconSizeHalf := iconSize / 2
+				common.DrawBox(gtx, common.Box{
+					Size:      image.Rect(0, 0, iconSize, iconSize),
+					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
+					Clickable: m.replayButton,
+				})
+				return micons.Replay.Layout(gtx, m.th.Palette.Backdrop)
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}

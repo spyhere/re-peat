@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"gioui.org/layout"
+	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	p "github.com/spyhere/re-peat/internal/player"
@@ -20,11 +21,12 @@ type Props struct {
 
 func NewMarkersView(props Props) *MarkersView {
 	mView := &MarkersView{
-		audio:       props.Audio,
-		th:          props.Th,
-		timeMarkers: props.TimeMarkers,
-		p:           props.Player,
-		searchable:  &common.Searchable{},
+		audio:        props.Audio,
+		th:           props.Th,
+		timeMarkers:  props.TimeMarkers,
+		p:            props.Player,
+		searchable:   &common.Searchable{},
+		replayButton: &widget.Clickable{},
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis:      layout.Vertical,
@@ -61,6 +63,7 @@ type MarkersView struct {
 	th           *theme.RepeatTheme
 	table        *common.Table[*tm.TimeMarker]
 	searchable   *common.Searchable
+	replayButton *widget.Clickable
 	audio        audio.Audio
 }
 
@@ -102,4 +105,11 @@ func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 		strings.ToLower(curMarker.Name),
 		strings.ToLower(m.searchable.GetInput()),
 	)
+}
+
+func (m *MarkersView) replayMarkers() {
+	// TODO: Make player pause before seeking
+	m.p.Pause()
+	m.p.Set(0)
+	m.p.Play()
 }
