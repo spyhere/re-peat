@@ -47,8 +47,8 @@ func NewMarkersView(props Props) *MarkersView {
 			layout.Center,
 			layout.Center,
 		},
-		RowValueCb:  mView.GetTableRowValue,
-		RowFilterCb: mView.TableRowFilter,
+		RowValueCb:  mView.getTableRowValue,
+		RowFilterCb: mView.tableRowFilter,
 	})
 	mView.table = table
 	return mView
@@ -93,11 +93,11 @@ func (m *MarkersView) updateDefferedState() {
 	m.timeMarkers.DeleteDead()
 }
 
-func (m *MarkersView) GetTableRowValue(rowIdx int) *tm.TimeMarker {
+func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {
 	return m.timeMarkers.GetAsc(rowIdx)
 }
 
-func (m *MarkersView) TableRowFilter(curMarker *tm.TimeMarker) bool {
+func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 	return strings.Contains(
 		strings.ToLower(curMarker.Name),
 		strings.ToLower(m.searchable.GetInput()),
