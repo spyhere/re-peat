@@ -114,8 +114,18 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return layout.Dimensions{}
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				// Delete button
-				return layout.Dimensions{}
+				if m.deleteButton.Clicked(gtx) {
+					m.deleteMarkers()
+				}
+				if m.deleteButton.Hovered() {
+					common.SetCursor(gtx, pointer.CursorPointer)
+				}
+				return common.DrawIconButton(gtx, common.IconButtonProps{
+					Icon: micons.Delete,
+					Bg:   m.th.Palette.IconButton.Enabled.Bg,
+					Fg:   m.th.Palette.IconButton.Enabled.Icon,
+					Cl:   m.deleteButton,
+				})
 			},
 		)
 

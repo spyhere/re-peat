@@ -11,6 +11,12 @@ var repeatPalette = palette{
 			Text:    rgb(0x1D1B20),
 		},
 	},
+	IconButton: iconButtonStatesPalette{
+		Enabled: iconButtonPalette{
+			Bg:   rgb(0x6750A4),
+			Icon: white,
+		},
+	},
 	Search: searchStatesPalette{
 		Enabled: searchPalette{
 			Bg:      rgb(0xECE6F0),
@@ -78,11 +84,21 @@ type palette struct {
 	Backdrop      color.NRGBA
 	Divider       color.NRGBA
 	Chip          chipStatesPalette
+	IconButton    iconButtonStatesPalette
 	Search        searchStatesPalette
 	CardBg        color.NRGBA
 	SegButtons    segButtonsStatesPalette
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette
+}
+
+type iconButtonStatesPalette struct {
+	Enabled iconButtonPalette
+}
+
+type iconButtonPalette struct {
+	Bg   color.NRGBA
+	Icon color.NRGBA
 }
 
 type chipStatesPalette struct {

@@ -28,6 +28,7 @@ func NewMarkersView(props Props) *MarkersView {
 		searchable:   &common.Searchable{},
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
+		deleteButton: &widget.Clickable{},
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis:      layout.Vertical,
@@ -66,6 +67,7 @@ type MarkersView struct {
 	searchable   *common.Searchable
 	replayButton *widget.Clickable
 	tagButton    *widget.Clickable
+	deleteButton *widget.Clickable
 	audio        audio.Audio
 }
 
@@ -117,5 +119,9 @@ func (m *MarkersView) replayMarkers() {
 }
 
 func (m *MarkersView) openTagsFilter() {
+	//
+}
+
+func (m *MarkersView) deleteMarkers() {
 	//
 }
