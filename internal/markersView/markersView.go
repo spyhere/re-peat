@@ -17,34 +17,38 @@ type Props struct {
 }
 
 func NewMarkersView(props Props) *MarkersView {
-	return &MarkersView{
+	mView := &MarkersView{
 		audio:       props.Audio,
 		th:          props.Th,
 		timeMarkers: props.TimeMarkers,
 		p:           props.Player,
-		table: common.NewTable(common.TableProps{
-			Axis:      layout.Vertical,
-			ColumsNum: 7,
-			HeaderCellsAlignment: []layout.Direction{
-				layout.Center,
-				layout.Center,
-				layout.W,
-				layout.Center,
-				layout.W,
-				layout.Center,
-				layout.Center,
-			},
-			RowCellsAlignment: []layout.Direction{
-				layout.Center,
-				layout.Center,
-				layout.W,
-				layout.Center,
-				layout.W,
-				layout.Center,
-				layout.Center,
-			},
-		}),
 	}
+	table := common.NewTable[*tm.TimeMarker](common.TableProps[*tm.TimeMarker]{
+		Axis:      layout.Vertical,
+		ColumsNum: 7,
+		HeaderCellsAlignment: []layout.Direction{
+			layout.Center,
+			layout.Center,
+			layout.W,
+			layout.Center,
+			layout.W,
+			layout.Center,
+			layout.Center,
+		},
+		RowCellsAlignment: []layout.Direction{
+			layout.Center,
+			layout.Center,
+			layout.W,
+			layout.Center,
+			layout.W,
+			layout.Center,
+			layout.Center,
+		},
+		RowValueCb:  mView.GetTableRowValue,
+		RowFilterCb: mView.TableRowFilter,
+	})
+	mView.table = table
+	return mView
 }
 
 type MarkersView struct {
@@ -52,7 +56,7 @@ type MarkersView struct {
 	timeMarkers  *tm.TimeMarkers
 	markerPlayed *tm.TimeMarker
 	th           *theme.RepeatTheme
-	table        *common.Table
+	table        *common.Table[*tm.TimeMarker]
 	audio        audio.Audio
 }
 
@@ -83,4 +87,12 @@ func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
 
 func (m *MarkersView) updateDefferedState() {
 	m.timeMarkers.DeleteDead()
+}
+
+func (m *MarkersView) GetTableRowValue(rowIdx int) *tm.TimeMarker {
+	return m.timeMarkers.GetAsc(rowIdx)
+}
+
+func (m *MarkersView) TableRowFilter(curMarker *tm.TimeMarker) bool {
+	return true
 }

@@ -102,51 +102,57 @@ func (s *Searchable) GetCursorType() pointer.Cursor {
 	return pointer.CursorDefault
 }
 
-type TableProps struct {
+type TableProps[T any] struct {
 	Axis                 layout.Axis
 	ColumsNum            int
 	HeaderCellsAlignment []layout.Direction
 	RowCellsAlignment    []layout.Direction
+	RowValueCb           func(int) T
+	RowFilterCb          func(T) bool
 }
 
-func NewTable(props TableProps) *Table {
+func NewTable[T any](props TableProps[T]) *Table[T] {
 	l := widget.List{}
 	l.Axis = props.Axis
-	return &Table{
+	return &Table[T]{
 		columns:          props.ColumsNum,
 		list:             &l,
 		columnWidths:     make([]int, props.ColumsNum),
 		hCellsAllignment: props.HeaderCellsAlignment,
 		headCellFuncs:    make([]HeadCellComp, props.ColumsNum),
 		rCellsAllignment: props.RowCellsAlignment,
-		rowCellFuncs:     make([]CellComp, props.ColumsNum),
+		rowCellFuncs:     make([]CellComp[T], props.ColumsNum),
 		cellsBuf:         make([]layout.FlexChild, props.ColumsNum),
+		rowValueCb:       props.RowValueCb,
+		rowFilterCb:      props.RowFilterCb,
 	}
 }
 
 type HeadCellComp func(gtx layout.Context) layout.Dimensions
-type CellComp func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions
-type Table struct {
+type CellComp[T any] func(gtx layout.Context, rowIdx int, rowValue T) layout.Dimensions
+type Table[T any] struct {
 	columns          int
 	Rows             int
+	rowValueCb       func(int) T
+	rowFilterCb      func(T) bool
 	cellsBuf         []layout.FlexChild
 	list             *widget.List
 	columnWidths     []int
 	hCellsAllignment []layout.Direction
 	rCellsAllignment []layout.Direction
 	headCellFuncs    []HeadCellComp
-	rowCellFuncs     []CellComp
+	rowCellFuncs     []CellComp[T]
 	BottomMargin     bool
 }
 
-func (t *Table) HeadCells(hFuncs ...HeadCellComp) {
+func (t *Table[T]) HeadCells(hFuncs ...HeadCellComp) {
 	if len(hFuncs) != t.columns {
 		log.Fatal("Incorrect usage of table! Header: number of cell render functions are not equal to set columns amount")
 	}
 	t.headCellFuncs = hFuncs
 }
 
-func (t *Table) RowCells(rFuncs ...CellComp) {
+func (t *Table[T]) RowCells(rFuncs ...CellComp[T]) {
 	if len(rFuncs) != t.columns {
 		log.Fatal("Incorrect usage of table! Row: number of cell render functions are not equal to set columns amount")
 	}
@@ -156,7 +162,7 @@ func (t *Table) RowCells(rFuncs ...CellComp) {
 const tableXMargin = 8
 const tableYMargin = 12
 
-func (t *Table) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths []int) {
+func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths []int) {
 	DrawBox(gtx, Box{
 		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
 		Color: th.Palette.CardBg,
@@ -200,7 +206,7 @@ const headerHDP = 40
 const cellMarginDP = 5
 const rowHeightDP = 50
 
-func (t *Table) layout(gtx layout.Context, th *theme.RepeatTheme) {
+func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme) {
 	ls := material.List(th.Theme, t.list)
 	headerH := gtx.Dp(headerHDP)
 	for colIdx, it := range t.headCellFuncs {
@@ -223,6 +229,10 @@ func (t *Table) layout(gtx layout.Context, th *theme.RepeatTheme) {
 	OffsetBy(gtx, image.Pt(0, headerH), func() {
 		DrawDivider(gtx, th, DividerProps{})
 		ls.Layout(gtx, t.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
+			rowValue := t.rowValueCb(rowIdx)
+			if t.rowFilterCb != nil && !t.rowFilterCb(rowValue) {
+				return layout.Dimensions{}
+			}
 			for colIdx, it := range t.rowCellFuncs {
 				t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 					columnDims := layout.Dimensions{Size: image.Pt(t.columnWidths[colIdx], rowH)}
@@ -232,8 +242,7 @@ func (t *Table) layout(gtx layout.Context, th *theme.RepeatTheme) {
 
 					layout.UniformInset(cellMarginDP).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						return cellAl.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-							// TODO: Do you really need column index?
-							return it(gtx, rowIdx, colIdx)
+							return it(gtx, rowIdx, rowValue)
 						})
 					})
 					return columnDims

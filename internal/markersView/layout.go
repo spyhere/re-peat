@@ -12,6 +12,7 @@ import (
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
+	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -93,14 +94,13 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		)
 
 		m.table.RowCells(
-			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				txt := material.Body2(m.th.Theme, fmt.Sprintf("%02d", rowIdx+1))
 				return txt.Layout(gtx)
 			},
-			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				iconSize := gtx.Dp(26)
 				gtx.Constraints.Min.X = iconSize
-				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
 				if curMarker.Play.Clicked(gtx) {
 					m.toggleMarker(curMarker)
 				}
@@ -119,20 +119,19 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					return micons.Play.Layout(gtx, m.th.Palette.Backdrop)
 				}
 			},
-			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
 				txt := material.Body2(m.th.Theme, (*m.timeMarkers).GetAsc(rowIdx).Name)
 				return txt.Layout(gtx)
 			},
-			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				curPcm := (*m.timeMarkers).GetAsc(rowIdx).Pcm
 				formattedSeconds := common.FormatSeconds(m.audio.GetSecondsFromSamples(m.audio.GetSamplesFromPCM(curPcm)))
 				txt := material.Body2(m.th.Theme, formattedSeconds)
 				return txt.Layout(gtx)
 			},
-			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
 				tagsArr := curMarker.CategoryTags
 				return curMarker.List.Layout(gtx, len(tagsArr)+len(tagsArr)-1, func(gtx layout.Context, index int) layout.Dimensions {
 					if index%2 != 0 {
@@ -144,8 +143,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					return dim
 				})
 			},
-			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
-				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Edit.Clicked(gtx) {
 					fmt.Println("Edit", rowIdx)
 				}
@@ -162,8 +160,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				})
 				return micons.Edit.Layout(gtx, m.th.Palette.Backdrop)
 			},
-			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
-				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Delete.Clicked(gtx) {
 					curMarker.MarkDead()
 				}
