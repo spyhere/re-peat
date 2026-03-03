@@ -27,6 +27,7 @@ func NewMarkersView(props Props) *MarkersView {
 		p:            props.Player,
 		searchable:   &common.Searchable{},
 		replayButton: &widget.Clickable{},
+		tagButton:    &widget.Clickable{},
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis:      layout.Vertical,
@@ -64,6 +65,7 @@ type MarkersView struct {
 	table        *common.Table[*tm.TimeMarker]
 	searchable   *common.Searchable
 	replayButton *widget.Clickable
+	tagButton    *widget.Clickable
 	audio        audio.Audio
 }
 
@@ -112,4 +114,8 @@ func (m *MarkersView) replayMarkers() {
 	m.p.Pause()
 	m.p.Set(0)
 	m.p.Play()
+}
+
+func (m *MarkersView) openTagsFilter() {
+	//
 }

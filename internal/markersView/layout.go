@@ -87,7 +87,20 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			func(gtx layout.Context) layout.Dimensions {
 				iconSize := gtx.Dp(24)
 				gtx.Constraints.Min.X = iconSize
+				if m.tagButton.Clicked(gtx) {
+					m.openTagsFilter()
+				}
+				if m.tagButton.Hovered() {
+					common.SetCursor(gtx, pointer.CursorPointer)
+				}
+				iconSizeHalf := iconSize / 2
+				common.DrawBox(gtx, common.Box{
+					Size:      image.Rect(0, 0, iconSize, iconSize),
+					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
+					Clickable: m.tagButton,
+				})
 				micons.Filter.Layout(gtx, m.th.Palette.Backdrop)
+
 				gtx.Constraints.Min = image.Point{}
 				txt := material.Body2(m.th.Theme, "Tags")
 				txt.Font.Weight = font.Bold
