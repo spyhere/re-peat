@@ -184,17 +184,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
 	})
 
-	// TODO: Move this to Searchable
-	if searchable.IsHovered() {
-		if searchable.IsFocused() {
-			common.SetCursor(gtx, pointer.CursorText)
-		} else {
-			common.SetCursor(gtx, pointer.CursorPointer)
-		}
-	}
-	if searchable.Cancel.Hovered() {
-		common.SetCursor(gtx, pointer.CursorPointer)
-	}
+	common.SetCursor(gtx, searchable.GetCursorType())
 	m.updateDefferedState()
 	return layout.Dimensions{}
 }

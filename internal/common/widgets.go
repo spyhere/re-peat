@@ -88,6 +88,20 @@ func (s *Searchable) IsFocused() bool {
 	return s.isFocused
 }
 
+func (s *Searchable) GetCursorType() pointer.Cursor {
+	if s.IsHovered() {
+		if s.IsFocused() {
+			return pointer.CursorText
+		} else {
+			return pointer.CursorPointer
+		}
+	}
+	if s.Cancel.Hovered() {
+		return pointer.CursorPointer
+	}
+	return pointer.CursorDefault
+}
+
 type TableProps struct {
 	Axis                 layout.Axis
 	ColumsNum            int
