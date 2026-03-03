@@ -28,9 +28,9 @@ type TimeMarker struct {
 }
 
 type ListTags struct {
-	Play   *struct{}
-	Edit   *struct{}
-	Delete *struct{}
+	Play   *widget.Clickable
+	Edit   *widget.Clickable
+	Delete *widget.Clickable
 }
 
 type EditorTags struct {
@@ -49,7 +49,7 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 		return nil
 	}
 	newT := &TimeMarker{
-		Pcm: pcm,
+		Pcm:          pcm,
 		CategoryTags: make([]string, 0, TagsLimit),
 		EditorTags: &EditorTags{
 			Flag:  &struct{}{},
@@ -57,9 +57,9 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 			Label: &struct{}{},
 		},
 		ListTags: &ListTags{
-			Play:   &struct{}{},
-			Edit:   &struct{}{},
-			Delete: &struct{}{},
+			Play:   &widget.Clickable{},
+			Edit:   &widget.Clickable{},
+			Delete: &widget.Clickable{},
 		},
 	}
 	*t = append(*t, newT)

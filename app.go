@@ -41,6 +41,7 @@ func newApp() *App {
 			Audio:       a,
 			Th:          th,
 			TimeMarkers: &timeMarkers,
+			Player:      player,
 		}),
 		timeMarkers: timeMarkers,
 	}

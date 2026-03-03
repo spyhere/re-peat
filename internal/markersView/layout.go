@@ -3,13 +3,16 @@ package markersview
 import (
 	"fmt"
 	"image"
+	"time"
 
 	"gioui.org/font"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
+	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
 var searchable = common.Searchable{}
@@ -38,7 +41,14 @@ var table = common.NewTable(common.TableProps{
 	},
 })
 
+var interval = 250 * time.Millisecond
+
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
+	if m.p.IsPlaying() {
+		gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(interval)})
+	} else {
+		m.pausePlaying()
+	}
 	common.DrawBackground(gtx, m.th.Palette.MarkersViewBg)
 
 	var searchDims layout.Dimensions
@@ -109,8 +119,26 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
-				gtx.Constraints.Min.X = gtx.Dp(24)
-				return micons.Play.Layout(gtx, m.th.Palette.Backdrop)
+				iconSize := gtx.Dp(26)
+				gtx.Constraints.Min.X = iconSize
+				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
+				if curMarker.Play.Clicked(gtx) {
+					m.toggleMarker(curMarker)
+				}
+				if curMarker.Play.Hovered() {
+					common.SetCursor(gtx, pointer.CursorPointer)
+				}
+				iconSizeHalf := iconSize / 2
+				common.DrawBox(gtx, common.Box{
+					Size:      image.Rect(0, 0, iconSize, iconSize),
+					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
+					Clickable: curMarker.Play,
+				})
+				if m.isThisMarkerPlaying(curMarker) {
+					return micons.Pause.Layout(gtx, m.th.Palette.Backdrop)
+				} else {
+					return micons.Play.Layout(gtx, m.th.Palette.Backdrop)
+				}
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
