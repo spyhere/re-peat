@@ -157,8 +157,13 @@ func (t *Table) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths []in
 		gtx.Constraints.Max.Y -= yMargin
 	}
 	var cellWidthSum int
+	var colSum int
 	maxX := gtx.Constraints.Max.X
 	for idx, it := range colWidths {
+		colSum += it
+		if colSum > 100 {
+			log.Fatal("Learn to count! Column width percentage sum is more than 100")
+		}
 		v := it * maxX / 100
 		cellWidthSum += v
 		t.columnWidths[idx] = v
