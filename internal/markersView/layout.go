@@ -72,6 +72,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X -= marginX * 2
 		gtx.Constraints.Max.Y -= topM + searchDims.Size.Y + 50
 		table.Rows = len(*m.timeMarkers)
+
 		table.HeadCells(
 			func(gtx layout.Context) layout.Dimensions {
 				txt := material.Body2(m.th.Theme, "№")
@@ -113,6 +114,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return layout.Dimensions{}
 			},
 		)
+
 		table.RowCells(
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
 				txt := material.Body2(m.th.Theme, fmt.Sprintf("%02d", rowIdx+1))
@@ -170,7 +172,21 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return micons.Edit.Layout(gtx, m.th.Palette.Backdrop)
 			},
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
-				gtx.Constraints.Min = image.Point{}
+				curMarker := (*m.timeMarkers).GetAsc(rowIdx)
+				if curMarker.Delete.Clicked(gtx) {
+					curMarker.MarkDead()
+				}
+				if curMarker.Delete.Hovered() {
+					common.SetCursor(gtx, pointer.CursorPointer)
+				}
+				iconSize := gtx.Dp(26)
+				gtx.Constraints.Min.X = iconSize
+				iconSizeHalf := iconSize / 2
+				common.DrawBox(gtx, common.Box{
+					Size:      image.Rect(0, 0, iconSize, iconSize),
+					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
+					Clickable: curMarker.Delete,
+				})
 				return micons.Delete.Layout(gtx, m.th.Palette.Backdrop)
 			},
 		)
@@ -188,5 +204,6 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	if searchable.Cancel.Hovered() {
 		common.SetCursor(gtx, pointer.CursorPointer)
 	}
+	m.updateDefferedState()
 	return layout.Dimensions{}
 }

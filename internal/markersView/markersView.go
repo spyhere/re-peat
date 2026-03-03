@@ -55,3 +55,7 @@ func (m *MarkersView) pausePlaying() {
 func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
 	return m.markerPlayed == curMarker
 }
+
+func (m *MarkersView) updateDefferedState() {
+	m.timeMarkers.DeleteDead()
+}
