@@ -1,7 +1,9 @@
 package markersview
 
 import (
+	"gioui.org/layout"
 	"github.com/spyhere/re-peat/internal/audio"
+	"github.com/spyhere/re-peat/internal/common"
 	p "github.com/spyhere/re-peat/internal/player"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -20,6 +22,28 @@ func NewMarkersView(props Props) *MarkersView {
 		th:          props.Th,
 		timeMarkers: props.TimeMarkers,
 		p:           props.Player,
+		table: common.NewTable(common.TableProps{
+			Axis:      layout.Vertical,
+			ColumsNum: 7,
+			HeaderCellsAlignment: []layout.Direction{
+				layout.Center,
+				layout.Center,
+				layout.W,
+				layout.Center,
+				layout.W,
+				layout.Center,
+				layout.Center,
+			},
+			RowCellsAlignment: []layout.Direction{
+				layout.Center,
+				layout.Center,
+				layout.W,
+				layout.Center,
+				layout.W,
+				layout.Center,
+				layout.Center,
+			},
+		}),
 	}
 }
 
@@ -28,6 +52,7 @@ type MarkersView struct {
 	timeMarkers  *tm.TimeMarkers
 	markerPlayed *tm.TimeMarker
 	th           *theme.RepeatTheme
+	table        *common.Table
 	audio        audio.Audio
 }
 

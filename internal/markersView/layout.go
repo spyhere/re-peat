@@ -18,29 +18,6 @@ import (
 var searchable = common.Searchable{}
 var topM = 140
 
-var table = common.NewTable(common.TableProps{
-	Axis:      layout.Vertical,
-	ColumsNum: 7,
-	HeaderCellsAlignment: []layout.Direction{
-		layout.Center,
-		layout.Center,
-		layout.W,
-		layout.Center,
-		layout.W,
-		layout.Center,
-		layout.Center,
-	},
-	RowCellsAlignment: []layout.Direction{
-		layout.Center,
-		layout.Center,
-		layout.W,
-		layout.Center,
-		layout.W,
-		layout.Center,
-		layout.Center,
-	},
-})
-
 var interval = 250 * time.Millisecond
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
@@ -71,9 +48,9 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	common.OffsetBy(gtx, image.Pt(marginX, topM+searchDims.Size.Y+50), func() {
 		gtx.Constraints.Max.X -= marginX * 2
 		gtx.Constraints.Max.Y -= topM + searchDims.Size.Y + 50
-		table.Rows = len(*m.timeMarkers)
+		m.table.Rows = len(*m.timeMarkers)
 
-		table.HeadCells(
+		m.table.HeadCells(
 			func(gtx layout.Context) layout.Dimensions {
 				txt := material.Body2(m.th.Theme, "№")
 				txt.Font.Weight = font.Bold
@@ -115,7 +92,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 		)
 
-		table.RowCells(
+		m.table.RowCells(
 			func(gtx layout.Context, rowIdx, colIdx int) layout.Dimensions {
 				txt := material.Body2(m.th.Theme, fmt.Sprintf("%02d", rowIdx+1))
 				return txt.Layout(gtx)
@@ -204,7 +181,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return micons.Delete.Layout(gtx, m.th.Palette.Backdrop)
 			},
 		)
-		table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
+		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
 	})
 
 	// TODO: Move this to Searchable
