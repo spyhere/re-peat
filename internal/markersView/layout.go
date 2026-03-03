@@ -16,7 +16,6 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-var searchable = common.Searchable{}
 var topM = 140
 
 var interval = 250 * time.Millisecond
@@ -34,7 +33,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
-				Searchable:  &searchable,
+				Searchable:  m.searchable,
 			})
 			return searchDims
 		})
@@ -181,7 +180,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
 	})
 
-	common.SetCursor(gtx, searchable.GetCursorType())
+	common.SetCursor(gtx, m.searchable.GetCursorType())
 	m.updateDefferedState()
 	return layout.Dimensions{}
 }

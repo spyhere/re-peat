@@ -22,8 +22,9 @@ func NewMarkersView(props Props) *MarkersView {
 		th:          props.Th,
 		timeMarkers: props.TimeMarkers,
 		p:           props.Player,
+		searchable:  &common.Searchable{},
 	}
-	table := common.NewTable[*tm.TimeMarker](common.TableProps[*tm.TimeMarker]{
+	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis:      layout.Vertical,
 		ColumsNum: 7,
 		HeaderCellsAlignment: []layout.Direction{
@@ -57,6 +58,7 @@ type MarkersView struct {
 	markerPlayed *tm.TimeMarker
 	th           *theme.RepeatTheme
 	table        *common.Table[*tm.TimeMarker]
+	searchable   *common.Searchable
 	audio        audio.Audio
 }
 
