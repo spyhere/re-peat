@@ -98,18 +98,18 @@ func (s *Searchable) IsFocused() bool {
 	return s.isFocused
 }
 
-func (s *Searchable) GetCursorType() pointer.Cursor {
+func (s *Searchable) GetCursorType() (cursor pointer.Cursor, ok bool) {
 	if s.IsHovered() {
 		if s.IsFocused() {
-			return pointer.CursorText
+			return pointer.CursorText, true
 		} else {
-			return pointer.CursorPointer
+			return pointer.CursorPointer, true
 		}
 	}
 	if s.Cancel.Hovered() {
-		return pointer.CursorPointer
+		return pointer.CursorPointer, true
 	}
-	return pointer.CursorDefault
+	return pointer.CursorDefault, false
 }
 
 func (s *Searchable) gotDirty(gtx layout.Context) bool {
