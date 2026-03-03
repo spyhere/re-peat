@@ -1,6 +1,8 @@
 package markersview
 
 import (
+	"strings"
+
 	"gioui.org/layout"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
@@ -96,5 +98,8 @@ func (m *MarkersView) GetTableRowValue(rowIdx int) *tm.TimeMarker {
 }
 
 func (m *MarkersView) TableRowFilter(curMarker *tm.TimeMarker) bool {
-	return true
+	return strings.Contains(
+		strings.ToLower(curMarker.Name),
+		strings.ToLower(m.searchable.GetInput()),
+	)
 }
