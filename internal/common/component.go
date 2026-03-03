@@ -394,3 +394,102 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 	})
 	return chipDims
 }
+
+type iconBMaterialWidth struct {
+	esIcon unit.Dp
+	esW    unit.Dp
+	esH    unit.Dp
+	sIcon  unit.Dp
+	sW     unit.Dp
+	sH     unit.Dp
+	mIcon  unit.Dp
+	mW     unit.Dp
+	mH     unit.Dp
+}
+
+type iconBMaterialSpecs struct {
+	standard iconBMaterialWidth
+	wide     iconBMaterialWidth
+}
+
+var iconBSpecs = iconBMaterialSpecs{
+	standard: iconBMaterialWidth{
+		esIcon: 20,
+		esW:    32,
+		esH:    32,
+		sIcon:  24,
+		sW:     40,
+		sH:     40,
+		mIcon:  24,
+		mW:     56,
+		mH:     56,
+	},
+	wide: iconBMaterialWidth{
+		esIcon: 20,
+		esW:    40,
+		esH:    32,
+		sIcon:  24,
+		sW:     52,
+		sH:     40,
+		mIcon:  24,
+		mW:     72,
+		mH:     56,
+	},
+}
+
+type iconButtonWidth int
+
+const (
+	IconButtonStandard iconButtonWidth = iota
+	IconButtonWide
+)
+
+type iconButtonSize int
+
+const (
+	IconButtomExtraSmall iconButtonSize = iota
+	IconButtonSmall
+	IconButtonMedium
+)
+
+type IconButtonProps struct {
+	Icon  *widget.Icon
+	Text  string
+	Width iconButtonWidth
+	Size  iconButtonSize
+	Bg    color.NRGBA
+	Fg    color.NRGBA
+	Cl    *widget.Clickable
+}
+
+func DrawIconButton(gtx layout.Context, props IconButtonProps) layout.Dimensions {
+	var sz iconBMaterialWidth
+	switch props.Width {
+	case IconButtonStandard:
+		sz = iconBSpecs.standard
+	case IconButtonWide:
+		sz = iconBSpecs.wide
+	}
+	var iconSize, w, h int
+	switch props.Size {
+	case IconButtomExtraSmall:
+		iconSize, w, h = gtx.Dp(sz.esIcon), gtx.Dp(sz.esW), gtx.Dp(sz.esH)
+	case IconButtonSmall:
+		iconSize, w, h = gtx.Dp(sz.sIcon), gtx.Dp(sz.sW), gtx.Dp(sz.sH)
+	case IconButtonMedium:
+		iconSize, w, h = gtx.Dp(sz.mIcon), gtx.Dp(sz.mW), gtx.Dp(sz.mH)
+	}
+	shape := h / 2
+	boxDim := DrawBox(gtx, Box{
+		Size:      image.Rect(0, 0, w, h),
+		Color:     props.Bg,
+		R:         theme.CornerR(shape, shape, shape, shape),
+		Clickable: props.Cl,
+	})
+	iconSizeHalf := iconSize / 2
+	OffsetBy(gtx, image.Pt(w/2-iconSizeHalf, h/2-iconSizeHalf), func() {
+		gtx.Constraints.Min.X = iconSize
+		props.Icon.Layout(gtx, props.Fg)
+	})
+	return boxDim
+}
