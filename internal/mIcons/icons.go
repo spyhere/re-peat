@@ -22,6 +22,7 @@ var (
 	Search           = newIcon(icons.ActionSearch)
 	Cancel           = newIcon(icons.NavigationCancel)
 	Play             = newIcon(icons.AVPlayArrow)
+	Replay           = newIcon(icons.AVReplay)
 	Pause            = newIcon(icons.AVPause)
 	Filter           = newIcon(icons.ContentFilterList)
 	Edit             = newIcon(icons.EditorModeEdit)
