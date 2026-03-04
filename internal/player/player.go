@@ -40,7 +40,14 @@ func (p *Player) Search(seconds float32) (int64, error) {
 }
 
 func (p *Player) Set(pcm int64) (int64, error) {
-	return p.player.Seek(pcm, io.SeekStart)
+	wasPlaying := p.player.IsPlaying()
+	// Pausing to avoid possible race condition problems
+	p.player.Pause()
+	val, err := p.player.Seek(pcm, io.SeekStart)
+	if wasPlaying {
+		p.player.Play()
+	}
+	return val, err
 }
 
 func (p *Player) BufferedSize() int {
