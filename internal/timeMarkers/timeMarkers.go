@@ -67,6 +67,7 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 			Edit:   &widget.Clickable{},
 			Delete: &widget.Clickable{},
 		},
+		List: widget.List{},
 	}
 	*t = append(*t, newT)
 	return newT

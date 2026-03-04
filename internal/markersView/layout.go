@@ -169,6 +169,9 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
 				tagsArr := curMarker.CategoryTags
+				if len(tagsArr) == 0 {
+					return layout.Dimensions{}
+				}
 				return curMarker.List.Layout(gtx, len(tagsArr)+len(tagsArr)-1, func(gtx layout.Context, index int) layout.Dimensions {
 					if index%2 != 0 {
 						return layout.Dimensions{Size: image.Pt(gtx.Dp(5), 0)}
