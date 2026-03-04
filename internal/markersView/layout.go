@@ -13,7 +13,6 @@ import (
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
-	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
 var topM = 140
@@ -59,25 +58,17 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				iconSize := gtx.Dp(24)
-				gtx.Constraints.Min.X = iconSize
 				if m.replayButton.Clicked(gtx) {
 					m.replayMarkers()
 				}
 				if m.replayButton.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				iconSizeHalf := iconSize / 2
-				common.DrawBox(gtx, common.Box{
-					Size:      image.Rect(0, 0, iconSize, iconSize),
-					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
-					Clickable: m.replayButton,
-				})
 				icon := micons.Replay
 				if isPlaying {
 					icon = micons.Pause
 				}
-				return icon.Layout(gtx, m.th.Palette.Backdrop)
+				return drawClickableIcon(gtx, icon, 24, m.th.Palette.Backdrop, m.replayButton)
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
@@ -91,30 +82,22 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				iconSize := gtx.Dp(24)
-				gtx.Constraints.Min.X = iconSize
 				if m.tagButton.Clicked(gtx) {
 					m.openTagsFilter()
 				}
 				if m.tagButton.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				iconSizeHalf := iconSize / 2
-				common.DrawBox(gtx, common.Box{
-					Size:      image.Rect(0, 0, iconSize, iconSize),
-					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
-					Clickable: m.tagButton,
-				})
-				micons.Filter.Layout(gtx, m.th.Palette.Backdrop)
+				iconDims := drawClickableIcon(gtx, micons.Filter, 24, m.th.Palette.Backdrop, m.tagButton)
 
 				gtx.Constraints.Min = image.Point{}
 				txt := material.Body2(m.th.Theme, "Tags")
 				txt.Font.Weight = font.Bold
 				var textDim layout.Dimensions
-				common.OffsetBy(gtx, image.Pt(iconSize, 0), func() {
+				common.OffsetBy(gtx, image.Pt(iconDims.Size.X, 0), func() {
 					textDim = txt.Layout(gtx)
 				})
-				return layout.Dimensions{Size: image.Pt(iconSize+textDim.Size.X, textDim.Size.Y)}
+				return layout.Dimensions{Size: image.Pt(iconDims.Size.X+textDim.Size.X, textDim.Size.Y)}
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				return layout.Dimensions{}
@@ -141,25 +124,17 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
-				iconSize := gtx.Dp(26)
-				gtx.Constraints.Min.X = iconSize
 				if curMarker.Play.Clicked(gtx) {
 					m.toggleMarker(curMarker)
 				}
 				if curMarker.Play.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				iconSizeHalf := iconSize / 2
-				common.DrawBox(gtx, common.Box{
-					Size:      image.Rect(0, 0, iconSize, iconSize),
-					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
-					Clickable: curMarker.Play,
-				})
+				icon := micons.Play
 				if m.isThisMarkerPlaying(curMarker) {
-					return micons.Pause.Layout(gtx, m.th.Palette.Backdrop)
-				} else {
-					return micons.Play.Layout(gtx, m.th.Palette.Backdrop)
+					icon = micons.Pause
 				}
+				return drawClickableIcon(gtx, icon, 26, m.th.Palette.Backdrop, curMarker.Play)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
@@ -195,15 +170,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if curMarker.Edit.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				iconSize := gtx.Dp(24)
-				gtx.Constraints.Min.X = iconSize
-				iconSizeHalf := iconSize / 2
-				common.DrawBox(gtx, common.Box{
-					Size:      image.Rect(0, 0, iconSize, iconSize),
-					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
-					Clickable: curMarker.Edit,
-				})
-				return micons.Edit.Layout(gtx, m.th.Palette.Backdrop)
+				return drawClickableIcon(gtx, micons.Edit, 24, m.th.Palette.Backdrop, curMarker.Edit)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Delete.Clicked(gtx) {
@@ -212,15 +179,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if curMarker.Delete.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				iconSize := gtx.Dp(26)
-				gtx.Constraints.Min.X = iconSize
-				iconSizeHalf := iconSize / 2
-				common.DrawBox(gtx, common.Box{
-					Size:      image.Rect(0, 0, iconSize, iconSize),
-					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
-					Clickable: curMarker.Delete,
-				})
-				return micons.Delete.Layout(gtx, m.th.Palette.Backdrop)
+				return drawClickableIcon(gtx, micons.Delete, 26, m.th.Palette.Backdrop, curMarker.Delete)
 			},
 		)
 		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
