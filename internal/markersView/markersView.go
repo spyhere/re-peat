@@ -75,7 +75,14 @@ type MarkersView struct {
 	audio        audio.Audio
 }
 
-// TODO: Move played marker to app state
+func (m *MarkersView) togglePlayer(curMarker *tm.TimeMarker) {
+	if m.markerInPlay == nil {
+		m.startPlaying(curMarker)
+	} else {
+		m.pausePlaying()
+	}
+}
+
 func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 	if m.markerInPlay == curMarker {
 		m.pausePlaying()
@@ -140,4 +147,8 @@ func (m *MarkersView) listenToPlayerUpdates() {
 	if m.p.GetReadAmount() >= nextMarker.Pcm {
 		m.markerInPlay = nextMarker
 	}
+}
+
+func (m *MarkersView) clearHotKeyBuf() {
+	m.hotKeyBuf = m.hotKeyBuf[:0]
 }
