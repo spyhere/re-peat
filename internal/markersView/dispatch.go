@@ -7,11 +7,14 @@ import (
 )
 
 func (m *MarkersView) dispatch(gtx layout.Context) {
-	m.dispatchKeyEvents(gtx)
+	if !m.searchable.IsFocused() {
+		m.dispatchKeyEvents(gtx)
+	}
 }
 
 func (m *MarkersView) dispatchKeyEvents(gtx layout.Context) {
 	common.HandleKeyEvents(gtx, m.handleKeyEvents,
+		key.Filter{Name: key.NameEscape},
 		key.Filter{Name: key.NameSpace},
 		key.Filter{Name: key.NameDeleteBackward},
 		key.Filter{Name: "1"},
