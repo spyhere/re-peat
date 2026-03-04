@@ -100,7 +100,7 @@ func (m *MarkersView) updateDefferedState() {
 }
 
 func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {
-	return m.timeMarkers.GetAsc(rowIdx)
+	return m.timeMarkers.Get(rowIdx, true)
 }
 
 func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {

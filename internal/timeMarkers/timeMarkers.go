@@ -78,17 +78,35 @@ func (t *TimeMarkers) DeleteDead() {
 	})
 }
 
-func (t *TimeMarkers) GetAsc(idx int) *TimeMarker {
+func (t *TimeMarkers) Get(idx int, asc bool) *TimeMarker {
+	if idx < 0 || idx > len(*t)-1 {
+		return nil
+	}
+	if asc {
+		return (*t)[idx]
+	}
 	return (*t)[len(*t)-1-idx]
 }
-func (t *TimeMarkers) GetDesc(idx int) *TimeMarker {
-	return (*t)[idx]
+
+func (t *TimeMarkers) GetIndex(m *TimeMarker, asc bool) int {
+	if m == nil {
+		return -1
+	}
+	ind := slices.Index(*t, m)
+	if ind == -1 {
+		return -1
+	}
+	if asc {
+		return ind
+	}
+	return len(*t) - 1 - ind
 }
 
 func (t *TimeMarkers) sortCb(a, b *TimeMarker) int {
-	return int(b.Pcm - a.Pcm)
+	return int(a.Pcm - b.Pcm)
 }
 
+// TODO: Sort only on marker manipulation
 func (t *TimeMarkers) Sorted() TimeMarkers {
 	if slices.IsSortedFunc(*t, t.sortCb) {
 		return *t

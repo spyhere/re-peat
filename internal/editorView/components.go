@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"slices"
 
 	"gioui.org/f32"
 	"gioui.org/io/event"
@@ -205,7 +206,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
 
 	prevLblX, yOffset, colDeviation := maxX, 0, 0
-	for _, marker := range m.getSortedMarkers() {
+	for _, marker := range slices.Backward(m.getSortedMarkers()) {
 		// TODO: Implement proper culling
 		var nameDim layout.Dimensions
 		isEditing := m.editing == marker && mode == modeMEdit

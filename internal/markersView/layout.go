@@ -157,11 +157,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				txt := material.Body2(m.th.Theme, (*m.timeMarkers).GetAsc(rowIdx).Name)
+				txt := material.Body2(m.th.Theme, (*m.timeMarkers).Get(rowIdx, true).Name)
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
-				curPcm := (*m.timeMarkers).GetAsc(rowIdx).Pcm
+				curPcm := (*m.timeMarkers).Get(rowIdx, true).Pcm
 				formattedSeconds := common.FormatSeconds(m.audio.GetSecondsFromSamples(m.audio.GetSamplesFromPCM(curPcm)))
 				txt := material.Body2(m.th.Theme, formattedSeconds)
 				return txt.Layout(gtx)
