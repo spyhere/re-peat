@@ -82,7 +82,6 @@ func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 
 func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
 	m.markerPlayed = curMarker
-	m.p.Pause()
 	m.p.Set(curMarker.Pcm)
 	m.p.Play()
 }
@@ -112,8 +111,6 @@ func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 }
 
 func (m *MarkersView) replayMarkers() {
-	// TODO: Make player pause before seeking
-	m.p.Pause()
 	m.p.Set(0)
 	m.p.Play()
 }
