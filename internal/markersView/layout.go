@@ -20,6 +20,7 @@ var topM = 140
 var interval = 250 * time.Millisecond
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
+	m.dispatch(gtx)
 	isPlaying := m.p.IsPlaying()
 	if isPlaying {
 		m.listenToPlayerUpdates()

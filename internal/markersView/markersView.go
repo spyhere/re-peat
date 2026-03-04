@@ -12,6 +12,8 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
+const selectionRuneLimit = 3
+
 type Props struct {
 	Audio       audio.Audio
 	Th          *theme.RepeatTheme
@@ -25,6 +27,7 @@ func NewMarkersView(props Props) *MarkersView {
 		th:           props.Th,
 		timeMarkers:  props.TimeMarkers,
 		p:            props.Player,
+		hotKeyBuf:    make([]rune, 0, selectionRuneLimit),
 		searchable:   &common.Searchable{},
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
@@ -68,6 +71,7 @@ type MarkersView struct {
 	replayButton *widget.Clickable
 	tagButton    *widget.Clickable
 	deleteButton *widget.Clickable
+	hotKeyBuf    []rune
 	audio        audio.Audio
 }
 
