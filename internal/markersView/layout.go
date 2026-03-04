@@ -22,6 +22,7 @@ var interval = 250 * time.Millisecond
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	if m.p.IsPlaying() {
+		m.listenToPlayerUpdates()
 		gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(interval)})
 	} else {
 		m.pausePlaying()

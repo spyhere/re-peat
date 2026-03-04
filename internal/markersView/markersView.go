@@ -122,3 +122,14 @@ func (m *MarkersView) openTagsFilter() {
 func (m *MarkersView) deleteMarkers() {
 	m.timeMarkers.MarkAllDead()
 }
+
+func (m *MarkersView) listenToPlayerUpdates() {
+	nextMarker := m.timeMarkers.Get(m.timeMarkers.GetIndex(m.markerPlayed, true)+1, true)
+	// Next marker can be nil when there are no markers, or current is the last one
+	if nextMarker == nil {
+		return
+	}
+	if m.p.GetReadAmount() >= nextMarker.Pcm {
+		m.markerPlayed = nextMarker
+	}
+}
