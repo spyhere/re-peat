@@ -5,6 +5,10 @@ import "image/color"
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
 	Divider:  rgb(0xCAC4D0),
+	Selection: selectionPalette{
+		Bg: yellow,
+		Fg: black,
+	},
 	Chip: chipStatesPalette{
 		Enabled: chipPalette{
 			Outline: rgb(0xCAC4D0),
@@ -78,11 +82,14 @@ var (
 	roseQuartz = rgb(0xf1dcd9)
 	tan        = rgb(0xcfb196)
 	white      = rgb(0xffffff)
+	yellow     = rgb(0xffff00)
+	black      = rgb(0x000000)
 )
 
 type palette struct {
 	Backdrop      color.NRGBA
 	Divider       color.NRGBA
+	Selection     selectionPalette
 	Chip          chipStatesPalette
 	IconButton    iconButtonStatesPalette
 	Search        searchStatesPalette
@@ -90,6 +97,11 @@ type palette struct {
 	SegButtons    segButtonsStatesPalette
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette
+}
+
+type selectionPalette struct {
+	Bg color.NRGBA
+	Fg color.NRGBA
 }
 
 type iconButtonStatesPalette struct {

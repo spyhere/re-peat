@@ -3,6 +3,7 @@ package markersview
 import (
 	"fmt"
 	"image"
+	"strings"
 	"time"
 
 	"gioui.org/font"
@@ -90,7 +91,6 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
 				iconDims := drawClickableIcon(gtx, micons.Filter, 24, m.th.Palette.Backdrop, m.tagButton)
-
 				gtx.Constraints.Min = image.Point{}
 				txt := material.Body2(m.th.Theme, "Tags")
 				txt.Font.Weight = font.Bold
@@ -121,8 +121,25 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 
 		m.table.RowCells(
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
-				txt := material.Body2(m.th.Theme, fmt.Sprintf("%02d", rowIdx+1))
-				return txt.Layout(gtx)
+				rowNum := fmt.Sprintf("%02d", rowIdx+1)
+				curInput := string(m.hotKeyBuf)
+				txt := material.Body2(m.th.Theme, rowNum)
+				dims := txt.Layout(gtx)
+				if strings.HasPrefix(rowNum, curInput) {
+					var highlightTDim layout.Dimensions
+					macro := common.MakeMacro(gtx.Ops, func() {
+						highlightT := material.Body2(m.th.Theme, curInput)
+						highlightT.Color = m.th.Palette.Selection.Fg
+						highlightT.TextSize += 2
+						highlightTDim = highlightT.Layout(gtx)
+					})
+					common.DrawBox(gtx, common.Box{
+						Size:  image.Rect(0, 0, highlightTDim.Size.X, highlightTDim.Size.Y),
+						Color: m.th.Palette.Selection.Bg,
+					})
+					macro.Add(gtx.Ops)
+				}
+				return dims
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Play.Clicked(gtx) {
