@@ -111,8 +111,12 @@ func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 }
 
 func (m *MarkersView) replayMarkers() {
-	m.p.Set(0)
-	m.p.Play()
+	if m.p.IsPlaying() {
+		m.p.Pause()
+	} else {
+		m.p.Set(0)
+		m.p.Play()
+	}
 }
 
 func (m *MarkersView) openTagsFilter() {

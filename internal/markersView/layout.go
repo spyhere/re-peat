@@ -21,7 +21,8 @@ var topM = 140
 var interval = 250 * time.Millisecond
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
-	if m.p.IsPlaying() {
+	isPlaying := m.p.IsPlaying()
+	if isPlaying {
 		m.listenToPlayerUpdates()
 		gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(interval)})
 	} else {
@@ -72,7 +73,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
 					Clickable: m.replayButton,
 				})
-				return micons.Replay.Layout(gtx, m.th.Palette.Backdrop)
+				icon := micons.Replay
+				if isPlaying {
+					icon = micons.Pause
+				}
+				return icon.Layout(gtx, m.th.Palette.Backdrop)
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
