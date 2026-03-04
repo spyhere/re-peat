@@ -30,7 +30,7 @@ func (s *Searchable) Update(gtx layout.Context) {
 
 	if s.Cancel.Clicked(gtx) {
 		s.Editor.SetText("")
-		s.Blur()
+		s.Blur(gtx)
 	}
 	HandlePointerEvents(gtx, &s.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
 		switch e.Kind {
@@ -40,7 +40,7 @@ func (s *Searchable) Update(gtx layout.Context) {
 			s.isHovered = false
 		case pointer.Press:
 			// Even if user missed the input field and pressed container the caret will be set anyway
-			if s.Focus() {
+			if s.Focus(gtx) {
 				if e.Position.X < 100 {
 					s.Editor.SetCaret(0, 0)
 				} else {
@@ -54,7 +54,7 @@ func (s *Searchable) Update(gtx layout.Context) {
 	HandleKeyEvents(gtx, func(e key.Event) {
 		switch e.Name {
 		case key.NameEscape:
-			s.Blur()
+			s.Blur(gtx)
 		}
 	},
 		key.Filter{Name: key.NameEscape},
@@ -66,14 +66,16 @@ func (s *Searchable) Subscribe(gtx layout.Context) {
 	event.Op(gtx.Ops, &s.Editor)
 }
 
-func (s *Searchable) Blur() {
+func (s *Searchable) Blur(gtx layout.Context) {
+	gtx.Execute(key.FocusCmd{Tag: nil})
 	s.isFocused = false
 }
 
-func (s *Searchable) Focus() (wasFocusedBefore bool) {
+func (s *Searchable) Focus(gtx layout.Context) (wasFocusedBefore bool) {
 	if s.isFocused {
 		return true
 	}
+	gtx.Execute(key.FocusCmd{Tag: &s.Editor})
 	txtLen := len(s.Editor.Text())
 	if txtLen > 0 {
 		s.Editor.SetCaret(txtLen, 0)

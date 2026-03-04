@@ -6,7 +6,6 @@ import (
 	"math"
 
 	"gioui.org/font"
-	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -259,7 +258,6 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 			passOp := pointer.PassOp{}.Push(gtx.Ops)
 			ed.Layout(gtx)
 			passOp.Pop()
-			gtx.Execute(key.FocusCmd{Tag: &props.Editor})
 		} else {
 			text := props.GetInput()
 			if text == "" {
