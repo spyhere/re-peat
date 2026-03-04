@@ -61,7 +61,7 @@ func NewMarkersView(props Props) *MarkersView {
 type MarkersView struct {
 	p            *p.Player
 	timeMarkers  *tm.TimeMarkers
-	markerPlayed *tm.TimeMarker
+	markerInPlay *tm.TimeMarker
 	th           *theme.RepeatTheme
 	table        *common.Table[*tm.TimeMarker]
 	searchable   *common.Searchable
@@ -73,7 +73,7 @@ type MarkersView struct {
 
 // TODO: Move played marker to app state
 func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
-	if m.markerPlayed == curMarker {
+	if m.markerInPlay == curMarker {
 		m.pausePlaying()
 		return
 	}
@@ -81,18 +81,18 @@ func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 }
 
 func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
-	m.markerPlayed = curMarker
+	m.markerInPlay = curMarker
 	m.p.Set(curMarker.Pcm)
 	m.p.Play()
 }
 
 func (m *MarkersView) pausePlaying() {
-	m.markerPlayed = nil
+	m.markerInPlay = nil
 	m.p.Pause()
 }
 
 func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
-	return m.markerPlayed == curMarker
+	return m.markerInPlay == curMarker
 }
 
 func (m *MarkersView) updateDefferedState() {
@@ -124,12 +124,12 @@ func (m *MarkersView) deleteMarkers() {
 }
 
 func (m *MarkersView) listenToPlayerUpdates() {
-	nextMarker := m.timeMarkers.Get(m.timeMarkers.GetIndex(m.markerPlayed, true)+1, true)
+	nextMarker := m.timeMarkers.Get(m.timeMarkers.GetIndex(m.markerInPlay, true)+1, true)
 	// Next marker can be nil when there are no markers, or current is the last one
 	if nextMarker == nil {
 		return
 	}
 	if m.p.GetReadAmount() >= nextMarker.Pcm {
-		m.markerPlayed = nextMarker
+		m.markerInPlay = nextMarker
 	}
 }
