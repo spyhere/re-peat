@@ -139,12 +139,25 @@ func (m *MarkersView) deleteMarkers() {
 }
 
 func (m *MarkersView) listenToPlayerUpdates() {
+	playerPos := m.p.GetReadAmount()
+	if m.markerInPlay != nil && playerPos < m.markerInPlay.Pcm {
+		// time markers were dragged in EditorView, so MarkersView should be updated as well
+		var prev *tm.TimeMarker
+		for _, it := range *m.timeMarkers {
+			if it.Pcm > playerPos {
+				m.markerInPlay = prev
+				return
+			}
+			prev = it
+		}
+	}
+
 	nextMarker := m.timeMarkers.Get(m.timeMarkers.GetIndex(m.markerInPlay, true)+1, true)
 	// Next marker can be nil when there are no markers, or current is the last one
 	if nextMarker == nil {
 		return
 	}
-	if m.p.GetReadAmount() >= nextMarker.Pcm {
+	if playerPos >= nextMarker.Pcm {
 		m.markerInPlay = nextMarker
 	}
 }
