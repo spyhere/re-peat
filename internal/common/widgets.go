@@ -8,6 +8,7 @@ import (
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -273,6 +274,221 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme) {
 				})
 			}
 			return layout.Flex{}.Layout(gtx, t.cellsBuf...)
+		})
+	})
+}
+
+type dialogButton struct {
+	Text     string
+	Icon     widget.Icon
+	Enabled  bool
+	IsHidden bool
+}
+
+type dialogType int
+
+const (
+	dialogBasic dialogType = iota
+	dialogError
+)
+
+type Dialog struct {
+	th          *theme.RepeatTheme
+	isOpen      bool
+	variant     dialogType
+	Ok          widget.Clickable
+	OkProps     dialogButton
+	Cancel      widget.Clickable
+	Scrim       widget.Clickable
+	CancelProps dialogButton
+	title       string
+	icon        *widget.Icon
+	hasIcon     bool
+	content     func(layout.Context) layout.Dimensions
+	contentLs   widget.List
+}
+
+func (d *Dialog) SetIcon(icon *widget.Icon) {
+	d.icon = icon
+}
+
+func (d *Dialog) Basic(th *theme.RepeatTheme, title string, w func(gtx layout.Context) layout.Dimensions) {
+	d.variant = dialogBasic
+	d.th = th
+	d.title = title
+	d.content = w
+}
+
+func (d *Dialog) Error(th *theme.RepeatTheme, title string, w func(gtx layout.Context) layout.Dimensions) {
+	d.variant = dialogError
+	d.th = th
+	d.title = title
+	d.content = w
+}
+
+func (d *Dialog) Show() {
+	d.isOpen = true
+}
+
+func (d *Dialog) Hide() {
+	d.isOpen = false
+}
+
+type dialogMaterialSpecs struct {
+	shape              unit.Dp
+	padd               unit.Dp
+	iconSz             unit.Dp
+	iconTitlePadd      unit.Dp
+	titleBodyPadd      unit.Dp
+	bodyActionsPadd    unit.Dp
+	betweenButtonsPadd unit.Dp
+	minW               unit.Dp
+	maxW               unit.Dp
+	maxContentHPercent int
+}
+
+var dialogSpecs = dialogMaterialSpecs{
+	shape:              28,
+	padd:               24,
+	iconSz:             24,
+	iconTitlePadd:      16,
+	titleBodyPadd:      16,
+	bodyActionsPadd:    24,
+	betweenButtonsPadd: 8,
+	minW:               280,
+	maxW:               560,
+	maxContentHPercent: 70,
+}
+
+func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
+	if d.th == nil {
+		panic("Dialog: no theme available")
+	}
+	if !d.isOpen {
+		return layout.Dimensions{}
+	}
+
+	bg := image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
+	if d.Scrim.Hovered() {
+		SetCursor(gtx, pointer.CursorPointer)
+	}
+	DrawBox(gtx, Box{
+		Size:      bg,
+		Color:     d.th.Palette.Backdrop,
+		Clickable: &d.Scrim,
+		HideInk:   true,
+	})
+
+	padd := gtx.Dp(dialogSpecs.padd)
+	fullPadd := padd * 2
+	minW, maxW := gtx.Dp(dialogSpecs.minW), gtx.Dp(dialogSpecs.maxW)
+	maxH := dialogSpecs.maxContentHPercent * gtx.Constraints.Max.Y / 100
+	shape := gtx.Dp(dialogSpecs.shape)
+	betweenButtonsPad := gtx.Dp(dialogSpecs.betweenButtonsPadd)
+
+	var innerDims layout.Dimensions
+	var contentDims layout.Dimensions
+	innerM := MakeMacro(gtx.Ops, func() {
+		gtx.Constraints.Min = image.Point{}
+		innerDims = layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+			layout.Rigid(layout.Spacer{Height: dialogSpecs.padd}.Layout),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				var iconDims layout.Dimensions
+				if d.icon != nil {
+					layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						gtx.Constraints.Min.X = gtx.Dp(dialogSpecs.iconSz)
+						return d.icon.Layout(gtx, d.th.Palette.Backdrop)
+					})
+					iconDims.Size.Y += gtx.Dp(dialogSpecs.iconTitlePadd)
+				}
+				var titleDims layout.Dimensions
+				OffsetBy(gtx, image.Pt(padd, iconDims.Size.Y), func() {
+					titleDims = material.H6(d.th.Theme, d.title).Layout(gtx)
+				})
+				titleDims.Size.X += fullPadd
+				return layout.Dimensions{Size: titleDims.Size}
+			}),
+			layout.Rigid(layout.Spacer{Height: dialogSpecs.titleBodyPadd}.Layout),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				maxY := gtx.Constraints.Max.Y
+				gtx.Constraints.Max.X = maxW - fullPadd
+				gtx.Constraints.Max.Y = maxH - fullPadd
+				d.contentLs.Axis = layout.Vertical
+				gtx.Constraints.Min = gtx.Constraints.Max
+				OffsetBy(gtx, image.Pt(padd, 0), func() {
+					// TODO: It's either double pass (render content 2 times), or do it without layout.Flex
+					material.List(d.th.Theme, &d.contentLs).Layout(gtx, 1, func(gtx layout.Context, index int) layout.Dimensions {
+						gtx.Constraints.Max.Y = maxY
+						contentDims = d.content(gtx)
+						return contentDims
+					})
+				})
+				contentDims.Size.X += fullPadd
+				contentDims.Size.Y = min(gtx.Constraints.Max.Y, contentDims.Size.Y)
+				return contentDims
+			}),
+			layout.Rigid(layout.Spacer{Height: dialogSpecs.bodyActionsPadd}.Layout),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				gtx.Constraints.Max.X = Clamp(minW-fullPadd, contentDims.Size.X, maxW-fullPadd)
+				gtx.Constraints.Min.X = gtx.Constraints.Max.X
+				return layout.E.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					var actionDims layout.Dimensions
+					OffsetBy(gtx, image.Pt(padd, 0), func() {
+						var button material.ButtonStyle
+						if !d.CancelProps.IsHidden {
+							txt := "Cancel"
+							if d.CancelProps.Text != "" {
+								txt = d.CancelProps.Text
+							}
+							if d.Cancel.Hovered() {
+								SetCursor(gtx, pointer.CursorPointer)
+							}
+							button = material.Button(d.th.Theme, &d.Cancel, txt)
+							button.Background.A = 0x00
+							button.Color = d.th.Palette.Backdrop
+							cancelDims := button.Layout(gtx)
+							actionDims = cancelDims
+							actionDims.Size.X += betweenButtonsPad
+						}
+						if !d.OkProps.IsHidden {
+							OffsetBy(gtx, image.Pt(actionDims.Size.X, 0), func() {
+								txt := "Ok"
+								if d.OkProps.Text != "" {
+									txt = d.OkProps.Text
+								}
+								if d.Ok.Hovered() {
+									SetCursor(gtx, pointer.CursorPointer)
+								}
+								button = material.Button(d.th.Theme, &d.Ok, txt)
+								button.Background.A = 0x00
+								button.Color = d.th.Palette.Backdrop
+								okDims := button.Layout(gtx)
+								actionDims.Size.X += okDims.Size.X
+								actionDims.Size.Y = okDims.Size.Y
+							})
+						}
+					})
+					actionDims.Size.X += padd
+					return actionDims
+				})
+			}),
+			layout.Rigid(layout.Spacer{Height: dialogSpecs.padd}.Layout),
+		)
+	})
+
+	gtx.Constraints.Min = gtx.Constraints.Max
+	return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		return layout.UniformInset(dialogSpecs.padd).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			size := image.Rect(0, 0, Clamp(minW, innerDims.Size.X+fullPadd, maxW), innerDims.Size.Y)
+			cardDims := DrawBox(gtx, Box{
+				Size:    size,
+				Color:   d.th.Palette.CardBg,
+				R:       theme.CornerR(shape, shape, shape, shape),
+				HideInk: true,
+			})
+			RegisterTag(gtx, &d, size)
+			innerM.Add(gtx.Ops)
+			return cardDims
 		})
 	})
 }
