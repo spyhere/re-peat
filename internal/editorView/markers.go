@@ -29,6 +29,7 @@ func (m *markers) newMarker(pcm int64) {
 	if newM == nil {
 		return
 	}
+	m.arr.Sort()
 	m.editing = newM
 }
 
@@ -36,8 +37,8 @@ func (m *markers) deleteDead() {
 	m.arr.DeleteDead()
 }
 
-func (m *markers) getSortedMarkers() tm.TimeMarkers {
-	return m.arr.Sorted()
+func (m *markers) sort() {
+	m.arr.Sort()
 }
 
 func (m *markers) startEdit(curMarker *tm.TimeMarker) {

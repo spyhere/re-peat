@@ -206,7 +206,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
 
 	prevLblX, yOffset, colDeviation := maxX, 0, 0
-	for _, marker := range slices.Backward(m.getSortedMarkers()) {
+	for _, marker := range slices.Backward(*m.arr) {
 		// TODO: Implement proper culling
 		var nameDim layout.Dimensions
 		isEditing := m.editing == marker && mode == modeMEdit
