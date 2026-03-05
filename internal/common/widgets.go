@@ -232,7 +232,6 @@ const cellMarginDP = 5
 const rowHeightDP = 50
 
 func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme) {
-	ls := material.List(th.Theme, t.list)
 	headerH := gtx.Dp(headerHDP)
 	for colIdx, it := range t.headCellFuncs {
 		t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
@@ -253,7 +252,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme) {
 	rowH := gtx.Dp(rowHeightDP)
 	OffsetBy(gtx, image.Pt(0, headerH), func() {
 		DrawDivider(gtx, th, DividerProps{})
-		ls.Layout(gtx, t.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
+		material.List(th.Theme, t.list).Layout(gtx, t.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
 			rowValue := t.rowValueCb(rowIdx)
 			if t.rowFilterCb != nil && !t.rowFilterCb(rowValue) {
 				return layout.Dimensions{}
