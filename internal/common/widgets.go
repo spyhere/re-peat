@@ -224,7 +224,8 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 		t.columnWidths[len(t.columnWidths)-1] += gtx.Constraints.Max.X - cellWidthSum
 	}
 	OffsetBy(gtx, image.Pt(xMargin, yMargin), func() {
-		t.layout(gtx, th)
+		gtx.Constraints.Max.Y -= yMargin * 2
+		t.layout(gtx, th, yMargin)
 	})
 }
 
@@ -232,7 +233,7 @@ const headerHDP = 40
 const cellMarginDP = 5
 const rowHeightDP = 50
 
-func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme) {
+func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargin int) {
 	headerH := gtx.Dp(headerHDP)
 	for colIdx, it := range t.headCellFuncs {
 		t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
@@ -253,6 +254,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme) {
 	rowH := gtx.Dp(rowHeightDP)
 	OffsetBy(gtx, image.Pt(0, headerH), func() {
 		DrawDivider(gtx, th, DividerProps{})
+		gtx.Constraints.Max.Y -= bottomMargin
 		material.List(th.Theme, t.list).Layout(gtx, t.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
 			rowValue := t.rowValueCb(rowIdx)
 			if t.rowFilterCb != nil && !t.rowFilterCb(rowValue) {
