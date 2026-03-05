@@ -77,6 +77,7 @@ func (t *TimeMarkers) DeleteDead() {
 	*t = slices.DeleteFunc(*t, func(it *TimeMarker) bool {
 		return it.isDead
 	})
+	t.Sort()
 }
 
 func (t *TimeMarkers) Get(idx int, asc bool) *TimeMarker {
@@ -107,12 +108,15 @@ func (t *TimeMarkers) sortCb(a, b *TimeMarker) int {
 	return int(a.Pcm - b.Pcm)
 }
 
-// TODO: Sort only on marker manipulation
-func (t *TimeMarkers) Sorted() TimeMarkers {
+func (t *TimeMarkers) Sort() {
 	if slices.IsSortedFunc(*t, t.sortCb) {
-		return *t
+		return
 	}
 	seq := slices.Values(*t)
 	*t = slices.SortedStableFunc(seq, t.sortCb)
+}
+
+func (t *TimeMarkers) Sorted() TimeMarkers {
+	t.Sort()
 	return *t
 }
