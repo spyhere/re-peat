@@ -134,6 +134,7 @@ type Box struct {
 	StrokeC    color.NRGBA
 	StrokeW    unit.Dp
 	Clickable  *widget.Clickable
+	HideInk    bool
 	GeometryCb func()
 }
 
@@ -147,9 +148,11 @@ func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
 		b.Clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 			return layout.Dimensions{Size: rrect.Rect.Max}
 		})
-		for _, it := range b.Clickable.History() {
-			gtx.Constraints.Min = rrect.Rect.Max
-			drawInk(gtx, it)
+		if !b.HideInk {
+			for _, it := range b.Clickable.History() {
+				gtx.Constraints.Min = rrect.Rect.Max
+				drawInk(gtx, it)
+			}
 		}
 	}
 	if b.GeometryCb != nil {
