@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"math"
@@ -261,6 +262,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 			passOp := pointer.PassOp{}.Push(gtx.Ops)
 			ed.Layout(gtx)
 			passOp.Pop()
+			// TODO: This else block is redundant
 		} else {
 			text := props.GetInput()
 			if text == "" {
@@ -289,6 +291,174 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		}
 	})
 	return layout.Dimensions{Size: image.Pt(containerW, containerH)}
+}
+
+type inputFieldMaterialSpecs struct {
+	defaultH          unit.Dp
+	yPadding          unit.Dp
+	outterIconPadding unit.Dp
+	textXPadding      unit.Dp
+	supTextPadding    unit.Dp
+	supTextTopPadding unit.Dp
+	bLineFocused      unit.Dp
+	bLineUnfocused    unit.Dp
+	icon              unit.Dp
+}
+
+var inputSpecs = inputFieldMaterialSpecs{
+	defaultH:          56,
+	yPadding:          8,
+	outterIconPadding: 12,
+	textXPadding:      16,
+	supTextPadding:    16,
+	supTextTopPadding: 4,
+	bLineFocused:      4,
+	bLineUnfocused:    1,
+	icon:              24,
+}
+
+type InputFieldProps struct {
+	MaxLen       int
+	Filter       string
+	LabelText    string
+	Placeholder  string
+	LeadingIcon  *widget.Icon
+	TrailingIcon *widget.Icon
+	*Inputable
+}
+
+func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldProps) layout.Dimensions {
+	props.Editor.MaxLen = props.MaxLen
+	props.Editor.SingleLine = true
+	props.Editor.Filter = props.Filter
+	props.Inputable.Update(gtx)
+
+	yPadding, defaultH := gtx.Dp(inputSpecs.yPadding), gtx.Dp(inputSpecs.defaultH)
+	outterIconPadding, textXPadding := gtx.Dp(inputSpecs.outterIconPadding), gtx.Dp(inputSpecs.textXPadding)
+	supTextPadding, supTextTopPadding := gtx.Dp(inputSpecs.supTextPadding), gtx.Dp(inputSpecs.supTextTopPadding)
+
+	c := th.Palette.Input.Enabled
+	contArea := image.Rect(0, 0, gtx.Constraints.Max.X, defaultH)
+	contDims := DrawBox(gtx, Box{
+		Size:       contArea,
+		Color:      c.Bg,
+		R:          theme.CornerR(0, 0, 4, 4),
+		Clickable:  &props.Clickable,
+		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
+	})
+	gtx.Constraints.Max.Y = defaultH
+	gtx.Constraints.Max.X = contDims.Size.X
+	indicatorH := gtx.Dp(inputSpecs.bLineUnfocused)
+	if props.IsFocused() {
+		indicatorH = gtx.Dp(inputSpecs.bLineFocused)
+	}
+	// Indicator
+	OffsetBy(gtx, image.Pt(0, contDims.Size.Y-indicatorH), func(gtx layout.Context) {
+		DrawBox(gtx, Box{
+			Size:  image.Rect(0, 0, gtx.Constraints.Max.X, indicatorH),
+			Color: c.Indicator,
+		})
+	})
+
+	var incrDims layout.Dimensions
+	iconSize := gtx.Dp(inputSpecs.icon)
+	// Leading icon
+	if props.LeadingIcon != nil {
+		OffsetBy(gtx, image.Pt(outterIconPadding, contDims.Size.Y/2-iconSize/2), func(gtx layout.Context) {
+			gtx.Constraints.Min.X = iconSize
+			props.LeadingIcon.Layout(gtx, c.Icon)
+		})
+		incrDims.Size.X += iconSize + outterIconPadding
+	}
+	gtx.Constraints.Max = contDims.Size
+	// Label
+	OffsetBy(gtx, image.Pt(textXPadding+incrDims.Size.X, yPadding), func(gtx layout.Context) {
+		lblTxtAlign := layout.W
+		var lblTxtSize unit.Sp = 16
+		var lblTxtHeight unit.Sp = 24
+		if props.IsFocused() || len(props.GetInput()) > 0 {
+			lblTxtAlign = layout.NW
+			lblTxtSize = 12
+			lblTxtHeight = 16
+		}
+		gtx.Constraints.Max.X -= incrDims.Size.X + textXPadding*2
+		gtx.Constraints.Max.Y -= yPadding * 2
+		gtx.Constraints.Min = gtx.Constraints.Max
+		lblTxtAlign.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			gtx.Constraints.Min = image.Point{}
+			labelTxt := material.Body2(th.Theme, props.LabelText)
+			labelTxt.Font.Typeface = "Roboto"
+			labelTxt.TextSize = lblTxtSize
+			labelTxt.LineHeight = lblTxtHeight
+			labelTxt.Font.Weight = 400
+			labelTxt.Color = c.LabelText
+			txtDims := labelTxt.Layout(gtx)
+			incrDims.Size.Y += txtDims.Size.Y
+			return txtDims
+		})
+	})
+	// Editor
+	OffsetBy(gtx, image.Pt(textXPadding+incrDims.Size.X, yPadding+incrDims.Size.Y), func(gtx layout.Context) {
+		trailingIcon := 0
+		if props.TrailingIcon != nil {
+			trailingIcon += iconSize + outterIconPadding
+		}
+		gtx.Constraints.Max.X -= incrDims.Size.X + textXPadding*2 + trailingIcon
+		gtx.Constraints.Max.Y -= yPadding * 2
+		gtx.Constraints.Min = gtx.Constraints.Max
+		placeholder := ""
+		if props.IsFocused() {
+			placeholder = props.Placeholder
+		}
+		ed := material.Editor(th.Theme, &props.Editor, placeholder)
+		ed.Font.Typeface = "Roboto"
+		ed.Color = c.InputText
+		ed.LineHeight = 24
+		ed.TextSize = 16
+		ed.Font.Weight = 400
+		passOp := pointer.PassOp{}.Push(gtx.Ops)
+		edDims := ed.Layout(gtx)
+		incrDims.Size.X += edDims.Size.X + textXPadding
+		passOp.Pop()
+	})
+	// Trailing icon
+	if props.TrailingIcon != nil {
+		OffsetBy(gtx, image.Pt(contDims.Size.X-outterIconPadding-iconSize, contDims.Size.Y/2-iconSize/2), func(gtx layout.Context) {
+			gtx.Constraints.Min.X = iconSize
+			props.TrailingIcon.Layout(gtx, c.Icon)
+			iconSizeHalf := iconSize / 2
+			DrawBox(gtx, Box{
+				Size:      image.Rect(0, 0, iconSize, iconSize),
+				R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
+				Clickable: &props.Cancel,
+				HideInk:   true,
+			})
+		})
+	}
+	// Hover layer
+	if props.Hovered() {
+		DrawBox(gtx, Box{
+			Size:  contArea,
+			Color: th.Palette.Input.Hovered.Bg,
+		})
+	}
+	// Supporting text (character limit)
+	if props.MaxLen > 0 {
+		supTextM, supTextDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+			gtx.Constraints.Min = image.Point{}
+			txt := material.Body2(th.Theme, fmt.Sprintf("%d/%d", len(props.GetInput()), props.MaxLen))
+			txt.Color = c.SupportingText
+			txt.TextSize = 12
+			txt.LineHeight = 16
+			return txt.Layout(gtx)
+		})
+		incrDims.Size.Y += supTextDims.Size.Y
+		OffsetBy(gtx, image.Pt(contDims.Size.X-supTextPadding-supTextDims.Size.X, defaultH+supTextTopPadding), func(gtx layout.Context) {
+			supTextM.Add(gtx.Ops)
+		})
+		contDims.Size.Y += supTextDims.Size.Y + supTextTopPadding
+	}
+	return contDims
 }
 
 type dividerAxis int

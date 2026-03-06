@@ -46,6 +46,7 @@ var repeatPalette = palette{
 		IconC:          rgb(0x625B71),
 		ButtonEnabledC: rgb(0x6750A4),
 	},
+	Input:  inputFieldP,
 	CardBg: rgb(0xF7F2FA),
 	SegButtons: segButtonsStatesPalette{
 		Enabled: segButtonsPalette{
@@ -102,6 +103,7 @@ type palette struct {
 	IconButton    iconButtonStatesPalette
 	Search        searchStatesPalette
 	Dialog        dialogPalette
+	Input         inputFieldStatePalette
 	CardBg        color.NRGBA
 	SegButtons    segButtonsStatesPalette
 	MarkersViewBg color.NRGBA
