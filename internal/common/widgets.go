@@ -33,6 +33,7 @@ func (in *Inputable) Update(gtx layout.Context) {
 
 	if in.Cancel.Clicked(gtx) {
 		in.Editor.SetText("")
+		in.value = ""
 		in.Blur(gtx)
 	}
 	HandlePointerEvents(gtx, &in.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
