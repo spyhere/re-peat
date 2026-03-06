@@ -16,7 +16,7 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-type Searchable struct {
+type Inputable struct {
 	isHovered bool
 	isFocused bool
 	isDirty   bool
@@ -26,29 +26,29 @@ type Searchable struct {
 	Cancel widget.Clickable
 }
 
-func (s *Searchable) Update(gtx layout.Context) {
-	if s.gotDirty(gtx) {
-		s.isDirty = true
+func (in *Inputable) Update(gtx layout.Context) {
+	if in.gotDirty(gtx) {
+		in.isDirty = true
 	}
 
-	if s.Cancel.Clicked(gtx) {
-		s.Editor.SetText("")
-		s.Blur(gtx)
+	if in.Cancel.Clicked(gtx) {
+		in.Editor.SetText("")
+		in.Blur(gtx)
 	}
-	HandlePointerEvents(gtx, &s.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
+	HandlePointerEvents(gtx, &in.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
 		switch e.Kind {
 		case pointer.Move:
-			s.isHovered = true
+			in.isHovered = true
 		case pointer.Leave:
-			s.isHovered = false
+			in.isHovered = false
 		case pointer.Press:
 			// Even if user missed the input field and pressed container the caret will be set anyway
-			if s.Focus(gtx) {
+			if in.Focus(gtx) {
 				if e.Position.X < 100 {
-					s.Editor.SetCaret(0, 0)
+					in.Editor.SetCaret(0, 0)
 				} else {
-					txtLen := len(s.GetInput())
-					s.Editor.SetCaret(txtLen, txtLen)
+					txtLen := len(in.GetInput())
+					in.Editor.SetCaret(txtLen, txtLen)
 				}
 			}
 		}
@@ -57,69 +57,69 @@ func (s *Searchable) Update(gtx layout.Context) {
 	HandleKeyEvents(gtx, func(e key.Event) {
 		switch e.Name {
 		case key.NameEscape:
-			s.Blur(gtx)
+			in.Blur(gtx)
 		}
 	},
 		key.Filter{Name: key.NameEscape},
 	)
 }
 
-func (s *Searchable) Subscribe(gtx layout.Context) {
+func (in *Inputable) Subscribe(gtx layout.Context) {
 	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	event.Op(gtx.Ops, &s.Editor)
+	event.Op(gtx.Ops, &in.Editor)
 }
 
-func (s *Searchable) Blur(gtx layout.Context) {
+func (in *Inputable) Blur(gtx layout.Context) {
 	gtx.Execute(key.FocusCmd{Tag: nil})
-	s.isFocused = false
+	in.isFocused = false
 }
 
-func (s *Searchable) Focus(gtx layout.Context) (wasFocusedBefore bool) {
-	if s.isFocused {
+func (in *Inputable) Focus(gtx layout.Context) (wasFocusedBefore bool) {
+	if in.isFocused {
 		return true
 	}
-	gtx.Execute(key.FocusCmd{Tag: &s.Editor})
-	txtLen := len(s.Editor.Text())
+	gtx.Execute(key.FocusCmd{Tag: &in.Editor})
+	txtLen := len(in.Editor.Text())
 	if txtLen > 0 {
-		s.Editor.SetCaret(txtLen, 0)
+		in.Editor.SetCaret(txtLen, 0)
 	}
-	s.isFocused = true
+	in.isFocused = true
 	return false
 }
 
-func (s *Searchable) GetInput() string {
-	if s.isDirty {
-		s.value = s.Editor.Text()
-		s.isDirty = false
+func (in *Inputable) GetInput() string {
+	if in.isDirty {
+		in.value = in.Editor.Text()
+		in.isDirty = false
 	}
-	return s.value
+	return in.value
 }
 
-func (s *Searchable) IsHovered() bool {
-	return s.isHovered
+func (in *Inputable) IsHovered() bool {
+	return in.isHovered
 }
 
-func (s *Searchable) IsFocused() bool {
-	return s.isFocused
+func (in *Inputable) IsFocused() bool {
+	return in.isFocused
 }
 
-func (s *Searchable) GetCursorType() (cursor pointer.Cursor, ok bool) {
-	if s.IsHovered() {
-		if s.IsFocused() {
+func (in *Inputable) GetCursorType() (cursor pointer.Cursor, ok bool) {
+	if in.IsHovered() {
+		if in.IsFocused() {
 			return pointer.CursorText, true
 		} else {
 			return pointer.CursorPointer, true
 		}
 	}
-	if s.Cancel.Hovered() {
+	if in.Cancel.Hovered() {
 		return pointer.CursorPointer, true
 	}
 	return pointer.CursorDefault, false
 }
 
-func (s *Searchable) gotDirty(gtx layout.Context) bool {
+func (in *Inputable) gotDirty(gtx layout.Context) bool {
 	for {
-		we, ok := s.Editor.Update(gtx)
+		we, ok := in.Editor.Update(gtx)
 		if !ok {
 			break
 		}

@@ -37,7 +37,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
-				Searchable:  m.searchable,
+				Inputable:   m.searchable,
 			})
 			return searchDims
 		})

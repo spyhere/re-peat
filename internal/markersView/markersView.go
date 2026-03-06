@@ -30,7 +30,7 @@ func NewMarkersView(props Props) *MarkersView {
 		p:            props.Player,
 		hotKeyBuf:    make([]rune, 0, selectionRuneLimit),
 		dialog:       props.Dialog,
-		searchable:   &common.Searchable{},
+		searchable:   &common.Inputable{},
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
 		deleteButton: &widget.Clickable{},
@@ -78,7 +78,7 @@ type MarkersView struct {
 	markerInPlay *tm.TimeMarker
 	th           *theme.RepeatTheme
 	table        *common.Table[*tm.TimeMarker]
-	searchable   *common.Searchable
+	searchable   *common.Inputable
 	replayButton *widget.Clickable
 	tagButton    *widget.Clickable
 	deleteButton *widget.Clickable

@@ -212,11 +212,11 @@ var searchSpecs = searchMaterialSpecs{
 
 type SProps struct {
 	DefaultText string
-	*Searchable
+	*Inputable
 }
 
 func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.Dimensions {
-	props.Searchable.Update(gtx)
+	props.Inputable.Update(gtx)
 
 	containerH := gtx.Dp(searchSpecs.height)
 	containerHHalft := containerH / 2
@@ -226,7 +226,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		Color:      th.Palette.Search.Enabled.Bg,
 		R:          theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
 		Clickable:  &props.Clickable,
-		GeometryCb: func() { props.Searchable.Subscribe(gtx) },
+		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
 	if props.IsHovered() {
 		DrawBox(gtx, Box{
