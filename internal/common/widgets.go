@@ -388,11 +388,10 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 	shape := gtx.Dp(dialogSpecs.shape)
 	betweenButtonsPad := gtx.Dp(dialogSpecs.betweenButtonsPadd)
 
-	var innerDims layout.Dimensions
 	var contentDims layout.Dimensions
-	innerM := MakeMacro(gtx.Ops, func() {
+	innerM, innerDims := MakeMacro(gtx.Ops, func() layout.Dimensions {
 		gtx.Constraints.Min = image.Point{}
-		innerDims = layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(layout.Spacer{Height: dialogSpecs.padd}.Layout),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				var iconDims layout.Dimensions
@@ -418,7 +417,6 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 				d.contentLs.Axis = layout.Vertical
 				gtx.Constraints.Min = gtx.Constraints.Max
 				OffsetBy(gtx, image.Pt(padd, 0), func() {
-					// TODO: It's either double pass (render content 2 times), or do it without layout.Flex
 					material.List(d.th.Theme, &d.contentLs).Layout(gtx, 1, func(gtx layout.Context, index int) layout.Dimensions {
 						gtx.Constraints.Max.Y = maxY
 						contentDims = d.content(gtx)

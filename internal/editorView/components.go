@@ -178,11 +178,10 @@ func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio.Audi
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
 		y := common.PrcToPx(waveM, th.Sizing.Editor.Grid.MargT)
 		if curSec%intervalSec == 0 {
-			var secDim layout.Dimensions
-			secLayout := common.MakeMacro(gtx.Ops, func() {
+			secLayout, secDim := common.MakeMacro(gtx.Ops, func() layout.Dimensions {
 				thatGtx := gtx
 				thatGtx.Constraints.Min = image.Point{}
-				secDim = material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(thatGtx)
+				return material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(thatGtx)
 			})
 			common.OffsetBy(gtx, image.Pt(x-secDim.Size.X/2, y-secDim.Size.Y), func() {
 				secLayout.Add(gtx.Ops)
@@ -208,10 +207,9 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 	prevLblX, yOffset, colDeviation := maxX, 0, 0
 	for _, marker := range slices.Backward(*m.arr) {
 		// TODO: Implement proper culling
-		var nameDim layout.Dimensions
 		isEditing := m.editing == marker && mode == modeMEdit
 		i9n := getMI9n(marker)
-		nameOp := common.MakeMacro(gtx.Ops, func() {
+		nameOp, nameDim := common.MakeMacro(gtx.Ops, func() layout.Dimensions {
 			var renderable renderable
 			if isEditing {
 				renderable = material.Editor(th.Theme, mE, "")
@@ -226,7 +224,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 			}
 			inset := unit.Dp(mrkSz.Lbl.Margin)
 			gtx.Constraints.Min = image.Point{}
-			nameDim = layout.UniformInset(inset).Layout(gtx, renderable.Layout)
+			return layout.UniformInset(inset).Layout(gtx, renderable.Layout)
 		})
 		curSamples := a.GetSamplesFromPCM(marker.Pcm)
 		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)

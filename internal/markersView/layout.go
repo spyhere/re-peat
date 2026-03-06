@@ -127,11 +127,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				dims := txt.Layout(gtx)
 				if strings.HasPrefix(rowNum, curInput) {
 					var highlightTDim layout.Dimensions
-					macro := common.MakeMacro(gtx.Ops, func() {
+					macro, highlightTDim := common.MakeMacro(gtx.Ops, func() layout.Dimensions {
 						highlightT := material.Body2(m.th.Theme, curInput)
 						highlightT.Color = m.th.Palette.Selection.Fg
 						highlightT.TextSize += 2
-						highlightTDim = highlightT.Layout(gtx)
+						return highlightT.Layout(gtx)
 					})
 					common.DrawBox(gtx, common.Box{
 						Size:  image.Rect(0, 0, highlightTDim.Size.X, highlightTDim.Size.Y),

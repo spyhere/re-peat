@@ -28,9 +28,8 @@ func OffsetBy(gtx layout.Context, amount image.Point, w func()) {
 }
 
 func CenteredX(gtx layout.Context, w func() layout.Dimensions) layout.Dimensions {
-	var dimensions layout.Dimensions
-	macro := MakeMacro(gtx.Ops, func() {
-		dimensions = w()
+	macro, dimensions := MakeMacro(gtx.Ops, func() layout.Dimensions {
+		return w()
 	})
 	xCenter := gtx.Constraints.Max.X / 2
 	wCenter := dimensions.Size.X / 2
@@ -78,10 +77,10 @@ func HandleKeyEvents(gtx layout.Context, cb func(e key.Event), filters ...event.
 	}
 }
 
-func MakeMacro(ops *op.Ops, cb func()) op.CallOp {
+func MakeMacro(ops *op.Ops, cb func() layout.Dimensions) (op.CallOp, layout.Dimensions) {
 	macro := op.Record(ops)
-	cb()
-	return macro.Stop()
+	dims := cb()
+	return macro.Stop(), dims
 }
 
 // Lock "this" between "from" and "to"

@@ -53,8 +53,7 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 		segButtonP = th.Palette.SegButtons.Disabled
 	}
 	for idx, it := range buttons.arr {
-		var textDim layout.Dimensions
-		textOp := common.MakeMacro(gtx.Ops, func() {
+		textOp, textDim := common.MakeMacro(gtx.Ops, func() layout.Dimensions {
 			gtx.Constraints.Min = image.Point{}
 			textBody2 := material.Body2(th.Theme, it.name)
 			if buttons.arr[idx].tab == selectedT {
@@ -66,7 +65,7 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 			textBody2.Font.Weight = segButtSpecs.fontWeight
 			textBody2.TextSize = segButtSpecs.fontSize
 			textBody2.LineHeight = segButtSpecs.fontLineHeigt
-			textDim = textBody2.Layout(gtx)
+			return textBody2.Layout(gtx)
 		})
 		buttTextOps[idx] = buttonText{width: textDim.Size.X, op: textOp}
 		if textDim.Size.X > maxDim.Size.X {
