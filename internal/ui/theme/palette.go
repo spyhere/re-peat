@@ -38,6 +38,10 @@ var repeatPalette = palette{
 			SupText: rgb(0x49454F),
 		},
 	},
+	Dialog: dialogPalette{
+		IconC:          rgb(0x625B71),
+		ButtonEnabledC: rgb(0x6750A4),
+	},
 	CardBg: rgb(0xF7F2FA),
 	SegButtons: segButtonsStatesPalette{
 		Enabled: segButtonsPalette{
@@ -93,6 +97,7 @@ type palette struct {
 	Chip          chipStatesPalette
 	IconButton    iconButtonStatesPalette
 	Search        searchStatesPalette
+	Dialog        dialogPalette
 	CardBg        color.NRGBA
 	SegButtons    segButtonsStatesPalette
 	MarkersViewBg color.NRGBA

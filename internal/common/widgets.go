@@ -313,8 +313,11 @@ type Dialog struct {
 	contentLs   widget.List
 }
 
-func (d *Dialog) SetIcon(icon *widget.Icon, c color.NRGBA) {
+func (d *Dialog) SetIcon(icon *widget.Icon) {
 	d.icon = icon
+}
+
+func (d *Dialog) SetIconColor(c color.NRGBA) {
 	d.iconC = c
 }
 
@@ -409,7 +412,11 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 				iconsSize := gtx.Dp(dialogSpecs.iconSz)
 				OffsetBy(gtx, image.Pt(currentWidth/2-iconsSize/2-padd, 0), func(gtx layout.Context) {
 					gtx.Constraints.Min.X = iconsSize
-					d.icon.Layout(gtx, d.iconC)
+					iconC := d.th.Palette.Dialog.IconC
+					if d.iconC.A != 0 {
+						iconC = d.iconC
+					}
+					d.icon.Layout(gtx, iconC)
 				})
 				incrDims.Size.Y += iconsSize + gtx.Dp(dialogSpecs.iconTitlePadd)
 			}
@@ -454,7 +461,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 						}
 						button = material.Button(d.th.Theme, &d.Cancel, txt)
 						button.Background.A = 0x00
-						button.Color = d.th.Palette.Backdrop
+						button.Color = d.th.Palette.Dialog.ButtonEnabledC
 						cancelDims := button.Layout(gtx)
 						dims = cancelDims
 						dims.Size.X += betweenButtonsPad
@@ -467,7 +474,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 							}
 							button = material.Button(d.th.Theme, &d.Ok, txt)
 							button.Background.A = 0x00
-							button.Color = d.th.Palette.Backdrop
+							button.Color = d.th.Palette.Dialog.ButtonEnabledC
 							okDims := button.Layout(gtx)
 							dims.Size.X += okDims.Size.X
 							dims.Size.Y = okDims.Size.Y
