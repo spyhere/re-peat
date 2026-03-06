@@ -454,12 +454,12 @@ const (
 
 type IconButtonProps struct {
 	Icon  *widget.Icon
+	Th    *theme.RepeatTheme
 	Text  string
 	Width iconButtonWidth
 	Size  iconButtonSize
-	Bg    color.NRGBA
-	Fg    color.NRGBA
 	Cl    *widget.Clickable
+	IsOff bool
 }
 
 func DrawIconButton(gtx layout.Context, props IconButtonProps) layout.Dimensions {
@@ -480,16 +480,22 @@ func DrawIconButton(gtx layout.Context, props IconButtonProps) layout.Dimensions
 		iconSize, w, h = gtx.Dp(sz.mIcon), gtx.Dp(sz.mW), gtx.Dp(sz.mH)
 	}
 	shape := h / 2
+	cl := props.Cl
+	color := props.Th.Palette.IconButton.Enabled
+	if props.IsOff {
+		cl = nil
+		color = props.Th.Palette.IconButton.Disabled
+	}
 	boxDim := DrawBox(gtx, Box{
 		Size:      image.Rect(0, 0, w, h),
-		Color:     props.Bg,
+		Color:     color.Bg,
 		R:         theme.CornerR(shape, shape, shape, shape),
-		Clickable: props.Cl,
+		Clickable: cl,
 	})
 	iconSizeHalf := iconSize / 2
 	OffsetBy(gtx, image.Pt(w/2-iconSizeHalf, h/2-iconSizeHalf), func(gtx layout.Context) {
 		gtx.Constraints.Min.X = iconSize
-		props.Icon.Layout(gtx, props.Fg)
+		props.Icon.Layout(gtx, color.Icon)
 	})
 	return boxDim
 }

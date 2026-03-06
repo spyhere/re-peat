@@ -112,10 +112,10 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
 				return common.DrawIconButton(gtx, common.IconButtonProps{
-					Icon: micons.Delete,
-					Bg:   m.th.Palette.IconButton.Enabled.Bg,
-					Fg:   m.th.Palette.IconButton.Enabled.Icon,
-					Cl:   m.deleteButton,
+					Icon:  micons.Delete,
+					Th:    m.th,
+					Cl:    m.deleteButton,
+					IsOff: len(*m.timeMarkers) == 0,
 				})
 			},
 		)

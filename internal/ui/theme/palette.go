@@ -20,6 +20,10 @@ var repeatPalette = palette{
 			Bg:   rgb(0x6750A4),
 			Icon: white,
 		},
+		Disabled: iconButtonPalette{
+			Bg:   rgb(0xDCDCDC),
+			Icon: rgb(0x949395),
+		},
 	},
 	Search: searchStatesPalette{
 		Enabled: searchPalette{
@@ -110,7 +114,8 @@ type selectionPalette struct {
 }
 
 type iconButtonStatesPalette struct {
-	Enabled iconButtonPalette
+	Enabled  iconButtonPalette
+	Disabled iconButtonPalette
 }
 
 type iconButtonPalette struct {
