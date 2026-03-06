@@ -370,7 +370,7 @@ type ChipProps struct {
 }
 
 func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout.Dimensions {
-	textM, textDim := MakeMacro(gtx.Ops, func() layout.Dimensions {
+	textM, textDim := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		txt := material.Body2(th.Theme, props.Text)
 		txt.Color = th.Palette.Chip.Enabled.Text
 		txt.Font.Typeface = "Roboto"

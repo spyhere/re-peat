@@ -389,7 +389,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 	betweenButtonsPad := gtx.Dp(dialogSpecs.betweenButtonsPadd)
 
 	var contentDims layout.Dimensions
-	innerM, innerDims := MakeMacro(gtx.Ops, func() layout.Dimensions {
+	innerM, innerDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Min = image.Point{}
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(layout.Spacer{Height: dialogSpecs.padd}.Layout),

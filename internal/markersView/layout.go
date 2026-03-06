@@ -127,7 +127,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				dims := txt.Layout(gtx)
 				if strings.HasPrefix(rowNum, curInput) {
 					var highlightTDim layout.Dimensions
-					macro, highlightTDim := common.MakeMacro(gtx.Ops, func() layout.Dimensions {
+					macro, highlightTDim := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 						highlightT := material.Body2(m.th.Theme, curInput)
 						highlightT.Color = m.th.Palette.Selection.Fg
 						highlightT.TextSize += 2

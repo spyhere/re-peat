@@ -178,7 +178,7 @@ func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio.Audi
 		x := int(float64(curSecIdx-scroll.leftB) * float64(gtx.Constraints.Max.X) / float64(scroll.rightB-scroll.leftB))
 		y := common.PrcToPx(waveM, th.Sizing.Editor.Grid.MargT)
 		if curSec%intervalSec == 0 {
-			secLayout, secDim := common.MakeMacro(gtx.Ops, func() layout.Dimensions {
+			secLayout, secDim := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 				thatGtx := gtx
 				thatGtx.Constraints.Min = image.Point{}
 				return material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(thatGtx)
@@ -209,7 +209,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 		// TODO: Implement proper culling
 		isEditing := m.editing == marker && mode == modeMEdit
 		i9n := getMI9n(marker)
-		nameOp, nameDim := common.MakeMacro(gtx.Ops, func() layout.Dimensions {
+		nameOp, nameDim := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			var renderable renderable
 			if isEditing {
 				renderable = material.Editor(th.Theme, mE, "")
