@@ -2,6 +2,7 @@ package common
 
 import (
 	"image"
+	"image/color"
 	"log"
 
 	"gioui.org/io/event"
@@ -306,13 +307,15 @@ type Dialog struct {
 	CancelProps dialogButton
 	title       string
 	icon        *widget.Icon
+	iconC       color.NRGBA
 	hasIcon     bool
 	content     func(layout.Context) layout.Dimensions
 	contentLs   widget.List
 }
 
-func (d *Dialog) SetIcon(icon *widget.Icon) {
+func (d *Dialog) SetIcon(icon *widget.Icon, c color.NRGBA) {
 	d.icon = icon
+	d.iconC = c
 }
 
 func (d *Dialog) Basic(th *theme.RepeatTheme, title string, w func(gtx layout.Context) layout.Dimensions) {
@@ -335,6 +338,7 @@ func (d *Dialog) Show() {
 
 func (d *Dialog) Hide() {
 	d.isOpen = false
+	d.icon = nil
 }
 
 type dialogMaterialSpecs struct {
@@ -387,7 +391,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 
 	prevConstr := gtx.Constraints
 	contentM, contentDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-		gtx.Constraints.Max.X = maxW
+		gtx.Constraints.Max.X = maxW - fullPadd
 		gtx.Constraints.Min.X = minW
 		gtx.Constraints.Min.Y = 0
 		dims := d.content(gtx)
@@ -405,7 +409,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 				iconsSize := gtx.Dp(dialogSpecs.iconSz)
 				OffsetBy(gtx, image.Pt(currentWidth/2-iconsSize/2-padd, 0), func(gtx layout.Context) {
 					gtx.Constraints.Min.X = iconsSize
-					d.icon.Layout(gtx, d.th.Palette.Backdrop)
+					d.icon.Layout(gtx, d.iconC)
 				})
 				incrDims.Size.Y += iconsSize + gtx.Dp(dialogSpecs.iconTitlePadd)
 			}
@@ -457,7 +461,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 					}
 					if !d.OkProps.IsHidden {
 						OffsetBy(gtx, image.Pt(dims.Size.X, 0), func(gtx layout.Context) {
-							txt := "Ok"
+							txt := "OK"
 							if d.OkProps.Text != "" {
 								txt = d.OkProps.Text
 							}
