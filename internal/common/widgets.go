@@ -364,17 +364,13 @@ var dialogSpecs = dialogMaterialSpecs{
 }
 
 func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
-	if d.th == nil {
-		panic("Dialog: no theme available")
-	}
 	if !d.isOpen {
 		return layout.Dimensions{}
 	}
-
-	bg := image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
-	if d.Scrim.Hovered() {
-		SetCursor(gtx, pointer.CursorPointer)
+	if d.th == nil {
+		panic("Dialog: no theme available")
 	}
+	bg := image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
 	DrawBox(gtx, Box{
 		Size:      bg,
 		Color:     d.th.Palette.Backdrop,
@@ -452,9 +448,6 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 						if d.CancelProps.Text != "" {
 							txt = d.CancelProps.Text
 						}
-						if d.Cancel.Hovered() {
-							SetCursor(gtx, pointer.CursorPointer)
-						}
 						button = material.Button(d.th.Theme, &d.Cancel, txt)
 						button.Background.A = 0x00
 						button.Color = d.th.Palette.Backdrop
@@ -467,9 +460,6 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 							txt := "Ok"
 							if d.OkProps.Text != "" {
 								txt = d.OkProps.Text
-							}
-							if d.Ok.Hovered() {
-								SetCursor(gtx, pointer.CursorPointer)
 							}
 							button = material.Button(d.th.Theme, &d.Ok, txt)
 							button.Background.A = 0x00
@@ -506,4 +496,11 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 		})
 		return dialogDims
 	})
+}
+
+func (d *Dialog) GetCursorType() (pointer.Cursor, bool) {
+	if d.Scrim.Hovered() || d.Cancel.Hovered() || d.Ok.Hovered() {
+		return pointer.CursorPointer, true
+	}
+	return pointer.CursorDefault, false
 }
