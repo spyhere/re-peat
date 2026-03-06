@@ -99,7 +99,7 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 		a.editorView.MakePeakMap()
 		a.editorView.Layout(gtx, e)
 	}
-	common.OffsetBy(gtx, image.Pt(0, a.th.Sizing.SegButtonsTopM), func() {
+	common.OffsetBy(gtx, image.Pt(0, a.th.Sizing.SegButtonsTopM), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			return groupedButtons(gtx, a.th, a.selectedTab, a.buttons)
 		})

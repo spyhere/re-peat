@@ -21,10 +21,9 @@ func SetCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
-// TODO: Make it return dimensions of the widget
-func OffsetBy(gtx layout.Context, amount image.Point, w func()) {
+func OffsetBy(gtx layout.Context, amount image.Point, w func(gtx layout.Context)) {
 	defer op.Offset(amount).Push(gtx.Ops).Pop()
-	w()
+	w(gtx)
 }
 
 func CenteredX(gtx layout.Context, w func() layout.Dimensions) layout.Dimensions {
@@ -33,7 +32,7 @@ func CenteredX(gtx layout.Context, w func() layout.Dimensions) layout.Dimensions
 	})
 	xCenter := gtx.Constraints.Max.X / 2
 	wCenter := dimensions.Size.X / 2
-	OffsetBy(gtx, image.Pt(xCenter-wCenter, 0), func() {
+	OffsetBy(gtx, image.Pt(xCenter-wCenter, 0), func(gtx layout.Context) {
 		macro.Add(gtx.Ops)
 	})
 	return dimensions

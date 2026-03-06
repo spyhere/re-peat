@@ -62,7 +62,7 @@ func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag,
 		Color: c,
 		R:     mrkSz.Lbl.CRound,
 	})
-	common.OffsetBy(gtx, image.Pt(x+(lblW/2-iconSize/2), y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func() {
+	common.OffsetBy(gtx, image.Pt(x+(lblW/2-iconSize/2), y+(th.Sizing.Editor.Markers.Lbl.H-iconSize)/2), func(gtx layout.Context) {
 		gtx.Constraints.Min.X = iconSize
 		micons.ContentAddCircle.Layout(gtx, th.Palette.Editor.SoundWave)
 	})
@@ -183,7 +183,7 @@ func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio.Audi
 				thatGtx.Constraints.Min = image.Point{}
 				return material.Body2(th.Theme, fmt.Sprintf("%d", curSec)).Layout(thatGtx)
 			})
-			common.OffsetBy(gtx, image.Pt(x-secDim.Size.X/2, y-secDim.Size.Y), func() {
+			common.OffsetBy(gtx, image.Pt(x-secDim.Size.X/2, y-secDim.Size.Y), func(gtx layout.Context) {
 				secLayout.Add(gtx.Ops)
 			})
 		}
@@ -354,7 +354,7 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 		common.RegisterTag(gtx, &mProps.tags.Label, lblArea)
 	}
 	halfMargin := mrkSz.Lbl.Margin / 2
-	common.OffsetBy(gtx, image.Pt(halfMargin, y+halfMargin), func() {
+	common.OffsetBy(gtx, image.Pt(halfMargin, y+halfMargin), func(gtx layout.Context) {
 		mProps.nameOp.Add(gtx.Ops)
 	})
 	return layout.Dimensions{Size: image.Pt(lblW, poleH)}
@@ -369,7 +369,7 @@ func editingMarkerComp(gtx layout.Context, th *theme.RepeatTheme, backdropTag ev
 		Color: th.Palette.Backdrop,
 	})
 	common.RegisterTag(gtx, backdropTag, backdropArea)
-	common.OffsetBy(gtx, image.Pt(mProps.x, mProps.y), func() {
+	common.OffsetBy(gtx, image.Pt(mProps.x, mProps.y), func(gtx layout.Context) {
 		markerComp(gtx, th, mProps)
 	})
 }

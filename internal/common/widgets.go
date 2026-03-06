@@ -215,7 +215,7 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 		cellWidthSum += v
 		t.columnWidths[idx] = v
 		if idx < len(colWidths)-1 {
-			OffsetBy(gtx, image.Pt(cellWidthSum+xMargin, yMargin), func() {
+			OffsetBy(gtx, image.Pt(cellWidthSum+xMargin, yMargin), func(gtx layout.Context) {
 				DrawDivider(gtx, th, DividerProps{Axis: Vertical})
 			})
 		}
@@ -224,7 +224,7 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 	if cellWidthSum < gtx.Constraints.Max.X {
 		t.columnWidths[len(t.columnWidths)-1] += gtx.Constraints.Max.X - cellWidthSum
 	}
-	OffsetBy(gtx, image.Pt(xMargin, yMargin), func() {
+	OffsetBy(gtx, image.Pt(xMargin, yMargin), func(gtx layout.Context) {
 		gtx.Constraints.Max.Y -= yMargin * 2
 		t.layout(gtx, th, yMargin)
 	})
@@ -253,7 +253,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 	layout.Flex{}.Layout(gtx, t.cellsBuf...)
 
 	rowH := gtx.Dp(rowHeightDP)
-	OffsetBy(gtx, image.Pt(0, headerH), func() {
+	OffsetBy(gtx, image.Pt(0, headerH), func(gtx layout.Context) {
 		DrawDivider(gtx, th, DividerProps{})
 		gtx.Constraints.Max.Y -= bottomMargin
 		material.List(th.Theme, t.list).Layout(gtx, t.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
@@ -402,17 +402,18 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 	innerM, innerDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		currentWidth := Clamp(minW, contentDims.Size.X, maxW)
 		gtx.Constraints.Max.X = currentWidth
+		gtx.Constraints.Max.Y = maxH - fullPadd
 		var incrDims layout.Dimensions
 		{
 			if d.icon != nil {
 				iconsSize := gtx.Dp(dialogSpecs.iconSz)
-				OffsetBy(gtx, image.Pt(currentWidth/2-iconsSize/2-padd, 0), func() {
+				OffsetBy(gtx, image.Pt(currentWidth/2-iconsSize/2-padd, 0), func(gtx layout.Context) {
 					gtx.Constraints.Min.X = iconsSize
 					d.icon.Layout(gtx, d.th.Palette.Backdrop)
 				})
 				incrDims.Size.Y += iconsSize + gtx.Dp(dialogSpecs.iconTitlePadd)
 			}
-			OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func() {
+			OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func(gtx layout.Context) {
 				gtx.Constraints.Min = image.Point{}
 				title := material.H6(d.th.Theme, d.title)
 				if d.icon != nil {
@@ -428,10 +429,9 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Min = gtx.Constraints.Max
 
 		incrDims.Size.X = contentDims.Size.X
-		OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func() {
+		OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func(gtx layout.Context) {
 			gtx.Constraints.Min = image.Point{}
 			gtx.Constraints.Max.X = maxW - fullPadd
-			gtx.Constraints.Max.Y = maxH - fullPadd
 			d.contentLs.Axis = layout.Vertical
 			material.List(d.th.Theme, &d.contentLs).Layout(gtx, 1, func(gtx layout.Context, index int) layout.Dimensions {
 				contentM.Add(gtx.Ops)
@@ -440,12 +440,12 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 			incrDims.Size.Y += min(gtx.Constraints.Max.Y, contentDims.Size.Y) + gtx.Dp(dialogSpecs.bodyActionsPadd)
 		})
 
-		OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func() {
+		OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func(gtx layout.Context) {
 			var actionsDims layout.Dimensions
-			gtx.Constraints.Min.X = currentWidth - fullPadd
+			gtx.Constraints.Min = image.Pt(currentWidth-fullPadd, 0)
 			actionsDims = layout.E.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				var dims layout.Dimensions
-				OffsetBy(gtx, image.Pt(padd, 0), func() {
+				OffsetBy(gtx, image.Pt(padd, 0), func(gtx layout.Context) {
 					var button material.ButtonStyle
 					if !d.CancelProps.IsHidden {
 						txt := "Cancel"
@@ -463,7 +463,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 						dims.Size.X += betweenButtonsPad
 					}
 					if !d.OkProps.IsHidden {
-						OffsetBy(gtx, image.Pt(dims.Size.X, 0), func() {
+						OffsetBy(gtx, image.Pt(dims.Size.X, 0), func(gtx layout.Context) {
 							txt := "Ok"
 							if d.OkProps.Text != "" {
 								txt = d.OkProps.Text
@@ -501,7 +501,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 			HideInk: true,
 		})
 		RegisterTag(gtx, &d, size)
-		OffsetBy(gtx, image.Pt(padd, padd), func() {
+		OffsetBy(gtx, image.Pt(padd, padd), func(gtx layout.Context) {
 			innerM.Add(gtx.Ops)
 		})
 		return dialogDims

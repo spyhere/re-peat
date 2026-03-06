@@ -32,7 +32,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	common.DrawBackground(gtx, m.th.Palette.MarkersViewBg)
 
 	var searchDims layout.Dimensions
-	common.OffsetBy(gtx, image.Pt(0, topM), func() {
+	common.OffsetBy(gtx, image.Pt(0, topM), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
@@ -41,14 +41,14 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			return searchDims
 		})
 	})
-	common.OffsetBy(gtx, image.Pt(0, topM+searchDims.Size.Y+20), func() {
+	common.OffsetBy(gtx, image.Pt(0, topM+searchDims.Size.Y+20), func(gtx layout.Context) {
 		common.DrawDivider(gtx, m.th, common.DividerProps{
 			Inset: common.DividerMiddleInset,
 		})
 	})
 
 	marginX := gtx.Dp(20)
-	common.OffsetBy(gtx, image.Pt(marginX, topM+searchDims.Size.Y+50), func() {
+	common.OffsetBy(gtx, image.Pt(marginX, topM+searchDims.Size.Y+50), func(gtx layout.Context) {
 		gtx.Constraints.Max.X -= marginX * 2
 		gtx.Constraints.Max.Y -= topM + searchDims.Size.Y + 50
 		m.table.Rows = len(*m.timeMarkers)
@@ -95,7 +95,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				txt := material.Body2(m.th.Theme, "Tags")
 				txt.Font.Weight = font.Bold
 				var textDim layout.Dimensions
-				common.OffsetBy(gtx, image.Pt(iconDims.Size.X, 0), func() {
+				common.OffsetBy(gtx, image.Pt(iconDims.Size.X, 0), func(gtx layout.Context) {
 					textDim = txt.Layout(gtx)
 				})
 				return layout.Dimensions{Size: image.Pt(iconDims.Size.X+textDim.Size.X, textDim.Size.Y)}

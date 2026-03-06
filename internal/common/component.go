@@ -248,7 +248,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	iconPadding := gtx.Dp(searchSpecs.iconXPadding)
 
 	textH := gtx.Sp(searchSpecs.fontLineHeight)
-	OffsetBy(gtx, image.Pt(xPadd*2, bDims.Size.Y-textH-textH/2), func() {
+	OffsetBy(gtx, image.Pt(xPadd*2, bDims.Size.Y-textH-textH/2), func(gtx layout.Context) {
 		gtx.Constraints.Max = image.Pt(bDims.Size.X-xPadd*2-iconSz-iconPadding*2, textH)
 		if props.isFocused {
 			props.Editor.SingleLine = true
@@ -276,7 +276,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		}
 	})
 
-	OffsetBy(gtx, image.Pt(bDims.Size.X-iconPadding-xPadd-iconSz/2, bDims.Size.Y/2-iconSz/2), func() {
+	OffsetBy(gtx, image.Pt(bDims.Size.X-iconPadding-xPadd-iconSz/2, bDims.Size.Y/2-iconSz/2), func(gtx layout.Context) {
 		gtx.Constraints.Min.X = iconSz
 		if len(props.GetInput()) > 0 {
 			micons.Cancel.Layout(gtx, th.Palette.Search.Enabled.Icon)
@@ -389,7 +389,7 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 		StrokeC: th.Palette.Chip.Enabled.Outline,
 		StrokeW: chipSpecs.outline,
 	})
-	OffsetBy(gtx, image.Pt(xPadding, textDim.Size.Y/2), func() {
+	OffsetBy(gtx, image.Pt(xPadding, textDim.Size.Y/2), func(gtx layout.Context) {
 		textM.Add(gtx.Ops)
 	})
 	return chipDims
@@ -487,7 +487,7 @@ func DrawIconButton(gtx layout.Context, props IconButtonProps) layout.Dimensions
 		Clickable: props.Cl,
 	})
 	iconSizeHalf := iconSize / 2
-	OffsetBy(gtx, image.Pt(w/2-iconSizeHalf, h/2-iconSizeHalf), func() {
+	OffsetBy(gtx, image.Pt(w/2-iconSizeHalf, h/2-iconSizeHalf), func(gtx layout.Context) {
 		gtx.Constraints.Min.X = iconSize
 		props.Icon.Layout(gtx, props.Fg)
 	})

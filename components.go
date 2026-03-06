@@ -79,7 +79,7 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 	var xOffset int
 	for idx, it := range buttTextOps {
 		curButt := buttons.arr[idx]
-		common.OffsetBy(gtx, image.Pt(xOffset, 0), func() {
+		common.OffsetBy(gtx, image.Pt(xOffset, 0), func(gtx layout.Context) {
 			segmentedButtonComp(gtx, segmentedBProps{
 				b:           curButt,
 				height:      containerH,
@@ -168,16 +168,16 @@ func segmentedButtonComp(gtx layout.Context, props segmentedBProps) {
 	y := (props.height - props.textDim.Size.Y) / 2
 	if props.isSelected {
 		x := (props.textDim.Size.X - props.text.width - props.iconSize - props.elementsGap) / 2
-		common.OffsetBy(gtx, image.Pt(x, y), func() {
+		common.OffsetBy(gtx, image.Pt(x, y), func(gtx layout.Context) {
 			gtx.Constraints.Min.X = props.iconSize
 			micons.Check.Layout(gtx, bPalette.SelText)
-			common.OffsetBy(gtx, image.Pt(props.iconSize+props.elementsGap, 0), func() {
+			common.OffsetBy(gtx, image.Pt(props.iconSize+props.elementsGap, 0), func(gtx layout.Context) {
 				props.text.op.Add(gtx.Ops)
 			})
 		})
 	} else {
 		x := (props.textDim.Size.X - props.text.width) / 2
-		common.OffsetBy(gtx, image.Pt(x, y), func() {
+		common.OffsetBy(gtx, image.Pt(x, y), func(gtx layout.Context) {
 			props.text.op.Add(gtx.Ops)
 		})
 	}
