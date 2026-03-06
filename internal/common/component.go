@@ -317,20 +317,19 @@ var inputSpecs = inputFieldMaterialSpecs{
 	icon:              24,
 }
 
-type InputFieldProps struct {
-	MaxLen       int
-	Filter       string
+type InputFieldBase struct {
 	LabelText    string
-	Placeholder  string
 	LeadingIcon  *widget.Icon
 	TrailingIcon *widget.Icon
 	*Inputable
 }
 
-func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldProps) layout.Dimensions {
-	props.Editor.MaxLen = props.MaxLen
-	props.Editor.SingleLine = true
-	props.Editor.Filter = props.Filter
+type inputFieldBaseProps struct {
+	InputFieldBase
+	content func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions
+}
+
+func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFieldBaseProps) layout.Dimensions {
 	props.Inputable.Update(gtx)
 
 	yPadding, defaultH := gtx.Dp(inputSpecs.yPadding), gtx.Dp(inputSpecs.defaultH)
@@ -397,7 +396,7 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 			return txtDims
 		})
 	})
-	// Editor
+	// Content
 	OffsetBy(gtx, image.Pt(textXPadding+incrDims.Size.X, yPadding+incrDims.Size.Y), func(gtx layout.Context) {
 		trailingIcon := 0
 		if props.TrailingIcon != nil {
@@ -406,20 +405,8 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 		gtx.Constraints.Max.X -= incrDims.Size.X + textXPadding*2 + trailingIcon
 		gtx.Constraints.Max.Y -= yPadding * 2
 		gtx.Constraints.Min = gtx.Constraints.Max
-		placeholder := ""
-		if props.IsFocused() {
-			placeholder = props.Placeholder
-		}
-		ed := material.Editor(th.Theme, &props.Editor, placeholder)
-		ed.Font.Typeface = "Roboto"
-		ed.Color = c.InputText
-		ed.LineHeight = 24
-		ed.TextSize = 16
-		ed.Font.Weight = 400
-		passOp := pointer.PassOp{}.Push(gtx.Ops)
-		edDims := ed.Layout(gtx)
-		incrDims.Size.X += edDims.Size.X + textXPadding
-		passOp.Pop()
+		contentDims := props.content(gtx, c)
+		incrDims.Size.X += contentDims.Size.X + textXPadding
 	})
 	// Trailing icon
 	if props.TrailingIcon != nil {
@@ -459,6 +446,39 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 		contDims.Size.Y += supTextDims.Size.Y + supTextTopPadding
 	}
 	return contDims
+}
+
+type InputFieldProps struct {
+	Base        InputFieldBase
+	MaxLen      int
+	Filter      string
+	Placeholder string
+}
+
+func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldProps) layout.Dimensions {
+	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
+		props.Base.Editor.MaxLen = props.MaxLen
+		props.Base.Editor.SingleLine = true
+		props.Base.Editor.Filter = props.Filter
+		placeholder := ""
+		if props.Base.IsFocused() {
+			placeholder = props.Placeholder
+		}
+		ed := material.Editor(th.Theme, &props.Base.Editor, placeholder)
+		ed.Font.Typeface = "Roboto"
+		ed.Color = c.InputText
+		ed.LineHeight = 24
+		ed.TextSize = 16
+		ed.Font.Weight = 400
+		passOp := pointer.PassOp{}.Push(gtx.Ops)
+		edDims := ed.Layout(gtx)
+		passOp.Pop()
+		return edDims
+	}
+	return drawInputFieldBase(gtx, th, inputFieldBaseProps{
+		InputFieldBase: props.Base,
+		content:        editorRender,
+	})
 }
 
 type dividerAxis int
