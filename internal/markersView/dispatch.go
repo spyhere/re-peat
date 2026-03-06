@@ -7,7 +7,7 @@ import (
 )
 
 func (m *MarkersView) dispatch(gtx layout.Context) {
-	if !m.searchable.IsFocused() {
+	if !m.searchbar.IsFocused() {
 		m.dispatchKeyEvents(gtx)
 	}
 }

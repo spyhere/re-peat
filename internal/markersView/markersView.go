@@ -30,7 +30,7 @@ func NewMarkersView(props Props) *MarkersView {
 		p:            props.Player,
 		hotKeyBuf:    make([]rune, 0, selectionRuneLimit),
 		dialog:       props.Dialog,
-		searchable:   &common.Inputable{},
+		searchbar:    &common.Inputable{},
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
 		deleteButton: &widget.Clickable{},
@@ -78,7 +78,7 @@ type MarkersView struct {
 	markerInPlay *tm.TimeMarker
 	th           *theme.RepeatTheme
 	table        *common.Table[*tm.TimeMarker]
-	searchable   *common.Inputable
+	searchbar    *common.Inputable
 	replayButton *widget.Clickable
 	tagButton    *widget.Clickable
 	deleteButton *widget.Clickable
@@ -130,7 +130,7 @@ func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {
 func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 	return strings.Contains(
 		strings.ToLower(curMarker.Name),
-		strings.ToLower(m.searchable.GetInput()),
+		strings.ToLower(m.searchbar.GetInput()),
 	)
 }
 

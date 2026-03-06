@@ -37,7 +37,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
-				Inputable:   m.searchable,
+				Inputable:   m.searchbar,
 			})
 			return searchDims
 		})
@@ -204,7 +204,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
 	})
 
-	if cursor, ok := m.searchable.GetCursorType(); ok {
+	if cursor, ok := m.searchbar.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}
 	m.updateDefferedState()
