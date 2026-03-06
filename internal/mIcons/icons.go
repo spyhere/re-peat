@@ -26,4 +26,5 @@ var (
 	Pause            = newIcon(icons.AVPause)
 	Filter           = newIcon(icons.ContentFilterList)
 	Edit             = newIcon(icons.EditorModeEdit)
+	Warning          = newIcon(icons.AlertWarning)
 )

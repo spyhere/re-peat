@@ -34,14 +34,18 @@ func newApp() *App {
 	// TODO: Create app state and put it there
 	timeMarkers := tm.NewTimeMarkers()
 	a := audio.NewAudio(decoder, pcm)
+	d := common.Dialog{}
+	d.CancelProps.Text = "Отмена"
 	appInstance := &App{
 		th:      th,
+		dialog:  &d,
 		buttons: newButtons(),
 		markersView: markersview.NewMarkersView(markersview.Props{
 			Audio:       a,
 			Th:          th,
 			TimeMarkers: &timeMarkers,
 			Player:      player,
+			Dialog:      &d,
 		}),
 		timeMarkers: timeMarkers,
 	}
@@ -71,6 +75,7 @@ const (
 )
 
 type App struct {
+	dialog      *common.Dialog
 	markersView *markersview.MarkersView
 	editorView  *editorview.Editor
 	selectedTab tab
@@ -106,6 +111,10 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	})
 	if a.buttons.isPointerHitting {
 		common.SetCursor(gtx, pointer.CursorPointer)
+	}
+	a.dialog.Layout(gtx)
+	if cursor, ok := a.dialog.GetCursorType(); ok {
+		common.SetCursor(gtx, cursor)
 	}
 	return layout.Dimensions{}
 }

@@ -22,6 +22,7 @@ var interval = 250 * time.Millisecond
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	m.dispatch(gtx)
+	m.dialogUpdate(gtx)
 	isPlaying := m.p.IsPlaying()
 	if isPlaying {
 		m.listenToPlayerUpdates()
@@ -85,7 +86,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				if m.tagButton.Clicked(gtx) {
-					m.openTagsFilter()
+					m.openTagsFilterDialog()
 				}
 				if m.tagButton.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
@@ -105,7 +106,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				if m.deleteButton.Clicked(gtx) {
-					m.deleteMarkers()
+					m.openDeleteAllDialog()
 				}
 				if m.deleteButton.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
@@ -183,7 +184,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Edit.Clicked(gtx) {
-					fmt.Println("Edit", rowIdx)
+					m.openEditDialog(curMarker)
 				}
 				if curMarker.Edit.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)

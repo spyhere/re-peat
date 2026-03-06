@@ -19,6 +19,7 @@ type Props struct {
 	Th          *theme.RepeatTheme
 	TimeMarkers *tm.TimeMarkers
 	Player      *p.Player
+	Dialog      *common.Dialog
 }
 
 func NewMarkersView(props Props) *MarkersView {
@@ -28,6 +29,7 @@ func NewMarkersView(props Props) *MarkersView {
 		timeMarkers:  props.TimeMarkers,
 		p:            props.Player,
 		hotKeyBuf:    make([]rune, 0, selectionRuneLimit),
+		dialog:       props.Dialog,
 		searchable:   &common.Searchable{},
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
@@ -61,6 +63,15 @@ func NewMarkersView(props Props) *MarkersView {
 	return mView
 }
 
+type dialogOwner uint8
+
+const (
+	none dialogOwner = iota
+	edit
+	tagFilter
+	deleteAll
+)
+
 type MarkersView struct {
 	p            *p.Player
 	timeMarkers  *tm.TimeMarkers
@@ -71,8 +82,10 @@ type MarkersView struct {
 	replayButton *widget.Clickable
 	tagButton    *widget.Clickable
 	deleteButton *widget.Clickable
-	hotKeyBuf    []rune
-	audio        audio.Audio
+	dialog       *common.Dialog
+	dialogOwner
+	hotKeyBuf []rune
+	audio     audio.Audio
 }
 
 func (m *MarkersView) togglePlayer(curMarker *tm.TimeMarker) {
@@ -128,10 +141,6 @@ func (m *MarkersView) replayMarkers() {
 		m.p.Set(0)
 		m.p.Play()
 	}
-}
-
-func (m *MarkersView) openTagsFilter() {
-	//
 }
 
 func (m *MarkersView) deleteMarkers() {
