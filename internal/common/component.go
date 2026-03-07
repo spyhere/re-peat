@@ -336,8 +336,27 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	outterIconPadding, textXPadding := gtx.Dp(inputSpecs.outterIconPadding), gtx.Dp(inputSpecs.textXPadding)
 	supTextPadding, supTextTopPadding := gtx.Dp(inputSpecs.supTextPadding), gtx.Dp(inputSpecs.supTextTopPadding)
 
+	iconSize := gtx.Dp(inputSpecs.icon)
+	iconWidthSum := 0
+	if props.LeadingIcon != nil {
+		iconWidthSum += iconSize + outterIconPadding
+	}
+	if props.TrailingIcon != nil {
+		iconWidthSum += iconSize + outterIconPadding
+	}
 	c := th.Palette.Input.Enabled
-	contArea := image.Rect(0, 0, gtx.Constraints.Max.X, defaultH)
+	contentM, contentDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		gtx.Constraints.Min = image.Point{}
+		gtx.Constraints.Max.X -= iconWidthSum + textXPadding*2
+		return props.content(gtx, c)
+	})
+
+	// TODO: Use specs for this
+	var defaultContentH unit.Sp = 24
+	contentH := max(gtx.Sp(defaultContentH), contentDims.Size.Y)
+	height := max(defaultH, textXPadding*2+contentH)
+
+	contArea := image.Rect(0, 0, gtx.Constraints.Max.X, height)
 	contDims := DrawBox(gtx, Box{
 		Size:       contArea,
 		Color:      c.Bg,
@@ -360,7 +379,6 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	})
 
 	var incrDims layout.Dimensions
-	iconSize := gtx.Dp(inputSpecs.icon)
 	// Leading icon
 	if props.LeadingIcon != nil {
 		OffsetBy(gtx, image.Pt(outterIconPadding, contDims.Size.Y/2-iconSize/2), func(gtx layout.Context) {
@@ -405,7 +423,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 		gtx.Constraints.Max.X -= incrDims.Size.X + textXPadding*2 + trailingIcon
 		gtx.Constraints.Max.Y -= yPadding * 2
 		gtx.Constraints.Min = gtx.Constraints.Max
-		contentDims := props.content(gtx, c)
+		contentM.Add(gtx.Ops)
 		incrDims.Size.X += contentDims.Size.X + textXPadding
 	})
 	// Trailing icon
@@ -467,6 +485,7 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 		ed := material.Editor(th.Theme, &props.Base.Editor, placeholder)
 		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
+		// TODO: Use common input specs for this
 		ed.LineHeight = 24
 		ed.TextSize = 16
 		ed.Font.Weight = 400
