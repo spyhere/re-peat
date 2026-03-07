@@ -21,16 +21,35 @@ func SetCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
 
+type absoluteOffset image.Point
+
+func (a *absoluteOffset) Add(p image.Point) *absoluteOffset {
+	a.X += p.X
+	a.Y += p.Y
+	return a
+}
+func (a *absoluteOffset) Sub(p image.Point) {
+	a.X -= p.X
+	a.Y -= p.Y
+}
+
+// This is ultra cringe, I agree, but you have no right to judge me, I was desperate.
+// It can track offsets done by OffsetBy, but cannot know about exact offsets done in CenteredX,
+// since it uses macro - in other words, rendering is done before offset.
+var AbsoluteOffset = absoluteOffset{}
+
 func OffsetBy(gtx layout.Context, amount image.Point, w func(gtx layout.Context)) {
 	defer op.Offset(amount).Push(gtx.Ops).Pop()
+	defer AbsoluteOffset.Add(amount).Sub(amount)
 	w(gtx)
 }
 
 func CenteredX(gtx layout.Context, w func() layout.Dimensions) layout.Dimensions {
+	xCenter := gtx.Constraints.Max.X / 2
+	defer AbsoluteOffset.Add(image.Pt(xCenter, 0)).Sub(image.Pt(xCenter, 0))
 	macro, dimensions := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		return w()
 	})
-	xCenter := gtx.Constraints.Max.X / 2
 	wCenter := dimensions.Size.X / 2
 	OffsetBy(gtx, image.Pt(xCenter-wCenter, 0), func(gtx layout.Context) {
 		macro.Add(gtx.Ops)
