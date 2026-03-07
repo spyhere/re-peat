@@ -12,6 +12,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -342,7 +343,8 @@ type InputFieldBase struct {
 
 type inputFieldBaseProps struct {
 	InputFieldBase
-	content func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions
+	content      func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions
+	chipsPresent bool
 }
 
 func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFieldBaseProps) layout.Dimensions {
@@ -404,12 +406,13 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 		incrDims.Size.X += iconSize + outterIconPadding
 	}
 	gtx.Constraints.Max = contDims.Size
+
 	// Label
 	OffsetBy(gtx, image.Pt(textXPadding+incrDims.Size.X, yPadding), func(gtx layout.Context) {
 		lblTxtAlign := layout.W
 		var lblTxtSize unit.Sp = inputSpecs.lblSizeBig
 		var lblTxtHeight unit.Sp = inputSpecs.lblHeightBig
-		if props.IsFocused() || len(props.GetInput()) > 0 {
+		if props.IsFocused() || (props.chipsPresent || len(props.GetInput()) > 0) {
 			lblTxtAlign = layout.NW
 			lblTxtSize = inputSpecs.lblSizeSmall
 			lblTxtHeight = inputSpecs.lblHeightSmall
@@ -515,6 +518,62 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 	})
 }
 
+type ComboboxProps struct {
+	Base        InputFieldBase
+	Placeholder string
+	Chips       []string
+}
+
+func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
+	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
+		props.Base.Editor.Submit = true
+		placeholder := ""
+		if props.Base.IsFocused() {
+			placeholder = props.Placeholder
+		}
+		ed := material.Editor(th.Theme, &props.Base.Editor, placeholder)
+		ed.Font.Typeface = "Roboto"
+		ed.Color = c.InputText
+		ed.LineHeight = inputSpecs.lblHeightBig
+		ed.TextSize = inputSpecs.lblSizeBig
+		ed.Font.Weight = inputSpecs.lblWeight
+		passOp := pointer.PassOp{}.Push(gtx.Ops)
+
+		var dims layout.Dimensions
+		offset, gap, chipHeight := 0, gtx.Dp(5), gtx.Dp(chipSpecs.height)
+		if len(props.Chips) > 0 {
+			for _, it := range props.Chips {
+				chipM, chipDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+					return DrawChip(gtx, th, ChipProps{Text: it})
+				})
+				if offset != 0 && gtx.Constraints.Max.X-offset-chipDims.Size.X < 0 {
+					offset = 0
+					dims.Size.Y += chipHeight + gap
+				}
+				OffsetBy(gtx, image.Pt(offset, dims.Size.Y), func(gtx layout.Context) {
+					chipM.Add(gtx.Ops)
+					offset += chipDims.Size.X + gap
+				})
+			}
+		}
+		if offset > 0 {
+			dims.Size.Y += chipHeight + gap
+		}
+		OffsetBy(gtx, image.Pt(0, dims.Size.Y), func(gtx layout.Context) {
+			edDims := ed.Layout(gtx)
+			dims.Size.X += edDims.Size.X
+			dims.Size.Y += edDims.Size.Y
+		})
+		passOp.Pop()
+		return dims
+	}
+	return drawInputFieldBase(gtx, th, inputFieldBaseProps{
+		InputFieldBase: props.Base,
+		content:        editorRender,
+		chipsPresent:   len(props.Chips) > 0,
+	})
+}
+
 type dividerAxis int
 
 const (
@@ -601,6 +660,7 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 		txt.LineHeight = 20
 		txt.TextSize = 14
 		txt.Font.Weight = 500
+		txt.WrapPolicy = text.WrapWords
 		return txt.Layout(gtx)
 	})
 	h := gtx.Dp(chipSpecs.height)
