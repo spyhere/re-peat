@@ -520,12 +520,14 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 
 type ComboboxProps struct {
 	Base        InputFieldBase
+	MaxLen      int
 	Placeholder string
 	Chips       []string
 }
 
 func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
 	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
+		props.Base.Editor.MaxLen = props.MaxLen
 		props.Base.Editor.Submit = true
 		placeholder := ""
 		if props.Base.IsFocused() {
