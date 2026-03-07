@@ -139,7 +139,7 @@ func (in *Inputable) GetCursorType() (cursor pointer.Cursor, ok bool) {
 
 func (in *Inputable) handleKeys(gtx layout.Context) {
 	backspaceFilter := key.Filter{Name: key.NameDeleteBackward}
-	if in.value != "" && !in.hasEmptyDeleteEvent {
+	if in.value != "" {
 		// Disable this filter when editor still has something to not block Delete button for it
 		backspaceFilter.Focus = &in
 	}
