@@ -223,6 +223,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	containerH := gtx.Dp(searchSpecs.height)
 	containerHHalft := containerH / 2
 	containerW := gtx.Dp(searchSpecs.minWidth)
+	// Background
 	bDims := DrawBox(gtx, Box{
 		Size:       image.Rect(0, 0, containerW, containerH),
 		Color:      th.Palette.Search.Enabled.Bg,
@@ -230,6 +231,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		Clickable:  &props.Clickable,
 		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
+	// Hovered layer
 	if props.IsHovered() {
 		DrawBox(gtx, Box{
 			Size:  image.Rect(0, 0, containerW, containerH),
@@ -237,6 +239,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 			R:     theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
 		})
 	} else if props.IsFocused() {
+		// Focused layer
 		DrawBox(gtx, Box{
 			Size:  image.Rect(0, 0, containerW, containerH),
 			Color: th.Palette.Search.Pressed.Bg,
@@ -245,38 +248,31 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	}
 
 	xPadd := gtx.Dp(searchSpecs.xPadding)
+	iconSz, iconPadding := gtx.Dp(searchSpecs.iconSize), gtx.Dp(searchSpecs.iconXPadding)
 
-	iconSz := gtx.Dp(searchSpecs.iconSize)
-	iconPadding := gtx.Dp(searchSpecs.iconXPadding)
-
+	// Inner text
+	c := th.Palette.Search.Enabled
+	if props.IsFocused() {
+		c = th.Palette.Search.Pressed
+	}
 	textH := gtx.Sp(searchSpecs.fontLineHeight)
 	OffsetBy(gtx, image.Pt(xPadd*2, bDims.Size.Y-textH-textH/2), func(gtx layout.Context) {
 		gtx.Constraints.Max = image.Pt(bDims.Size.X-xPadd*2-iconSz-iconPadding*2, textH)
-		if props.isFocused {
-			props.Editor.SingleLine = true
-			ed := material.Editor(th.Theme, &props.Editor, "")
-			ed.Font.Typeface = "Roboto"
-			ed.Color = th.Palette.Search.Enabled.SupText
-			ed.LineHeight = searchSpecs.fontLineHeight
-			ed.TextSize = searchSpecs.fontSize
-			ed.Font.Weight = 400
-			passOp := pointer.PassOp{}.Push(gtx.Ops)
-			ed.Layout(gtx)
-			passOp.Pop()
-			// TODO: This else block is redundant
-		} else {
-			text := props.GetInput()
-			if text == "" {
-				text = props.DefaultText
-			}
-			txt := material.Body2(th.Theme, text)
-			txt.Font.Typeface = "Roboto"
-			txt.Color = th.Palette.Search.Enabled.SupText
-			txt.LineHeight = searchSpecs.fontLineHeight
-			txt.TextSize = searchSpecs.fontSize
-			txt.Font.Weight = 400
-			txt.Layout(gtx)
+		props.Editor.SingleLine = true
+		text := props.GetInput()
+		if text == "" {
+			text = props.DefaultText
 		}
+		ed := material.Editor(th.Theme, &props.Editor, text)
+		ed.Font.Typeface = "Roboto"
+		ed.Color = c.Text
+		ed.HintColor = th.Palette.Search.Enabled.Text
+		ed.LineHeight = searchSpecs.fontLineHeight
+		ed.TextSize = searchSpecs.fontSize
+		ed.Font.Weight = 400
+		passOp := pointer.PassOp{}.Push(gtx.Ops)
+		ed.Layout(gtx)
+		passOp.Pop()
 	})
 
 	OffsetBy(gtx, image.Pt(bDims.Size.X-iconPadding-xPadd-iconSz/2, bDims.Size.Y/2-iconSz/2), func(gtx layout.Context) {

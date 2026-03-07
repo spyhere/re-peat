@@ -27,19 +27,19 @@ var repeatPalette = palette{
 	},
 	Search: searchStatesPalette{
 		Enabled: searchPalette{
-			Bg:      rgb(0xECE6F0),
-			Icon:    rgb(0x49454F),
-			SupText: rgb(0x49454F),
+			Bg:   rgb(0xECE6F0),
+			Icon: rgb(0x49454F),
+			Text: rgb(0x49454F),
 		},
 		Hovered: searchPalette{
-			Bg:      argb(0x141D1B20),
-			Icon:    rgb(0x49454F),
-			SupText: rgb(0x49454F),
+			Bg:   argb(0x141D1B20),
+			Icon: rgb(0x49454F),
+			Text: rgb(0x49454F),
 		},
 		Pressed: searchPalette{
-			Bg:      argb(0x191D1B20),
-			Icon:    rgb(0x49454F),
-			SupText: rgb(0x49454F),
+			Bg:   argb(0x191D1B20),
+			Icon: rgb(0x49454F),
+			Text: rgb(0x1D1B20),
 		},
 	},
 	Dialog: dialogPalette{
@@ -135,9 +135,9 @@ type chipPalette struct {
 }
 
 type searchPalette struct {
-	Bg      color.NRGBA
-	Icon    color.NRGBA
-	SupText color.NRGBA
+	Bg   color.NRGBA
+	Icon color.NRGBA
+	Text color.NRGBA
 }
 
 type searchStatesPalette struct {
