@@ -294,6 +294,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 }
 
 type inputFieldMaterialSpecs struct {
+	shape             int
 	defaultH          unit.Dp
 	yPadding          unit.Dp
 	outterIconPadding unit.Dp
@@ -303,9 +304,17 @@ type inputFieldMaterialSpecs struct {
 	bLineFocused      unit.Dp
 	bLineUnfocused    unit.Dp
 	icon              unit.Dp
+	lblSizeBig        unit.Sp
+	lblHeightBig      unit.Sp
+	lblSizeSmall      unit.Sp
+	lblHeightSmall    unit.Sp
+	lblWeight         font.Weight
+	supTxtSize        unit.Sp
+	supTxtHeight      unit.Sp
 }
 
 var inputSpecs = inputFieldMaterialSpecs{
+	shape:             4,
 	defaultH:          56,
 	yPadding:          8,
 	outterIconPadding: 12,
@@ -315,6 +324,13 @@ var inputSpecs = inputFieldMaterialSpecs{
 	bLineFocused:      4,
 	bLineUnfocused:    1,
 	icon:              24,
+	lblSizeBig:        16,
+	lblHeightBig:      24,
+	lblSizeSmall:      12,
+	lblHeightSmall:    16,
+	lblWeight:         400,
+	supTxtSize:        12,
+	supTxtHeight:      16,
 }
 
 type InputFieldBase struct {
@@ -337,6 +353,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	supTextPadding, supTextTopPadding := gtx.Dp(inputSpecs.supTextPadding), gtx.Dp(inputSpecs.supTextTopPadding)
 
 	iconSize := gtx.Dp(inputSpecs.icon)
+	// Determine dimensions
 	iconWidthSum := 0
 	if props.LeadingIcon != nil {
 		iconWidthSum += iconSize + outterIconPadding
@@ -350,17 +367,16 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 		gtx.Constraints.Max.X -= iconWidthSum + textXPadding*2
 		return props.content(gtx, c)
 	})
-
-	// TODO: Use specs for this
-	var defaultContentH unit.Sp = 24
+	var defaultContentH unit.Sp = inputSpecs.lblHeightBig
 	contentH := max(gtx.Sp(defaultContentH), contentDims.Size.Y)
 	height := max(defaultH, textXPadding*2+contentH)
 
+	// Background
 	contArea := image.Rect(0, 0, gtx.Constraints.Max.X, height)
 	contDims := DrawBox(gtx, Box{
 		Size:       contArea,
 		Color:      c.Bg,
-		R:          theme.CornerR(0, 0, 4, 4),
+		R:          theme.CornerR(0, 0, inputSpecs.shape, inputSpecs.shape),
 		Clickable:  &props.Clickable,
 		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
@@ -391,12 +407,12 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	// Label
 	OffsetBy(gtx, image.Pt(textXPadding+incrDims.Size.X, yPadding), func(gtx layout.Context) {
 		lblTxtAlign := layout.W
-		var lblTxtSize unit.Sp = 16
-		var lblTxtHeight unit.Sp = 24
+		var lblTxtSize unit.Sp = inputSpecs.lblSizeBig
+		var lblTxtHeight unit.Sp = inputSpecs.lblHeightBig
 		if props.IsFocused() || len(props.GetInput()) > 0 {
 			lblTxtAlign = layout.NW
-			lblTxtSize = 12
-			lblTxtHeight = 16
+			lblTxtSize = inputSpecs.lblSizeSmall
+			lblTxtHeight = inputSpecs.lblHeightSmall
 		}
 		gtx.Constraints.Max.X -= incrDims.Size.X + textXPadding*2
 		gtx.Constraints.Max.Y -= yPadding * 2
@@ -407,7 +423,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 			labelTxt.Font.Typeface = "Roboto"
 			labelTxt.TextSize = lblTxtSize
 			labelTxt.LineHeight = lblTxtHeight
-			labelTxt.Font.Weight = 400
+			labelTxt.Font.Weight = inputSpecs.lblWeight
 			labelTxt.Color = c.LabelText
 			txtDims := labelTxt.Layout(gtx)
 			incrDims.Size.Y += txtDims.Size.Y
@@ -453,8 +469,8 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 			gtx.Constraints.Min = image.Point{}
 			txt := material.Body2(th.Theme, fmt.Sprintf("%d/%d", len(props.GetInput()), props.MaxLen))
 			txt.Color = c.SupportingText
-			txt.TextSize = 12
-			txt.LineHeight = 16
+			txt.TextSize = inputSpecs.supTxtSize
+			txt.LineHeight = inputSpecs.supTxtHeight
 			return txt.Layout(gtx)
 		})
 		incrDims.Size.Y += supTextDims.Size.Y
@@ -485,10 +501,9 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 		ed := material.Editor(th.Theme, &props.Base.Editor, placeholder)
 		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
-		// TODO: Use common input specs for this
-		ed.LineHeight = 24
-		ed.TextSize = 16
-		ed.Font.Weight = 400
+		ed.LineHeight = inputSpecs.lblHeightBig
+		ed.TextSize = inputSpecs.lblSizeBig
+		ed.Font.Weight = inputSpecs.lblWeight
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
 		edDims := ed.Layout(gtx)
 		passOp.Pop()
