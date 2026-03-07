@@ -518,11 +518,20 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 	})
 }
 
+const comboboxMaxDropdown unit.Dp = 128
+
+type ComboboxOption struct {
+	Text string
+	Cl   *widget.Clickable
+}
+
 type ComboboxProps struct {
 	Base        InputFieldBase
 	MaxLen      int
 	Placeholder string
 	Chips       []string
+	Dropdown    *op.CallOp
+	Options     []ComboboxOption
 }
 
 func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
@@ -542,6 +551,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
 
 		var dims layout.Dimensions
+		// Chips
 		offset, gap, chipHeight := 0, gtx.Dp(5), gtx.Dp(chipSpecs.height)
 		if len(props.Chips) > 0 {
 			for _, it := range props.Chips {
@@ -569,11 +579,56 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 		passOp.Pop()
 		return dims
 	}
-	return drawInputFieldBase(gtx, th, inputFieldBaseProps{
+	inputFieldDims := drawInputFieldBase(gtx, th, inputFieldBaseProps{
 		InputFieldBase: props.Base,
 		content:        editorRender,
 		chipsPresent:   len(props.Chips) > 0,
 	})
+
+	// Dropdown
+	if len(props.Options) > 0 {
+		*props.Dropdown, _ = MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+			x0, y0 := AbsoluteOffset.X-inputFieldDims.Size.X/2, AbsoluteOffset.Y+inputFieldDims.Size.Y
+			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+				ls := &props.Base.Inputable.List
+				ls.Axis = layout.Vertical
+				gtx.Constraints.Min = image.Point{}
+				gtx.Constraints.Max = image.Pt(inputFieldDims.Size.X, gtx.Dp(comboboxMaxDropdown))
+				return material.List(th.Theme, ls).Layout(gtx, len(props.Options), func(gtx layout.Context, index int) layout.Dimensions {
+					curOption := props.Options[index]
+					txt := material.Body2(th.Theme, curOption.Text)
+					gtx.Constraints.Min.X = gtx.Constraints.Max.X
+					txt.LineHeight = inputSpecs.lblHeightBig
+					txt.TextSize = inputSpecs.lblSizeBig
+					txt.Alignment = text.Middle
+					dims := layout.UniformInset(5).Layout(gtx, txt.Layout)
+					DrawBox(gtx, Box{
+						Size:      image.Rect(0, 0, dims.Size.X, dims.Size.Y),
+						Clickable: curOption.Cl,
+						HideInk:   true,
+					})
+					return dims
+				})
+			})
+			var dims layout.Dimensions
+			OffsetBy(gtx, image.Pt(x0, y0), func(gtx layout.Context) {
+				shadowOff := gtx.Dp(2)
+				DrawBox(gtx, Box{
+					Size:  image.Rect(0, 0, shadowOff+inputFieldDims.Size.X, shadowOff+lsDims.Size.Y),
+					Color: th.Palette.Backdrop,
+					R:     theme.CornerR(4, 4, 0, 0),
+				})
+				dims = DrawBox(gtx, Box{
+					Size:  image.Rect(0, 0, inputFieldDims.Size.X, lsDims.Size.Y),
+					Color: th.Palette.Input.Enabled.Bg,
+					R:     theme.CornerR(4, 4, 0, 0),
+				})
+				lsM.Add(gtx.Ops)
+			})
+			return dims
+		})
+	}
+	return inputFieldDims
 }
 
 type dividerAxis int
