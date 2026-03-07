@@ -477,7 +477,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 			return txt.Layout(gtx)
 		})
 		incrDims.Size.Y += supTextDims.Size.Y
-		OffsetBy(gtx, image.Pt(contDims.Size.X-supTextPadding-supTextDims.Size.X, defaultH+supTextTopPadding), func(gtx layout.Context) {
+		OffsetBy(gtx, image.Pt(contDims.Size.X-supTextPadding-supTextDims.Size.X, height+supTextTopPadding), func(gtx layout.Context) {
 			supTextM.Add(gtx.Ops)
 		})
 		contDims.Size.Y += supTextDims.Size.Y + supTextTopPadding
