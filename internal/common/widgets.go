@@ -17,19 +17,19 @@ import (
 )
 
 type Inputable struct {
-	isHovered bool
-	isFocused bool
-	isDirty   bool
-	value     string
+	isHovered    bool
+	isFocused    bool
+	isDirty      bool
+	value        string
+	hasSelection bool
+	hasSubmitted bool
 	widget.Editor
 	widget.Clickable
 	Cancel widget.Clickable
 }
 
 func (in *Inputable) Update(gtx layout.Context) {
-	if in.gotDirty(gtx) {
-		in.isDirty = true
-	}
+	in.processEditorEvents(gtx)
 
 	if in.Cancel.Clicked(gtx) {
 		in.Editor.SetText("")
@@ -96,6 +96,22 @@ func (in *Inputable) GetInput() string {
 	return in.value
 }
 
+func (in *Inputable) HasSelection() bool {
+	if in.hasSelection {
+		in.hasSelection = !in.hasSelection
+		return !in.hasSelection
+	}
+	return false
+}
+
+func (in *Inputable) HasSubmit() bool {
+	if in.hasSubmitted {
+		in.hasSubmitted = !in.hasSubmitted
+		return !in.hasSubmitted
+	}
+	return false
+}
+
 func (in *Inputable) IsHovered() bool {
 	return in.isHovered
 }
@@ -118,17 +134,21 @@ func (in *Inputable) GetCursorType() (cursor pointer.Cursor, ok bool) {
 	return pointer.CursorDefault, false
 }
 
-func (in *Inputable) gotDirty(gtx layout.Context) bool {
+func (in *Inputable) processEditorEvents(gtx layout.Context) {
 	for {
 		we, ok := in.Editor.Update(gtx)
 		if !ok {
 			break
 		}
-		if _, ok := we.(widget.ChangeEvent); ok {
-			return true
+		switch we.(type) {
+		case widget.ChangeEvent:
+			in.isDirty = true
+		case widget.SelectEvent:
+			in.hasSelection = true
+		case widget.SubmitEvent:
+			in.hasSubmitted = true
 		}
 	}
-	return false
 }
 
 type TableProps[T any] struct {
