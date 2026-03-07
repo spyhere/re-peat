@@ -17,18 +17,20 @@ import (
 )
 
 type Inputable struct {
-	isHovered    bool
-	isFocused    bool
-	isDirty      bool
-	value        string
-	hasSelection bool
-	hasSubmitted bool
+	isHovered           bool
+	isFocused           bool
+	isDirty             bool
+	value               string
+	hasSelection        bool
+	hasSubmitted        bool
+	hasEmptyDeleteEvent bool // delete button has been triggered when editor is empty. Useful for combobox
 	widget.Editor
 	widget.Clickable
 	Cancel widget.Clickable
 }
 
 func (in *Inputable) Update(gtx layout.Context) {
+	in.handleKeys(gtx)
 	in.processEditorEvents(gtx)
 
 	if in.Cancel.Clicked(gtx) {
@@ -54,15 +56,6 @@ func (in *Inputable) Update(gtx layout.Context) {
 			}
 		}
 	})
-
-	HandleKeyEvents(gtx, func(e key.Event) {
-		switch e.Name {
-		case key.NameEscape:
-			in.Blur(gtx)
-		}
-	},
-		key.Filter{Name: key.NameEscape},
-	)
 }
 
 func (in *Inputable) Subscribe(gtx layout.Context) {
@@ -112,6 +105,14 @@ func (in *Inputable) HasSubmit() bool {
 	return false
 }
 
+func (in *Inputable) HasEmptyDeleteEvent() bool {
+	if in.hasEmptyDeleteEvent {
+		in.hasEmptyDeleteEvent = !in.hasEmptyDeleteEvent
+		return !in.hasEmptyDeleteEvent
+	}
+	return false
+}
+
 func (in *Inputable) IsHovered() bool {
 	return in.isHovered
 }
@@ -132,6 +133,28 @@ func (in *Inputable) GetCursorType() (cursor pointer.Cursor, ok bool) {
 		return pointer.CursorPointer, true
 	}
 	return pointer.CursorDefault, false
+}
+
+func (in *Inputable) handleKeys(gtx layout.Context) {
+	backspaceFilter := key.Filter{Name: key.NameDeleteBackward}
+	if in.value != "" && !in.hasEmptyDeleteEvent {
+		// Disable this filter when editor still has something to not block Delete button for it
+		backspaceFilter.Focus = &in
+	}
+	HandleKeyEvents(gtx, func(e key.Event) {
+		if e.State == key.Release {
+			return
+		}
+		switch e.Name {
+		case key.NameEscape:
+			in.Blur(gtx)
+		case key.NameDeleteBackward:
+			in.hasEmptyDeleteEvent = true
+		}
+	},
+		key.Filter{Name: key.NameEscape},
+		backspaceFilter,
+	)
 }
 
 func (in *Inputable) processEditorEvents(gtx layout.Context) {
