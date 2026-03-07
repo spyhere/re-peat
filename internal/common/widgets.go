@@ -24,6 +24,7 @@ type Inputable struct {
 	hasSelection        bool
 	hasSubmitted        bool
 	hasEmptyDeleteEvent bool // delete button has been triggered when editor is empty. Useful for combobox
+	widget.List
 	widget.Editor
 	widget.Clickable
 	Cancel widget.Clickable
@@ -64,6 +65,7 @@ func (in *Inputable) Subscribe(gtx layout.Context) {
 }
 
 func (in *Inputable) Blur(gtx layout.Context) {
+	in.List.ScrollTo(0)
 	gtx.Execute(key.FocusCmd{Tag: nil})
 	in.isFocused = false
 }
