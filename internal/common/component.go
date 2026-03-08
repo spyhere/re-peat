@@ -717,6 +717,7 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 
 	// Text (macro)
 	textM, textDim := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		gtx.Constraints.Min = image.Point{}
 		txt := material.Body2(th.Theme, props.Text)
 		txt.Color = c.Text
 		txt.Font.Typeface = "Roboto"
