@@ -705,6 +705,7 @@ var chipSpecs = chipMaterialSpecs{
 type ChipProps struct {
 	Text     string
 	Selected bool
+	Cl       *widget.Clickable
 }
 
 func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout.Dimensions {
@@ -738,11 +739,12 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 		chipSize.Max.X += iconSize
 	}
 	chipDims := DrawBox(gtx, Box{
-		Size:    chipSize,
-		Color:   c.Bg,
-		R:       theme.CornerR(shape, shape, shape, shape),
-		StrokeC: c.Outline,
-		StrokeW: outlineW,
+		Size:      chipSize,
+		Color:     c.Bg,
+		R:         theme.CornerR(shape, shape, shape, shape),
+		StrokeC:   c.Outline,
+		StrokeW:   outlineW,
+		Clickable: props.Cl,
 	})
 
 	// Icon + text
