@@ -13,8 +13,8 @@ import (
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
 
-func newMarkerDialog(tagLimit int) *markerDialog {
-	return &markerDialog{
+func newMarkerDialog(tagLimit int) markerDialog {
+	return markerDialog{
 		nameField:     &common.Inputable{},
 		timeField:     &common.Inputable{},
 		tagsField:     &common.Inputable{},

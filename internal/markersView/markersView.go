@@ -91,7 +91,7 @@ type MarkersView struct {
 	deleteButton *widget.Clickable
 	dialog       *common.Dialog
 	dialogOwner
-	*markerDialog
+	markerDialog
 	tagsDialog
 	chipsFilter
 	hotKeyBuf []rune
