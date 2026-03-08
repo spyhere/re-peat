@@ -1,6 +1,7 @@
 package markersview
 
 import (
+	"slices"
 	"strings"
 
 	"gioui.org/layout"
@@ -12,7 +13,10 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-const selectionRuneLimit = 3
+const (
+	selectionRuneLimit = 3
+	globalChipsLimit   = 100
+)
 
 type Props struct {
 	Audio       audio.Audio
@@ -35,6 +39,8 @@ func NewMarkersView(props Props) *MarkersView {
 		tagButton:    &widget.Clickable{},
 		deleteButton: &widget.Clickable{},
 		markerDialog: newMarkerDialog(),
+		tagsDialog:   newTagsDialog(globalChipsLimit),
+		chipsFilter:  newChipsFilter(globalChipsLimit),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis:      layout.Vertical,
@@ -86,6 +92,8 @@ type MarkersView struct {
 	dialog       *common.Dialog
 	dialogOwner
 	*markerDialog
+	tagsDialog
+	chipsFilter
 	hotKeyBuf []rune
 	audio     audio.Audio
 }
@@ -130,7 +138,15 @@ func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {
 }
 
 func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
-	return strings.Contains(
+	hasChipsMatch := true
+	for _, chip := range m.chipsFilter.getEnabledChips() {
+		hasChipsMatch = false
+		if slices.Contains(curMarker.CategoryTags, chip) {
+			hasChipsMatch = true
+			break
+		}
+	}
+	return hasChipsMatch && strings.Contains(
 		strings.ToLower(curMarker.Name),
 		strings.ToLower(m.searchbar.GetInput()),
 	)
