@@ -798,7 +798,8 @@ func DrawChipsFilter(gtx layout.Context, th *theme.RepeatTheme, chips []*FilterC
 			xOffset += chipDims.Size.X + xGap
 		})
 	}
-	return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X, yOffset)}
+	chipHeight := gtx.Dp(chipSpecs.height)
+	return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X, yOffset+chipHeight+yGap)}
 }
 
 type iconBMaterialWidth struct {
