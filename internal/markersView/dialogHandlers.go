@@ -56,7 +56,7 @@ func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
 		return
 	}
 	m.dialogOwner = edit
-	m.markerDialog.prepareForOpening(curMarker, m.audio)
+	m.markerDialog.prepareForOpening(curMarker, m.audio, m.chipsFilter.all)
 
 	m.dialog.Basic(m.th, "Marker Edit", func(gtx layout.Context) layout.Dimensions {
 		return drawMarkerDialogFields(gtx, m.th, markerDialogFieldsProps{
@@ -65,6 +65,7 @@ func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
 			tags:         m.markerDialog.tagsField,
 			chips:        m.markerDialog.tags,
 			totalSeconds: m.audio.Seconds,
+			tagOptions:   m.markerDialog.getTagOptions(),
 		})
 	})
 	m.dialog.Show()

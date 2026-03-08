@@ -56,6 +56,7 @@ type markerDialogFieldsProps struct {
 	tags         *common.Inputable
 	chips        []string
 	totalSeconds float64
+	tagOptions   []common.ComboboxOption
 }
 
 func drawMarkerDialogFields(gtx layout.Context, th *theme.RepeatTheme, props markerDialogFieldsProps) layout.Dimensions {
@@ -101,8 +102,9 @@ func drawMarkerDialogFields(gtx layout.Context, th *theme.RepeatTheme, props mar
 							LabelText: "Категории",
 							Inputable: props.tags,
 						},
-						Chips:  props.chips,
-						MaxLen: 20,
+						Chips:   props.chips,
+						MaxLen:  20,
+						Options: props.tagOptions,
 					})
 				}),
 			)

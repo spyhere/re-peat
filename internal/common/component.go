@@ -584,6 +584,8 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 
 	// Dropdown
 	if len(props.Options) > 0 {
+		// This is not working when inside macro. There is no other way to center/align it without macro
+		// Remove cringy AbsoluteOffset
 		*props.Dropdown, _ = MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			x0, y0 := AbsoluteOffset.X-inputFieldDims.Size.X/2, AbsoluteOffset.Y+inputFieldDims.Size.Y
 			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
