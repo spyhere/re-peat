@@ -34,6 +34,7 @@ func NewMarkersView(props Props) *MarkersView {
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
 		deleteButton: &widget.Clickable{},
+		markerDialog: newMarkerDialog(),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis:      layout.Vertical,
@@ -84,6 +85,7 @@ type MarkersView struct {
 	deleteButton *widget.Clickable
 	dialog       *common.Dialog
 	dialogOwner
+	*markerDialog
 	hotKeyBuf []rune
 	audio     audio.Audio
 }

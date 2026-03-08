@@ -5,6 +5,7 @@ import (
 	"image"
 
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/text"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
@@ -26,10 +27,15 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 			m.confirmDeleteAll()
 		}
 	}
+	if cursor, ok := m.markerDialog.getCursorType(); ok {
+		common.SetCursor(gtx, cursor)
+		gtx.Execute(op.InvalidateCmd{})
+	}
+	m.markerDialog.handleFieldsEvents(gtx)
 }
 
 func (m *MarkersView) confirmEdit() {
-	fmt.Println("Edit confirmed")
+	m.markerDialog.executeConfirm(m.audio)
 	m.dialog.Hide()
 }
 func (m *MarkersView) confirmTagFilter() {
@@ -42,11 +48,19 @@ func (m *MarkersView) confirmDeleteAll() {
 }
 
 func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
+	if curMarker == nil {
+		return
+	}
 	m.dialogOwner = edit
-	m.dialog.Basic(m.th, "Tag Edit", func(gtx layout.Context) layout.Dimensions {
-		return common.DrawBox(gtx, common.Box{
-			Size:  image.Rect(0, 0, 200, 200),
-			Color: m.th.Palette.Selection.Bg,
+	m.markerDialog.prepareForOpening(curMarker, m.audio)
+
+	m.dialog.Basic(m.th, "Marker Edit", func(gtx layout.Context) layout.Dimensions {
+		return drawMarkerDialogFields(gtx, m.th, markerDialogFieldsProps{
+			name:         m.markerDialog.nameField,
+			time:         m.markerDialog.timeField,
+			tags:         m.markerDialog.tagsField,
+			chips:        m.markerDialog.tags,
+			totalSeconds: m.audio.Seconds,
 		})
 	})
 	m.dialog.Show()
