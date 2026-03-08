@@ -492,6 +492,7 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
 		props.Base.Editor.MaxLen = props.MaxLen
 		props.Base.Editor.SingleLine = true
+		props.Base.Editor.Submit = true
 		props.Base.Editor.Filter = props.Filter
 		placeholder := ""
 		if props.Base.IsFocused() {
