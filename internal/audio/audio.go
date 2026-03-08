@@ -34,8 +34,17 @@ func (a Audio) GetNextSecond(second float64) (nextSecond float64, sammplesIdx in
 	nextSecond = math.Ceil(second)
 	return nextSecond, int(nextSecond * float64(a.SampleRate))
 }
+func (a Audio) GetSamplesFromSeconds(seconds float64) int {
+	return int(seconds * float64(a.SampleRate))
+}
 func (a Audio) GetSamplesFromPCM(pcmBytes int64) int {
 	return int(pcmBytes / (int64(a.Channels) * constants.BytesPerSample))
+}
+func (a Audio) GetSecondsFromPCM(pcmBytes int64) float64 {
+	return a.GetSecondsFromSamples(a.GetSamplesFromPCM(pcmBytes))
+}
+func (a Audio) GetPcmFromSeconds(seconds float64) int64 {
+	return a.GetPcmFromSamples(a.GetSamplesFromSeconds(seconds))
 }
 func (a Audio) GetPcmFromSamples(samples int) int64 {
 	return int64(samples * a.Channels * constants.BytesPerSample)
