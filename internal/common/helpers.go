@@ -152,3 +152,20 @@ func FormatSeconds(seconds float64) string {
 	hours := minutes / 60
 	return fmt.Sprintf("%d:%02d:%02d", int(hours), int(math.Mod(minutes, 60)), int(math.Mod(seconds, 60)))
 }
+
+func ParseSeconds(secondsStr string) (float64, error) {
+	if secondsStr == "" || !strings.Contains(secondsStr, ":") {
+		return 0, fmt.Errorf("Given incorrect string to parse from seconds")
+	}
+	parts := strings.Split(secondsStr, ":")
+	m, s := parts[0], parts[1]
+	minutes, err := strconv.Atoi(m)
+	if err != nil {
+		return 0, err
+	}
+	seconds, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+	return float64(minutes*60 + seconds), nil
+}
