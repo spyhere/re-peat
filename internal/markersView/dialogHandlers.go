@@ -38,6 +38,7 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 }
 
 func (m *MarkersView) confirmEdit() {
+	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)
 	m.dialog.Hide()
 }

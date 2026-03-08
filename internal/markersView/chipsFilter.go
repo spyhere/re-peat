@@ -38,6 +38,14 @@ func (c *chipsFilter) recreate(markers tm.TimeMarkers) {
 	}
 }
 
+func (c *chipsFilter) updateAll(tags []string) {
+	for _, tag := range tags {
+		if _, ok := c.all[tag]; !ok {
+			c.all[tag] = struct{}{}
+		}
+	}
+}
+
 func (c *chipsFilter) updateEnabled(chips []*common.FilterChip) {
 	for chip := range c.enabled {
 		delete(c.enabled, chip)
