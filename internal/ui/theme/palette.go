@@ -11,8 +11,14 @@ var repeatPalette = palette{
 	},
 	Chip: chipStatesPalette{
 		Enabled: chipPalette{
+			Bg:      rgb(0xF7F2FA),
 			Outline: rgb(0xCAC4D0),
-			Text:    rgb(0x1D1B20),
+			Text:    rgb(0x49454F),
+		},
+		Focused: chipPalette{
+			Bg:      rgb(0xE8DEF8),
+			Outline: rgb(0xE8DEF8),
+			Text:    rgb(0x4A4458),
 		},
 	},
 	IconButton: iconButtonStatesPalette{
@@ -127,9 +133,11 @@ type iconButtonPalette struct {
 
 type chipStatesPalette struct {
 	Enabled chipPalette
+	Focused chipPalette
 }
 
 type chipPalette struct {
+	Bg      color.NRGBA
 	Outline color.NRGBA
 	Text    color.NRGBA
 }

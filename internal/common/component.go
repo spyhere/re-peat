@@ -703,13 +703,22 @@ var chipSpecs = chipMaterialSpecs{
 }
 
 type ChipProps struct {
-	Text string
+	Text     string
+	Selected bool
 }
 
 func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout.Dimensions {
+	c := th.Palette.Chip.Enabled
+	outlineW := chipSpecs.outline
+	if props.Selected {
+		c = th.Palette.Chip.Focused
+		outlineW = 0
+	}
+
+	// Text (macro)
 	textM, textDim := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		txt := material.Body2(th.Theme, props.Text)
-		txt.Color = th.Palette.Chip.Enabled.Text
+		txt.Color = c.Text
 		txt.Font.Typeface = "Roboto"
 		txt.LineHeight = 20
 		txt.TextSize = 14
@@ -717,17 +726,34 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 		txt.WrapPolicy = text.WrapWords
 		return txt.Layout(gtx)
 	})
+
+	// Bg
 	h := gtx.Dp(chipSpecs.height)
 	shape := gtx.Dp(chipSpecs.shape)
 	xPadding := gtx.Dp(chipSpecs.xPadding)
 	chipSize := image.Rect(0, 0, textDim.Size.X+xPadding*2, h)
+	iconSize := gtx.Dp(chipSpecs.iconSize)
+	if props.Selected {
+		chipSize.Max.X += iconSize
+	}
 	chipDims := DrawBox(gtx, Box{
 		Size:    chipSize,
+		Color:   c.Bg,
 		R:       theme.CornerR(shape, shape, shape, shape),
-		StrokeC: th.Palette.Chip.Enabled.Outline,
-		StrokeW: chipSpecs.outline,
+		StrokeC: c.Outline,
+		StrokeW: outlineW,
 	})
-	OffsetBy(gtx, image.Pt(xPadding, textDim.Size.Y/2), func(gtx layout.Context) {
+
+	// Icon + text
+	textOff := xPadding
+	if props.Selected {
+		OffsetBy(gtx, image.Pt(xPadding/2, chipSize.Max.Y/2-iconSize/2), func(gtx layout.Context) {
+			gtx.Constraints.Min.X = gtx.Dp(chipSpecs.iconSize)
+			micons.Check.Layout(gtx, c.Text)
+		})
+		textOff += iconSize
+	}
+	OffsetBy(gtx, image.Pt(textOff, textDim.Size.Y/2), func(gtx layout.Context) {
 		textM.Add(gtx.Ops)
 	})
 	return chipDims

@@ -27,4 +27,5 @@ var (
 	Filter           = newIcon(icons.ContentFilterList)
 	Edit             = newIcon(icons.EditorModeEdit)
 	Warning          = newIcon(icons.AlertWarning)
+	Tick             = newIcon(icons.NavigationCheck)
 )
