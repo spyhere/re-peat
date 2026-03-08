@@ -138,10 +138,15 @@ func (in *Inputable) GetCursorType() (cursor pointer.Cursor, ok bool) {
 }
 
 func (in *Inputable) handleKeys(gtx layout.Context) {
-	backspaceFilter := key.Filter{Name: key.NameDeleteBackward}
+	backspaceFilter := key.Filter{Name: key.NameDeleteBackward, Focus: &in.Editor}
 	if in.value != "" {
 		// Disable this filter when editor still has something to not block Delete button for it
 		backspaceFilter.Focus = &in
+	}
+	escapeFilter := key.Filter{Name: key.NameEscape, Focus: &in.Editor}
+	if !in.isFocused {
+		// Disable escape listener when this inputable is not in focus
+		escapeFilter.Focus = &in
 	}
 	HandleKeyEvents(gtx, func(e key.Event) {
 		if e.State == key.Release {
@@ -154,7 +159,7 @@ func (in *Inputable) handleKeys(gtx layout.Context) {
 			in.hasEmptyDeleteEvent = true
 		}
 	},
-		key.Filter{Name: key.NameEscape},
+		escapeFilter,
 		backspaceFilter,
 	)
 }
@@ -444,13 +449,13 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Min.X = minW
 		gtx.Constraints.Min.Y = 0
 		dims := d.content(gtx)
-		dims.Size.X += fullPadd
+		// dims.Size.X += fullPadd
 		return dims
 	})
 
 	innerM, innerDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		currentWidth := Clamp(minW, contentDims.Size.X, maxW)
-		gtx.Constraints.Max.X = currentWidth
+		gtx.Constraints.Max.X = currentWidth - fullPadd
 		gtx.Constraints.Max.Y = maxH - fullPadd
 		var incrDims layout.Dimensions
 		{
