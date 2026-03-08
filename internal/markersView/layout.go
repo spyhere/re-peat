@@ -71,7 +71,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if isPlaying {
 					icon = micons.Pause
 				}
-				return drawClickableIcon(gtx, icon, 24, m.th.Palette.Backdrop, m.replayButton)
+				return drawClickableIcon(gtx, m.th, clickableIconProps{
+					icon:     icon,
+					iconSize: 24,
+					cl:       m.replayButton,
+				})
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
@@ -91,7 +95,12 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if m.tagButton.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				iconDims := drawClickableIcon(gtx, micons.Filter, 24, m.th.Palette.Backdrop, m.tagButton)
+				iconDims := drawClickableIcon(gtx, m.th, clickableIconProps{
+					icon:     micons.Filter,
+					iconSize: 24,
+					cl:       m.tagButton,
+					disabled: len(m.chipsFilter.all) == 0,
+				})
 				gtx.Constraints.Min = image.Point{}
 				txt := material.Body2(m.th.Theme, "Tags")
 				txt.Font.Weight = font.Bold
@@ -153,7 +162,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if m.isThisMarkerPlaying(curMarker) {
 					icon = micons.Pause
 				}
-				return drawClickableIcon(gtx, icon, 26, m.th.Palette.Backdrop, curMarker.Play)
+				return drawClickableIcon(gtx, m.th, clickableIconProps{
+					icon:     icon,
+					iconSize: 26,
+					cl:       curMarker.Play,
+				})
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
@@ -189,7 +202,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if curMarker.Edit.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				return drawClickableIcon(gtx, micons.Edit, 24, m.th.Palette.Backdrop, curMarker.Edit)
+				return drawClickableIcon(gtx, m.th, clickableIconProps{
+					icon:     micons.Edit,
+					iconSize: 24,
+					cl:       curMarker.Edit,
+				})
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Delete.Clicked(gtx) {
@@ -198,7 +215,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if curMarker.Delete.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				return drawClickableIcon(gtx, micons.Delete, 26, m.th.Palette.Backdrop, curMarker.Delete)
+				return drawClickableIcon(gtx, m.th, clickableIconProps{
+					icon:     micons.Delete,
+					iconSize: 26,
+					cl:       curMarker.Delete,
+				})
 			},
 		)
 		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})

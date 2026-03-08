@@ -2,7 +2,6 @@ package markersview
 
 import (
 	"image"
-	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/unit"
@@ -11,16 +10,30 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func drawClickableIcon(gtx layout.Context, icon *widget.Icon, iconSize unit.Dp, iconC color.NRGBA, cl *widget.Clickable) layout.Dimensions {
-	iconS := gtx.Dp(iconSize)
+type clickableIconProps struct {
+	icon     *widget.Icon
+	iconSize unit.Dp
+	cl       *widget.Clickable
+	disabled bool
+}
+
+// TODO: Looks like this should be a part of common DrawIconButton
+func drawClickableIcon(gtx layout.Context, th *theme.RepeatTheme, props clickableIconProps) layout.Dimensions {
+	iconS := gtx.Dp(props.iconSize)
 	gtx.Constraints.Min.X = iconS
 	iconSizeHalf := iconS / 2
+	cl := props.cl
+	color := th.Palette.Backdrop
+	if props.disabled {
+		color = th.Palette.IconButton.Disabled.Bg
+		cl = nil
+	}
 	common.DrawBox(gtx, common.Box{
 		Size:      image.Rect(0, 0, iconS, iconS),
 		R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
 		Clickable: cl,
 	})
-	return icon.Layout(gtx, iconC)
+	return props.icon.Layout(gtx, color)
 }
 
 type drawMarkerDialogSizeSpecs struct {
