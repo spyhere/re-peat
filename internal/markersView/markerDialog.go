@@ -3,6 +3,7 @@ package markersview
 import (
 	"fmt"
 	"slices"
+	"unicode"
 
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -56,7 +57,11 @@ func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
 		m.timeField.Blur(gtx)
 	}
 	if m.tagsField.HasSubmit() {
-		m.tags = append(m.tags, m.tagsField.GetInput())
+		newTag := m.tagsField.GetInput()
+		runes := []rune(newTag)
+		runes[0] = unicode.ToUpper(runes[0])
+		newTag = string(runes)
+		m.tags = append(m.tags, newTag)
 		m.tagsField.SetText("")
 	}
 	if len(m.tags) > 0 && m.tagsField.HasEmptyDeleteEvent() {
