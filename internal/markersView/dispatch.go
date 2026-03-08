@@ -7,7 +7,8 @@ import (
 )
 
 func (m *MarkersView) dispatch(gtx layout.Context) {
-	if !m.searchbar.IsFocused() {
+	isModalOpen := m.dialogOwner != none
+	if !m.searchbar.IsFocused() && !isModalOpen {
 		m.dispatchKeyEvents(gtx)
 	}
 }
