@@ -762,6 +762,45 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 	return chipDims
 }
 
+type filterChipsSizeSpecs struct {
+	xGap unit.Dp
+	yGap unit.Dp
+}
+
+var filterChipsSpecs = filterChipsSizeSpecs{
+	xGap: 5,
+	yGap: 12,
+}
+
+type FilterChip struct {
+	Text     string
+	Selected bool
+	Cl       *widget.Clickable
+}
+
+func DrawChipsFilter(gtx layout.Context, th *theme.RepeatTheme, chips []*FilterChip) layout.Dimensions {
+	xGap, yGap := gtx.Dp(filterChipsSpecs.xGap), gtx.Dp(filterChipsSpecs.yGap)
+	xOffset, yOffset := 0, 0
+	for _, it := range chips {
+		chipM, chipDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+			return DrawChip(gtx, th, ChipProps{
+				Text:     it.Text,
+				Selected: it.Selected,
+				Cl:       it.Cl,
+			})
+		})
+		if gtx.Constraints.Max.X-chipDims.Size.X-xOffset < 0 {
+			xOffset = 0
+			yOffset += chipDims.Size.Y + yGap
+		}
+		OffsetBy(gtx, image.Pt(xOffset, yOffset), func(gtx layout.Context) {
+			chipM.Add(gtx.Ops)
+			xOffset += chipDims.Size.X + xGap
+		})
+	}
+	return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X, yOffset)}
+}
+
 type iconBMaterialWidth struct {
 	esIcon unit.Dp
 	esW    unit.Dp
