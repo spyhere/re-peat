@@ -72,6 +72,9 @@ func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
 	}
 	if m.tagsField.HasSubmit() {
 		newTag := m.tagsField.GetInput()
+		if newTag == "" {
+			return
+		}
 		runes := []rune(newTag)
 		runes[0] = unicode.ToUpper(runes[0])
 		newTag = string(runes)
