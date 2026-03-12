@@ -32,6 +32,7 @@ type Inputable struct {
 	widget.List
 	widget.Editor
 	widget.Clickable
+	scrim   widget.Clickable
 	Cancel  widget.Clickable
 	Focuser Focuser // To manage focus between multiple inputables
 }
@@ -40,10 +41,15 @@ func (in *Inputable) Update(gtx layout.Context) {
 	in.handleKeys(gtx)
 	in.processEditorEvents(gtx)
 
+	if in.scrim.Clicked(gtx) {
+		in.requestBlur(gtx)
+		return
+	}
 	if in.Cancel.Clicked(gtx) {
 		in.Editor.SetText("")
 		in.value = ""
 		in.requestBlur(gtx)
+		return
 	}
 	HandlePointerEvents(gtx, &in.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
 		switch e.Kind {
