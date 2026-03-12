@@ -66,6 +66,10 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker = nil
 }
 
+func (m *markerDialog) cleanUp(gtx layout.Context) {
+	m.focuser.RequestBlur(gtx)
+}
+
 func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
 	if m.nameField.HasSubmit() {
 		m.focuser.RequestBlur(gtx)

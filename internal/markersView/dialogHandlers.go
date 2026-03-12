@@ -14,11 +14,15 @@ import (
 func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	if m.dialog.Cancel.Clicked(gtx) || m.dialog.Scrim.Clicked(gtx) {
 		m.dialog.Hide()
+		switch m.dialogOwner {
+		case edit:
+			m.cleanUp(gtx)
+		}
 	}
 	if m.dialog.Ok.Clicked(gtx) {
 		switch m.dialogOwner {
 		case edit:
-			m.confirmEdit()
+			m.confirmEdit(gtx)
 		case tagFilter:
 			m.confirmTagFilter()
 		case deleteAll:
@@ -37,9 +41,10 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	}
 }
 
-func (m *MarkersView) confirmEdit() {
+func (m *MarkersView) confirmEdit(gtx layout.Context) {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)
+	m.cleanUp(gtx)
 	m.dialog.Hide()
 }
 func (m *MarkersView) confirmTagFilter() {
