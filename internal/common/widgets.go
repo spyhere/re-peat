@@ -465,13 +465,11 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 	shape := gtx.Dp(dialogSpecs.shape)
 	betweenButtonsPad := gtx.Dp(dialogSpecs.betweenButtonsPadd)
 
-	prevConstr := gtx.Constraints
 	contentM, contentDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X = maxW - fullPadd
 		gtx.Constraints.Min.X = minW
 		gtx.Constraints.Min.Y = 0
 		dims := d.content(gtx)
-		// dims.Size.X += fullPadd
 		return dims
 	})
 
@@ -481,6 +479,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.Y = maxH - fullPadd
 		var incrDims layout.Dimensions
 		{
+			// Icon for Title
 			if d.icon != nil {
 				iconsSize := gtx.Dp(dialogSpecs.iconSz)
 				OffsetBy(gtx, image.Pt(currentWidth/2-iconsSize/2-padd, 0), func(gtx layout.Context) {
@@ -493,6 +492,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 				})
 				incrDims.Size.Y += iconsSize + gtx.Dp(dialogSpecs.iconTitlePadd)
 			}
+			// Title
 			OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func(gtx layout.Context) {
 				gtx.Constraints.Min = image.Point{}
 				title := material.H6(d.th.Theme, d.title)
@@ -508,6 +508,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 
 		gtx.Constraints.Min = gtx.Constraints.Max
 
+		// Content
 		incrDims.Size.X = contentDims.Size.X
 		OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func(gtx layout.Context) {
 			gtx.Constraints.Min = image.Point{}
@@ -520,6 +521,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 			incrDims.Size.Y += min(gtx.Constraints.Max.Y, contentDims.Size.Y) + gtx.Dp(dialogSpecs.bodyActionsPadd)
 		})
 
+		// Actions
 		OffsetBy(gtx, image.Pt(0, incrDims.Size.Y), func(gtx layout.Context) {
 			var actionsDims layout.Dimensions
 			gtx.Constraints.Min = image.Pt(currentWidth-fullPadd, 0)
@@ -561,18 +563,17 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 		})
 		return incrDims
 	})
-	gtx.Constraints = prevConstr
 
+	// Dialog background
 	gtx.Constraints.Min = gtx.Constraints.Max
 	return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X -= fullPadd
 		gtx.Constraints.Max.Y -= fullPadd
 		size := image.Rect(0, 0, Clamp(minW, innerDims.Size.X+fullPadd, maxW), innerDims.Size.Y)
 		dialogDims := DrawBox(gtx, Box{
-			Size:    size,
-			Color:   d.th.Palette.CardBg,
-			R:       theme.CornerR(shape, shape, shape, shape),
-			HideInk: true,
+			Size:  size,
+			Color: d.th.Palette.CardBg,
+			R:     theme.CornerR(shape, shape, shape, shape),
 		})
 		RegisterTag(gtx, &d, size)
 		OffsetBy(gtx, image.Pt(padd, padd), func(gtx layout.Context) {
