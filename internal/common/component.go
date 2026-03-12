@@ -466,7 +466,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	if props.MaxLen > 0 {
 		supTextM, supTextDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			gtx.Constraints.Min = image.Point{}
-			txt := material.Body2(th.Theme, fmt.Sprintf("%d/%d", len(props.GetInput()), props.MaxLen))
+			txt := material.Body2(th.Theme, fmt.Sprintf("%d/%d", strlen(props.GetInput()), props.MaxLen))
 			txt.Color = c.SupportingText
 			txt.TextSize = inputSpecs.supTxtSize
 			txt.LineHeight = inputSpecs.supTxtHeight
