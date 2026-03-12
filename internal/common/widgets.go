@@ -16,6 +16,11 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
+type Focuser interface {
+	RequestFocus(gtx layout.Context, f Focusable)
+	RequestBlur(gtx layout.Context)
+}
+
 type Inputable struct {
 	isHovered           bool
 	isFocused           bool
@@ -27,7 +32,8 @@ type Inputable struct {
 	widget.List
 	widget.Editor
 	widget.Clickable
-	Cancel widget.Clickable
+	Cancel  widget.Clickable
+	Focuser Focuser // To manage focus between multiple inputables
 }
 
 func (in *Inputable) Update(gtx layout.Context) {
@@ -37,7 +43,7 @@ func (in *Inputable) Update(gtx layout.Context) {
 	if in.Cancel.Clicked(gtx) {
 		in.Editor.SetText("")
 		in.value = ""
-		in.Blur(gtx)
+		in.requestBlur(gtx)
 	}
 	HandlePointerEvents(gtx, &in.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
 		switch e.Kind {
@@ -47,7 +53,7 @@ func (in *Inputable) Update(gtx layout.Context) {
 			in.isHovered = false
 		case pointer.Press:
 			// Even if user missed the input field and pressed container the caret will be set anyway
-			if in.Focus(gtx) {
+			if in.requestFocus(gtx) {
 				if e.Position.X < 100 {
 					in.Editor.SetCaret(0, 0)
 				} else {
@@ -64,23 +70,39 @@ func (in *Inputable) Subscribe(gtx layout.Context) {
 	event.Op(gtx.Ops, &in.Editor)
 }
 
+func (in *Inputable) requestBlur(gtx layout.Context) {
+	if in.Focuser != nil {
+		in.Focuser.RequestBlur(gtx)
+	} else {
+		in.Blur(gtx)
+	}
+}
+
 func (in *Inputable) Blur(gtx layout.Context) {
 	in.List.ScrollTo(0)
 	gtx.Execute(key.FocusCmd{Tag: nil})
 	in.isFocused = false
 }
 
-func (in *Inputable) Focus(gtx layout.Context) (wasFocusedBefore bool) {
+func (in *Inputable) requestFocus(gtx layout.Context) (wasFocusedBefore bool) {
 	if in.isFocused {
 		return true
 	}
+	if in.Focuser != nil {
+		in.Focuser.RequestFocus(gtx, in)
+	} else {
+		in.Focus(gtx)
+	}
+	in.isFocused = true
+	return false
+}
+
+func (in *Inputable) Focus(gtx layout.Context) {
 	gtx.Execute(key.FocusCmd{Tag: &in.Editor})
 	txtLen := len(in.Editor.Text())
 	if txtLen > 0 {
 		in.Editor.SetCaret(txtLen, 0)
 	}
-	in.isFocused = true
-	return false
 }
 
 func (in *Inputable) GetInput() string {
@@ -565,4 +587,26 @@ func (d *Dialog) GetCursorType() (pointer.Cursor, bool) {
 		return pointer.CursorPointer, true
 	}
 	return pointer.CursorDefault, false
+}
+
+type Focusable interface {
+	Focus(layout.Context)
+	Blur(layout.Context)
+}
+type FocusManager struct {
+	inFocus Focusable
+}
+
+func (fm *FocusManager) RequestFocus(gtx layout.Context, it Focusable) {
+	if fm.inFocus != nil {
+		fm.inFocus.Blur(gtx)
+	}
+	it.Focus(gtx)
+	fm.inFocus = it
+}
+func (fm *FocusManager) RequestBlur(gtx layout.Context) {
+	if fm.inFocus != nil {
+		fm.inFocus.Blur(gtx)
+	}
+	fm.inFocus = nil
 }
