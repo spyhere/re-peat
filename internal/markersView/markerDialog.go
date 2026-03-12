@@ -66,7 +66,7 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker = nil
 }
 
-func (m *markerDialog) cleanUp(gtx layout.Context) {
+func (m *markerDialog) blur(gtx layout.Context) {
 	m.focuser.RequestBlur(gtx)
 }
 

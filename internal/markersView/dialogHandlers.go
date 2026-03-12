@@ -14,10 +14,14 @@ import (
 func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	if m.dialog.Cancel.Clicked(gtx) || m.dialog.Scrim.Clicked(gtx) {
 		m.dialog.Hide()
+		// TODO: Interface needed
 		switch m.dialogOwner {
 		case edit:
-			m.cleanUp(gtx)
+			m.markerDialog.blur(gtx)
 		}
+	}
+	if m.dialog.Body.Clicked(gtx) {
+		m.markerDialog.blur(gtx)
 	}
 	if m.dialog.Ok.Clicked(gtx) {
 		switch m.dialogOwner {
@@ -44,7 +48,7 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 func (m *MarkersView) confirmEdit(gtx layout.Context) {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)
-	m.cleanUp(gtx)
+	m.blur(gtx)
 	m.dialog.Hide()
 }
 func (m *MarkersView) confirmTagFilter() {
@@ -56,6 +60,7 @@ func (m *MarkersView) confirmDeleteAll() {
 	m.dialog.Hide()
 }
 
+// Move this to markerDialog.Layout
 func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
 	if curMarker == nil {
 		return
