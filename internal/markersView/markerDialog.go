@@ -14,12 +14,14 @@ import (
 )
 
 func newMarkerDialog(tagLimit int) markerDialog {
+	fm := &common.FocusManager{}
 	return markerDialog{
-		nameField:     &common.Inputable{},
-		timeField:     &common.Inputable{},
-		tagsField:     &common.Inputable{},
+		nameField:     &common.Inputable{Focuser: fm},
+		timeField:     &common.Inputable{Focuser: fm},
+		tagsField:     &common.Inputable{Focuser: fm},
 		tagOptionsMap: make(map[string]common.ComboboxOption, tagLimit),
 		tagOptions:    make([]common.ComboboxOption, 0, tagLimit),
+		focuser:       fm,
 	}
 }
 
@@ -31,6 +33,7 @@ type markerDialog struct {
 	nameField     *common.Inputable
 	timeField     *common.Inputable
 	tagsField     *common.Inputable
+	focuser       common.Focuser
 }
 
 func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, a audio.Audio, allChips map[string]struct{}) {
@@ -65,10 +68,10 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 
 func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
 	if m.nameField.HasSubmit() {
-		m.nameField.Blur(gtx)
+		m.focuser.RequestBlur(gtx)
 	}
 	if m.timeField.HasSubmit() {
-		m.timeField.Blur(gtx)
+		m.focuser.RequestBlur(gtx)
 	}
 	if m.tagsField.HasSubmit() {
 		newTag := m.tagsField.GetInput()
