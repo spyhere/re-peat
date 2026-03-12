@@ -71,6 +71,7 @@ func (m *markerDialog) blur(gtx layout.Context) {
 }
 
 func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
+	// TODO: focus the next field
 	if m.nameField.HasSubmit() {
 		m.focuser.RequestBlur(gtx)
 	}
@@ -85,6 +86,12 @@ func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
 		runes := []rune(newTag)
 		runes[0] = unicode.ToUpper(runes[0])
 		newTag = string(runes)
+		suchTagExists := slices.ContainsFunc(m.tags, func(it string) bool {
+			return it == newTag
+		})
+		if suchTagExists {
+			return
+		}
 		m.tags = append(m.tags, newTag)
 		m.tagsField.SetText("")
 	}
