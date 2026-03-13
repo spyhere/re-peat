@@ -27,10 +27,14 @@ func (c *chipsFilter) getEnabledChips() []string {
 	return c.enabledBuf
 }
 
-func (c *chipsFilter) recreate(markers tm.TimeMarkers) {
+func (c *chipsFilter) purge() {
 	for chip := range c.all {
 		delete(c.all, chip)
 	}
+}
+
+func (c *chipsFilter) recreate(markers tm.TimeMarkers) {
+	c.purge()
 	for _, marker := range markers {
 		for _, tag := range marker.CategoryTags {
 			c.all[tag] = struct{}{}

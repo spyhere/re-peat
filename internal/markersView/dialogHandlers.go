@@ -57,6 +57,7 @@ func (m *MarkersView) confirmTagFilter() {
 }
 func (m *MarkersView) confirmDeleteAll() {
 	m.deleteMarkers()
+	m.chipsFilter.purge()
 	m.dialog.Hide()
 }
 
