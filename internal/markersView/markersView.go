@@ -192,3 +192,8 @@ func (m *MarkersView) listenToPlayerUpdates() {
 func (m *MarkersView) clearHotKeyBuf() {
 	m.hotKeyBuf = m.hotKeyBuf[:0]
 }
+
+func (m *MarkersView) closeDialog() {
+	m.dialog.Hide()
+	m.dialogOwner = none
+}

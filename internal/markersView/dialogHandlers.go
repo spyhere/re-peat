@@ -13,7 +13,7 @@ import (
 
 func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	if m.dialog.Cancel.Clicked(gtx) || m.dialog.Scrim.Clicked(gtx) {
-		m.dialog.Hide()
+		m.closeDialog()
 		// TODO: Interface needed
 		switch m.dialogOwner {
 		case edit:
@@ -49,16 +49,16 @@ func (m *MarkersView) confirmEdit(gtx layout.Context) {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)
 	m.blur(gtx)
-	m.dialog.Hide()
+	m.closeDialog()
 }
 func (m *MarkersView) confirmTagFilter() {
 	m.chipsFilter.updateEnabled(m.tagsDialog.filterChips)
-	m.dialog.Hide()
+	m.closeDialog()
 }
 func (m *MarkersView) confirmDeleteAll() {
 	m.deleteMarkers()
 	m.chipsFilter.purge()
-	m.dialog.Hide()
+	m.closeDialog()
 }
 
 // Move this to markerDialog.Layout
