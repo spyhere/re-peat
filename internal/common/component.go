@@ -290,6 +290,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	return layout.Dimensions{Size: image.Pt(containerW, containerH)}
 }
 
+// TODO: Should we use Gio's way of hiding this?
 type inputFieldMaterialSpecs struct {
 	shape             int
 	defaultH          unit.Dp
