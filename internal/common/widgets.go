@@ -29,6 +29,7 @@ type Inputable struct {
 	hasSelection        bool
 	hasSubmitted        bool
 	hasEmptyDeleteEvent bool // delete button has been triggered when editor is empty. Useful for combobox
+	shouldResetCaret    bool
 	widget.List
 	widget.Editor
 	widget.Clickable
@@ -38,6 +39,10 @@ type Inputable struct {
 }
 
 func (in *Inputable) Update(gtx layout.Context) {
+	if in.shouldResetCaret {
+		in.Editor.SetCaret(0, 0)
+		in.shouldResetCaret = false
+	}
 	in.handleKeys(gtx)
 	in.processEditorEvents(gtx)
 
@@ -58,15 +63,7 @@ func (in *Inputable) Update(gtx layout.Context) {
 		case pointer.Leave:
 			in.isHovered = false
 		case pointer.Press:
-			// Even if user missed the input field and pressed container the caret will be set anyway
-			if in.requestFocus(gtx) {
-				if e.Position.X < 100 {
-					in.Editor.SetCaret(0, 0)
-				} else {
-					txtLen := len(in.GetInput())
-					in.Editor.SetCaret(txtLen, txtLen)
-				}
-			}
+			in.requestFocus(gtx)
 		}
 	})
 }
@@ -88,6 +85,7 @@ func (in *Inputable) Blur(gtx layout.Context) {
 	in.List.ScrollTo(0)
 	gtx.Execute(key.FocusCmd{Tag: nil})
 	in.isFocused = false
+	in.shouldResetCaret = true
 }
 
 func (in *Inputable) requestFocus(gtx layout.Context) (wasFocusedBefore bool) {
@@ -103,12 +101,18 @@ func (in *Inputable) requestFocus(gtx layout.Context) (wasFocusedBefore bool) {
 	return false
 }
 
-func (in *Inputable) Focus(gtx layout.Context) {
-	gtx.Execute(key.FocusCmd{Tag: &in.Editor})
-	txtLen := len(in.Editor.Text())
-	if txtLen > 0 {
+func (in *Inputable) selectAllOnFocus() {
+	line, col := in.Editor.CaretPos()
+	if line == 0 && col == 0 {
+		txtLen := strlen(in.Editor.Text())
 		in.Editor.SetCaret(txtLen, 0)
 	}
+}
+
+func (in *Inputable) Focus(gtx layout.Context) {
+	gtx.Execute(key.FocusCmd{Tag: &in.Editor})
+	in.isFocused = true
+	in.selectAllOnFocus()
 }
 
 func (in *Inputable) GetInput() string {
