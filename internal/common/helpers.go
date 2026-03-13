@@ -8,6 +8,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"gioui.org/io/event"
 	"gioui.org/io/key"
@@ -120,7 +121,7 @@ func Snap(v float32) float32 {
 }
 
 func strlen(input string) int {
-	return strings.Count(input, "") - 1
+	return utf8.RuneCountInString(input)
 }
 
 // Since non-lating letters are taking more then 1 byte `strlen` and manual idx in range is required
