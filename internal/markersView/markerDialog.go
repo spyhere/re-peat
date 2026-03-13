@@ -71,12 +71,11 @@ func (m *markerDialog) blur(gtx layout.Context) {
 }
 
 func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
-	// TODO: focus the next field
 	if m.nameField.HasSubmit() {
-		m.focuser.RequestBlur(gtx)
+		m.focuser.RequestFocus(gtx, m.timeField)
 	}
 	if m.timeField.HasSubmit() {
-		m.focuser.RequestBlur(gtx)
+		m.focuser.RequestFocus(gtx, m.tagsField)
 	}
 	if m.tagsField.HasSubmit() {
 		newTag := m.tagsField.GetInput()
