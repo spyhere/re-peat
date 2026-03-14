@@ -32,10 +32,10 @@ type Inputable struct {
 	shouldResetCaret    bool
 	widget.List
 	widget.Editor
-	widget.Clickable
-	scrim   widget.Clickable
-	Cancel  widget.Clickable
-	Focuser Focuser // To manage focus between multiple inputables
+	widget.Clickable                  // TODO: this is also redundant, input fields doesnt have ripple animation according to md3
+	scrim            widget.Clickable // TODO: replace it with empty struct
+	Cancel           widget.Clickable
+	Focuser          Focuser // To manage focus between multiple inputables
 }
 
 func (in *Inputable) Update(gtx layout.Context) {
@@ -45,6 +45,10 @@ func (in *Inputable) Update(gtx layout.Context) {
 	}
 	in.handleKeys(gtx)
 	in.processEditorEvents(gtx)
+
+	if in.isFocused && !gtx.Focused(&in.Editor) {
+		in.requestBlur(gtx)
+	}
 
 	if in.scrim.Clicked(gtx) {
 		in.requestBlur(gtx)
