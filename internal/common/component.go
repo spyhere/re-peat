@@ -228,7 +228,6 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		Size:       image.Rect(0, 0, containerW, containerH),
 		Color:      th.Palette.Search.Enabled.Bg,
 		R:          theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
-		Clickable:  &props.Clickable,
 		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
 	// Hovered layer
