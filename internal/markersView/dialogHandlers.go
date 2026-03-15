@@ -61,7 +61,6 @@ func (m *MarkersView) confirmDeleteAll() {
 	m.closeDialog()
 }
 
-// Move this to markerDialog.Layout
 func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
 	if curMarker == nil {
 		return
@@ -70,15 +69,7 @@ func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
 	m.markerDialog.prepareForOpening(curMarker, m.audio, m.chipsFilter.all)
 
 	m.dialog.Basic(m.th, "Marker Edit", func(gtx layout.Context) layout.Dimensions {
-		return drawMarkerDialogFields(gtx, m.th, markerDialogFieldsProps{
-			name:         m.markerDialog.nameField,
-			time:         m.markerDialog.timeField,
-			tags:         m.markerDialog.tagsField,
-			chips:        m.markerDialog.tags,
-			totalSeconds: m.audio.Seconds,
-			tagOptions:   m.markerDialog.getTagOptions(),
-			fm:           m.markerDialog.focuser,
-		})
+		return m.markerDialog.Layout(gtx, m.audio.Seconds)
 	})
 	m.dialog.Show()
 }

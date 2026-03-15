@@ -6,13 +6,16 @@ import (
 	"unicode"
 
 	"gioui.org/io/pointer"
+	"gioui.org/layout"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
+	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func newMarkerDialog(tagLimit int) markerDialog {
+func newMarkerDialog(tagLimit int, th *theme.RepeatTheme) markerDialog {
 	fm := &common.FocusManager{}
 	return markerDialog{
 		nameField:     &common.Inputable{Focuser: fm},
@@ -21,6 +24,7 @@ func newMarkerDialog(tagLimit int) markerDialog {
 		tagOptionsMap: make(map[string]common.ComboboxOption, tagLimit),
 		tagOptions:    make([]common.ComboboxOption, 0, tagLimit),
 		focuser:       fm,
+		th:            th,
 	}
 }
 
@@ -33,6 +37,7 @@ type markerDialog struct {
 	timeField     *common.Inputable
 	tagsField     *common.Inputable
 	focuser       *common.FocusManager
+	th            *theme.RepeatTheme
 }
 
 func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, a audio.Audio, allChips map[string]struct{}) {
@@ -121,4 +126,73 @@ func (m *markerDialog) getTagOptions() []common.ComboboxOption {
 	// 	}
 	// }
 	// return m.tagOptions
+}
+
+type drawMarkerDialogSizeSpecs struct {
+	fieldsYMargin unit.Dp
+	fieldsXMargin unit.Dp
+	fieldW        unit.Dp
+	gap           unit.Dp
+}
+
+var drawMarkerDialogSpecs = drawMarkerDialogSizeSpecs{
+	fieldsYMargin: 10,
+	fieldsXMargin: 10,
+	fieldW:        270,
+	gap:           20,
+}
+
+func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.Dimensions {
+	s := drawMarkerDialogSpecs
+	inset := layout.Inset{Top: s.fieldsYMargin, Bottom: s.fieldsYMargin, Left: s.fieldsXMargin, Right: s.fieldsXMargin}
+	dims := inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		gapPx := gtx.Dp(s.gap)
+		gtx.Constraints.Max.X = gtx.Constraints.Min.X
+		gtx.Constraints.Min.X = gtx.Constraints.Max.X
+		fieldW := gtx.Dp(s.fieldW)
+		return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+					gtx.Constraints.Max.X = fieldW
+					inputDims := common.DrawInputField(gtx, m.th, common.InputFieldProps{
+						Base: common.InputFieldBase{
+							LabelText: "Имя",
+							Inputable: m.nameField,
+						},
+						MaxLen:      20,
+						Placeholder: "Новый маркер...",
+					})
+					inputDims.Size.Y += gapPx
+					return inputDims
+				}),
+				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+					gtx.Constraints.Max.X = fieldW
+					inputDims := common.DrawInputField(gtx, m.th, common.InputFieldProps{
+						Base: common.InputFieldBase{
+							LabelText: "Время",
+							Inputable: m.timeField,
+						},
+						MaxLen:      7,
+						Placeholder: common.FormatSeconds(totalSeconds),
+					})
+					inputDims.Size.Y += gapPx
+					return inputDims
+				}),
+				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+					gtx.Constraints.Max.X = fieldW
+					return common.DrawCombobox(gtx, m.th, common.ComboboxProps{
+						Base: common.InputFieldBase{
+							LabelText: "Категории",
+							Inputable: m.tagsField,
+						},
+						Chips:   m.tags,
+						MaxLen:  20,
+						Options: m.getTagOptions(),
+					})
+				}),
+			)
+		})
+	})
+	m.focuser.PlaceScrim(gtx)
+	return dims
 }

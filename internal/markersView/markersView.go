@@ -40,7 +40,7 @@ func NewMarkersView(props Props) *MarkersView {
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
 		deleteButton: &widget.Clickable{},
-		markerDialog: newMarkerDialog(globalChipsLimit),
+		markerDialog: newMarkerDialog(globalChipsLimit, props.Th),
 		tagsDialog:   newTagsDialog(globalChipsLimit),
 		chipsFilter:  newChipsFilter(globalChipsLimit),
 	}
