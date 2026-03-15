@@ -6,7 +6,6 @@ import (
 	"unicode"
 
 	"gioui.org/io/pointer"
-	"gioui.org/layout"
 	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
@@ -66,16 +65,16 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker = nil
 }
 
-func (m *markerDialog) blur(gtx layout.Context) {
-	m.focuser.RequestBlur(gtx)
+func (m *markerDialog) blur() {
+	m.focuser.RequestBlur()
 }
 
-func (m *markerDialog) handleFieldsEvents(gtx layout.Context) {
+func (m *markerDialog) handleFieldsEvents() {
 	if m.nameField.HasSubmit() {
-		m.focuser.RequestFocus(gtx, m.timeField)
+		m.focuser.RequestFocus(m.timeField)
 	}
 	if m.timeField.HasSubmit() {
-		m.focuser.RequestFocus(gtx, m.tagsField)
+		m.focuser.RequestFocus(m.tagsField)
 	}
 	if m.tagsField.HasSubmit() {
 		newTag := m.tagsField.GetInput()

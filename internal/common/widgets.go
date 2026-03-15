@@ -9,6 +9,7 @@ import (
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
@@ -17,8 +18,8 @@ import (
 )
 
 type Focuser interface {
-	RequestFocus(gtx layout.Context, f Focusable)
-	RequestBlur(gtx layout.Context)
+	RequestFocus(f Focusable)
+	RequestBlur()
 }
 
 type Inputable struct {
@@ -32,8 +33,7 @@ type Inputable struct {
 	shouldResetCaret    bool
 	widget.List
 	widget.Editor
-	widget.Clickable                  // TODO: this is also redundant, input fields doesnt have ripple animation according to md3
-	scrim            widget.Clickable // TODO: replace it with empty struct
+	widget.Clickable // TODO: this is also redundant, input fields doesnt have ripple animation according to md3
 	Cancel           widget.Clickable
 	Focuser          Focuser // To manage focus between multiple inputables
 }
@@ -42,23 +42,6 @@ func (in *Inputable) Update(gtx layout.Context) {
 	if in.shouldResetCaret {
 		in.Editor.SetCaret(0, 0)
 		in.shouldResetCaret = false
-	}
-	in.handleKeys(gtx)
-	in.processEditorEvents(gtx)
-
-	if in.isFocused && !gtx.Focused(&in.Editor) {
-		in.requestBlur(gtx)
-	}
-
-	if in.scrim.Clicked(gtx) {
-		in.requestBlur(gtx)
-		return
-	}
-	if in.Cancel.Clicked(gtx) {
-		in.Editor.SetText("")
-		in.value = ""
-		in.requestBlur(gtx)
-		return
 	}
 	HandlePointerEvents(gtx, &in.Editor, pointer.Press|pointer.Move|pointer.Leave, func(e pointer.Event) {
 		switch e.Kind {
@@ -70,6 +53,19 @@ func (in *Inputable) Update(gtx layout.Context) {
 			in.requestFocus(gtx)
 		}
 	})
+	in.handleKeys(gtx)
+	in.processEditorEvents(gtx)
+
+	if in.isFocused && !gtx.Focused(&in.Editor) {
+		in.requestBlur(gtx)
+	}
+
+	if in.Cancel.Clicked(gtx) {
+		in.Editor.SetText("")
+		in.value = ""
+		in.requestBlur(gtx)
+		return
+	}
 }
 
 func (in *Inputable) Subscribe(gtx layout.Context) {
@@ -79,7 +75,7 @@ func (in *Inputable) Subscribe(gtx layout.Context) {
 
 func (in *Inputable) requestBlur(gtx layout.Context) {
 	if in.Focuser != nil {
-		in.Focuser.RequestBlur(gtx)
+		in.Focuser.RequestBlur()
 	} else {
 		in.Blur(gtx)
 	}
@@ -92,20 +88,18 @@ func (in *Inputable) Blur(gtx layout.Context) {
 	in.shouldResetCaret = true
 }
 
-func (in *Inputable) requestFocus(gtx layout.Context) (wasFocusedBefore bool) {
-	if in.isFocused {
-		return true
-	}
+func (in *Inputable) requestFocus(gtx layout.Context) {
 	if in.Focuser != nil {
-		in.Focuser.RequestFocus(gtx, in)
+		in.Focuser.RequestFocus(in)
 	} else {
 		in.Focus(gtx)
 	}
-	in.isFocused = true
-	return false
 }
 
 func (in *Inputable) selectAllOnFocus() {
+	if in.isFocused {
+		return
+	}
 	line, col := in.Editor.CaretPos()
 	if line == 0 && col == 0 {
 		txtLen := strlen(in.Editor.Text())
@@ -115,8 +109,8 @@ func (in *Inputable) selectAllOnFocus() {
 
 func (in *Inputable) Focus(gtx layout.Context) {
 	gtx.Execute(key.FocusCmd{Tag: &in.Editor})
-	in.isFocused = true
 	in.selectAllOnFocus()
+	in.isFocused = true
 }
 
 func (in *Inputable) GetInput() string {
@@ -190,7 +184,7 @@ func (in *Inputable) handleKeys(gtx layout.Context) {
 		}
 		switch e.Name {
 		case key.NameEscape:
-			in.Blur(gtx)
+			in.requestBlur(gtx)
 		case key.NameDeleteBackward:
 			in.hasEmptyDeleteEvent = true
 		}
@@ -610,20 +604,71 @@ type Focusable interface {
 	Focus(layout.Context)
 	Blur(layout.Context)
 }
+
+// Manage focus for 1 or more Focusables. Focus and Blur are evaluated at the end of frame.
+// Explanation: scrim is on top, passing pointer events (mimicking web page behavior),
+// so we need to know whether any Focusables were hit underneath scrim, if it's the
+// Focusable that is currently in focus - cancel blur.
 type FocusManager struct {
-	inFocus Focusable
+	inFocus        Focusable
+	requestedFocus Focusable
+	requestedBlur  Focusable
+	scrimTag       struct{}
 }
 
-func (fm *FocusManager) RequestFocus(gtx layout.Context, it Focusable) {
-	if fm.inFocus != nil {
-		fm.inFocus.Blur(gtx)
-	}
-	it.Focus(gtx)
-	fm.inFocus = it
-}
-func (fm *FocusManager) RequestBlur(gtx layout.Context) {
+func (fm *FocusManager) blur(gtx layout.Context) {
 	if fm.inFocus != nil {
 		fm.inFocus.Blur(gtx)
 	}
 	fm.inFocus = nil
+	fm.requestedBlur = nil
+}
+func (fm *FocusManager) focus(gtx layout.Context) {
+	if fm.inFocus != fm.requestedFocus {
+		fm.blur(gtx)
+		fm.inFocus = fm.requestedFocus
+		fm.inFocus.Focus(gtx)
+	}
+	fm.requestedFocus = nil
+}
+
+func (fm *FocusManager) update(gtx layout.Context) {
+	HandlePointerEvents(gtx, &fm.scrimTag, pointer.Press, func(e pointer.Event) {
+		if e.Kind == pointer.Press {
+			fm.RequestBlur()
+		}
+	})
+	if (fm.requestedFocus != nil) && (fm.requestedBlur != nil) && (fm.requestedFocus == fm.requestedBlur) {
+		fm.requestedBlur, fm.requestedFocus = nil, nil
+		return
+	}
+	if fm.requestedFocus != nil {
+		fm.focus(gtx)
+	}
+	if fm.requestedBlur != nil {
+		fm.blur(gtx)
+	}
+}
+func (fm *FocusManager) RequestFocus(it Focusable) {
+	fm.requestedFocus = it
+}
+func (fm *FocusManager) RequestBlur() {
+	fm.requestedBlur = fm.inFocus
+}
+
+// This should be placed as lower as possible at the frame creation
+func (fm *FocusManager) PlaceScrim(gtx layout.Context) {
+	fm.update(gtx)
+	if fm.inFocus == nil {
+		return
+	}
+	scrimM, _ := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		OffsetBy(gtx, image.Pt(-1e3, -1e3), func(gtx layout.Context) {
+			passOp := pointer.PassOp{}.Push(gtx.Ops)
+			RegisterTag(gtx, &fm.scrimTag, image.Rect(0, 0, 1e6, 1e6))
+			passOp.Pop()
+		})
+		return layout.Dimensions{}
+	})
+	op.Defer(gtx.Ops, scrimM)
 }

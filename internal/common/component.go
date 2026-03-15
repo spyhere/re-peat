@@ -346,20 +346,6 @@ type inputFieldBaseProps struct {
 func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFieldBaseProps) layout.Dimensions {
 	props.Inputable.Update(gtx)
 
-	// Hardcoded scrim to be able to capture click outside of
-	// inputable in difficult layouts like widget.List
-	if props.IsFocused() {
-		OffsetBy(gtx, image.Pt(-1000, -1000), func(gtx layout.Context) {
-			passOp := pointer.PassOp{}.Push(gtx.Ops)
-			DrawBox(gtx, Box{
-				Size:      image.Rect(0, 0, 2000, 2000),
-				Clickable: &props.scrim,
-				HideInk:   true,
-			})
-			passOp.Pop()
-		})
-	}
-
 	yPadding, defaultH := gtx.Dp(inputSpecs.yPadding), gtx.Dp(inputSpecs.defaultH)
 	outterIconPadding, textXPadding := gtx.Dp(inputSpecs.outterIconPadding), gtx.Dp(inputSpecs.textXPadding)
 	supTextPadding, supTextTopPadding := gtx.Dp(inputSpecs.supTextPadding), gtx.Dp(inputSpecs.supTextTopPadding)

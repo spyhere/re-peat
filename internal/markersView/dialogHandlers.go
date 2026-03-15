@@ -17,16 +17,16 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 		// TODO: Interface needed
 		switch m.dialogOwner {
 		case edit:
-			m.markerDialog.blur(gtx)
+			m.markerDialog.blur()
 		}
 	}
 	if m.dialog.Body.Clicked(gtx) {
-		m.markerDialog.blur(gtx)
+		m.markerDialog.blur()
 	}
 	if m.dialog.Ok.Clicked(gtx) {
 		switch m.dialogOwner {
 		case edit:
-			m.confirmEdit(gtx)
+			m.confirmEdit()
 		case tagFilter:
 			m.confirmTagFilter()
 		case deleteAll:
@@ -38,17 +38,17 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 		common.SetCursor(gtx, cursor)
 		gtx.Execute(op.InvalidateCmd{})
 	}
-	m.markerDialog.handleFieldsEvents(gtx)
+	m.markerDialog.handleFieldsEvents()
 
 	if cursor, ok := m.tagsDialog.getCursorAndHandleEvents(gtx); ok {
 		common.SetCursor(gtx, cursor)
 	}
 }
 
-func (m *MarkersView) confirmEdit(gtx layout.Context) {
+func (m *MarkersView) confirmEdit() {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)
-	m.blur(gtx)
+	m.blur()
 	m.closeDialog()
 }
 func (m *MarkersView) confirmTagFilter() {
