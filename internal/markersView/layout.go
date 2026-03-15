@@ -225,6 +225,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
 	})
 
+	m.fm.PlaceScrim(gtx)
 	if cursor, ok := m.searchbar.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}

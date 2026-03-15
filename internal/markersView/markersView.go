@@ -27,6 +27,7 @@ type Props struct {
 }
 
 func NewMarkersView(props Props) *MarkersView {
+	fm := &common.FocusManager{}
 	mView := &MarkersView{
 		audio:        props.Audio,
 		th:           props.Th,
@@ -34,7 +35,8 @@ func NewMarkersView(props Props) *MarkersView {
 		p:            props.Player,
 		hotKeyBuf:    make([]rune, 0, selectionRuneLimit),
 		dialog:       props.Dialog,
-		searchbar:    &common.Inputable{},
+		searchbar:    &common.Inputable{Focuser: fm},
+		fm:           fm,
 		replayButton: &widget.Clickable{},
 		tagButton:    &widget.Clickable{},
 		deleteButton: &widget.Clickable{},
@@ -86,6 +88,7 @@ type MarkersView struct {
 	th           *theme.RepeatTheme
 	table        *common.Table[*tm.TimeMarker]
 	searchbar    *common.Inputable
+	fm           *common.FocusManager
 	replayButton *widget.Clickable
 	tagButton    *widget.Clickable
 	deleteButton *widget.Clickable
