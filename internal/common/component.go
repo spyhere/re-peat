@@ -375,7 +375,6 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 		Size:       contArea,
 		Color:      c.Bg,
 		R:          theme.CornerR(0, 0, inputSpecs.shape, inputSpecs.shape),
-		Clickable:  &props.Clickable,
 		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
 	gtx.Constraints.Max.Y = defaultH
@@ -456,7 +455,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 		})
 	}
 	// Hover layer
-	if props.Hovered() {
+	if props.IsHovered() {
 		DrawBox(gtx, Box{
 			Size:  contArea,
 			Color: th.Palette.Input.Hovered.Bg,

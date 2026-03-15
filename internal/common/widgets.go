@@ -33,9 +33,8 @@ type Inputable struct {
 	shouldResetCaret    bool
 	widget.List
 	widget.Editor
-	widget.Clickable // TODO: this is also redundant, input fields doesnt have ripple animation according to md3
-	Cancel           widget.Clickable
-	Focuser          Focuser // To manage focus between multiple inputables
+	Cancel  widget.Clickable
+	Focuser Focuser // To manage focus between multiple inputables
 }
 
 func (in *Inputable) Update(gtx layout.Context) {
