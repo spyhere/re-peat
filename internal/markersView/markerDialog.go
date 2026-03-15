@@ -105,7 +105,7 @@ func (m *markerDialog) handleFieldsEvents() {
 
 func (m *markerDialog) getCursorType() (pointer.Cursor, bool) {
 	if m.nameField.IsHovered() || m.timeField.IsHovered() || m.tagsField.IsHovered() {
-		return pointer.CursorPointer, true
+		return pointer.CursorText, true
 	}
 	return pointer.CursorDefault, false
 }

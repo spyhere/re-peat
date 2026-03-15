@@ -154,11 +154,7 @@ func (in *Inputable) IsFocused() bool {
 
 func (in *Inputable) GetCursorType() (cursor pointer.Cursor, ok bool) {
 	if in.IsHovered() {
-		if in.IsFocused() {
-			return pointer.CursorText, true
-		} else {
-			return pointer.CursorPointer, true
-		}
+		return pointer.CursorText, true
 	}
 	if in.Cancel.Hovered() {
 		return pointer.CursorPointer, true
