@@ -77,6 +77,7 @@ func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
 			chips:        m.markerDialog.tags,
 			totalSeconds: m.audio.Seconds,
 			tagOptions:   m.markerDialog.getTagOptions(),
+			fm:           m.markerDialog.focuser,
 		})
 	})
 	m.dialog.Show()

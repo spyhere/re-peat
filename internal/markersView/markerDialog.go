@@ -32,7 +32,7 @@ type markerDialog struct {
 	nameField     *common.Inputable
 	timeField     *common.Inputable
 	tagsField     *common.Inputable
-	focuser       common.Focuser
+	focuser       *common.FocusManager
 }
 
 func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, a audio.Audio, allChips map[string]struct{}) {

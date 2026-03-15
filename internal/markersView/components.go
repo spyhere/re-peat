@@ -57,12 +57,13 @@ type markerDialogFieldsProps struct {
 	chips        []string
 	totalSeconds float64
 	tagOptions   []common.ComboboxOption
+	fm           *common.FocusManager
 }
 
 func drawMarkerDialogFields(gtx layout.Context, th *theme.RepeatTheme, props markerDialogFieldsProps) layout.Dimensions {
 	s := drawMarkerDialogSpecs
 	inset := layout.Inset{Top: s.fieldsYMargin, Bottom: s.fieldsYMargin, Left: s.fieldsXMargin, Right: s.fieldsXMargin}
-	return inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+	dims := inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		gapPx := gtx.Dp(s.gap)
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
@@ -110,4 +111,6 @@ func drawMarkerDialogFields(gtx layout.Context, th *theme.RepeatTheme, props mar
 			)
 		})
 	})
+	props.fm.PlaceScrim(gtx)
+	return dims
 }
