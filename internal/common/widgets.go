@@ -589,7 +589,7 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 }
 
 func (d *Dialog) GetCursorType() (pointer.Cursor, bool) {
-	if d.Scrim.Hovered() || d.Cancel.Hovered() || d.Ok.Hovered() {
+	if d.Cancel.Hovered() || d.Ok.Hovered() {
 		return pointer.CursorPointer, true
 	}
 	return pointer.CursorDefault, false
