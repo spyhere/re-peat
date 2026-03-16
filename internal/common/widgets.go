@@ -110,34 +110,40 @@ func (in *Inputable) Focus(gtx layout.Context) {
 	in.isFocused = true
 }
 
+// This is designed for frequent reads, but can be inaccurate.
+// If you need accuracy use Editor's Text method
 func (in *Inputable) GetInput() string {
-	if in.isDirty {
-		in.value = in.Editor.Text()
-		in.isDirty = false
-	}
 	return in.value
+}
+
+func (in *Inputable) IsDirty() bool {
+	if in.isDirty {
+		in.isDirty = false
+		return true
+	}
+	return in.isDirty
 }
 
 func (in *Inputable) HasSelection() bool {
 	if in.hasSelection {
-		in.hasSelection = !in.hasSelection
-		return !in.hasSelection
+		in.hasSelection = false
+		return true
 	}
 	return false
 }
 
 func (in *Inputable) HasSubmit() bool {
 	if in.hasSubmitted {
-		in.hasSubmitted = !in.hasSubmitted
-		return !in.hasSubmitted
+		in.hasSubmitted = false
+		return true
 	}
 	return false
 }
 
 func (in *Inputable) HasEmptyDeleteEvent() bool {
 	if in.hasEmptyDeleteEvent {
-		in.hasEmptyDeleteEvent = !in.hasEmptyDeleteEvent
-		return !in.hasEmptyDeleteEvent
+		in.hasEmptyDeleteEvent = false
+		return true
 	}
 	return false
 }
@@ -196,6 +202,7 @@ func (in *Inputable) processEditorEvents(gtx layout.Context) {
 		switch we.(type) {
 		case widget.ChangeEvent:
 			in.isDirty = true
+			in.value = in.Editor.Text()
 		case widget.SelectEvent:
 			in.hasSelection = true
 		case widget.SubmitEvent:
