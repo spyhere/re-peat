@@ -211,14 +211,40 @@ func (in *Inputable) processEditorEvents(gtx layout.Context) {
 	}
 }
 
+type ComboboxOption struct {
+	Text string
+	Cl   widget.Clickable
+}
 type Comboboxable struct {
 	Inputable
 	optionsLs widget.List
-	selectedV string
+	options   []ComboboxOption
+	selected  string
+}
+
+func (c *Comboboxable) HandleOptionsEvents(gtx layout.Context) {
+	for idx := range c.options {
+		if c.options[idx].Cl.Clicked(gtx) {
+			c.setSelectedValue(c.options[idx].Text)
+		}
+		if c.options[idx].Cl.Hovered() {
+			SetCursor(gtx, pointer.CursorPointer)
+		}
+	}
+}
+
+func (c *Comboboxable) SetOptions(options []string, isFresh bool) {
+	if !isFresh {
+		return
+	}
+	c.options = c.options[:0]
+	for _, it := range options {
+		c.options = append(c.options, ComboboxOption{Text: it})
+	}
 }
 
 func (c *Comboboxable) setSelectedValue(v string) {
-	c.selectedV = v
+	c.selected = v
 }
 
 func (c *Comboboxable) WithFocusManager(f Focuser) *Comboboxable {
@@ -227,9 +253,9 @@ func (c *Comboboxable) WithFocusManager(f Focuser) *Comboboxable {
 }
 
 func (c *Comboboxable) HasSelectedValue() (string, bool) {
-	v := c.selectedV
+	v := c.selected
 	if v != "" {
-		c.selectedV = ""
+		c.selected = ""
 	}
 	return v, v != ""
 }

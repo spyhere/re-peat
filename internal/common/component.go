@@ -518,18 +518,13 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 
 const comboboxMaxDropdown unit.Dp = 128
 
-type ComboboxOption struct {
-	Text string
-	Cl   *widget.Clickable
-}
-
 type ComboboxProps struct {
 	Base InputFieldBase
 	*Comboboxable
 	MaxLen      int
 	Placeholder string
 	Chips       []string
-	Options     []ComboboxOption
+	OptionsF    func() ([]string, bool)
 }
 
 func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
@@ -585,23 +580,23 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 	})
 
 	// Dropdown
-	if props.IsFocused() && len(props.Options) > 0 {
+	options, isOptionsFresh := props.OptionsF()
+	if isOptionsFresh {
+		gtx.Execute(op.InvalidateCmd{})
+	}
+	if props.IsFocused() && len(options) > 0 {
+		props.Comboboxable.SetOptions(options, isOptionsFresh)
 		dropdown, _ := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-			for _, it := range props.Options {
-				if it.Cl.Clicked(gtx) {
-					props.setSelectedValue(it.Text)
-				}
-				if it.Cl.Hovered() {
-					SetCursor(gtx, pointer.CursorPointer)
-				}
-			}
+			props.Comboboxable.HandleOptionsEvents(gtx)
 			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 				ls := &props.optionsLs
 				ls.Axis = layout.Vertical
 				gtx.Constraints.Min = image.Point{}
 				gtx.Constraints.Max = image.Pt(inputFieldDims.Size.X, gtx.Dp(comboboxMaxDropdown))
-				return material.List(th.Theme, ls).Layout(gtx, len(props.Options), func(gtx layout.Context, index int) layout.Dimensions {
-					curOption := props.Options[index]
+				list := material.List(th.Theme, ls)
+				list.AnchorStrategy = material.Overlay
+				return list.Layout(gtx, len(options), func(gtx layout.Context, index int) layout.Dimensions {
+					curOption := &props.Comboboxable.options[index]
 					txt := material.Body2(th.Theme, curOption.Text)
 					gtx.Constraints.Min.X = gtx.Constraints.Max.X
 					txt.LineHeight = inputSpecs.lblHeightBig
@@ -617,7 +612,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 					})
 					DrawBox(gtx, Box{
 						Size:       image.Rect(0, 0, txtDims.Size.X, txtDims.Size.Y),
-						Clickable:  curOption.Cl,
+						Clickable:  &curOption.Cl,
 						Color:      bgC,
 						HideInk:    true,
 						GeometryCb: func() { props.Inputable.Subscribe(gtx) },
@@ -626,6 +621,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 					return txtDims
 				})
 			})
+
 			var dims layout.Dimensions
 			OffsetBy(gtx, image.Pt(0, inputFieldDims.Size.Y), func(gtx layout.Context) {
 				shadowOff := gtx.Dp(2)

@@ -3,12 +3,12 @@ package markersview
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"unicode"
 
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/unit"
-	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
@@ -18,58 +18,57 @@ import (
 func newMarkerDialog(tagLimit int, th *theme.RepeatTheme) markerDialog {
 	fm := &common.FocusManager{}
 	return markerDialog{
-		nameField:     &common.Inputable{Focuser: fm},
-		timeField:     &common.Inputable{Focuser: fm},
-		tagsField:     new(common.Comboboxable).WithFocusManager(fm),
-		tagOptionsMap: make(map[string]common.ComboboxOption, tagLimit),
-		tagOptions:    make([]common.ComboboxOption, 0, tagLimit),
-		focuser:       fm,
-		th:            th,
+		nameField:  &common.Inputable{Focuser: fm},
+		timeField:  &common.Inputable{Focuser: fm},
+		tagsField:  new(common.Comboboxable).WithFocusManager(fm),
+		allTags:    make([]string, tagLimit),
+		tags:       make([]string, tagLimit),
+		tagOptions: make([]string, 0, tagLimit),
+		focuser:    fm,
+		th:         th,
 	}
 }
 
 type markerDialog struct {
 	*tm.TimeMarker
-	tags          []string
-	tagOptionsMap map[string]common.ComboboxOption
-	tagOptions    []common.ComboboxOption
-	nameField     *common.Inputable
-	timeField     *common.Inputable
-	tagsField     *common.Comboboxable
-	focuser       *common.FocusManager
-	th            *theme.RepeatTheme
+	tags       []string
+	allTags    []string
+	tagOptions []string
+	nameField  *common.Inputable
+	timeField  *common.Inputable
+	tagsField  *common.Comboboxable
+	focuser    *common.FocusManager
+	th         *theme.RepeatTheme
 }
 
 func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, a audio.Audio, allChips map[string]struct{}) {
 	for chipName := range allChips {
-		if _, ok := m.tagOptionsMap[chipName]; !ok {
-			m.tagOptionsMap[chipName] = common.ComboboxOption{
-				Text: chipName,
-				Cl:   &widget.Clickable{},
-			}
-		}
+		m.allTags = append(m.allTags, chipName)
 	}
+	slices.Sort(m.allTags)
 
 	m.TimeMarker = curMarker
 	m.nameField.SetText(curMarker.Name)
 	formattedSeconds := common.FormatSeconds(a.GetSecondsFromPCM(curMarker.Pcm))
 	m.timeField.SetText(formattedSeconds)
 	m.tags = slices.Clone(curMarker.CategoryTags)
+	m.tagsField.SetText("")
 }
 
 func (m *markerDialog) executeConfirm(a audio.Audio) {
-	seconds, err := common.ParseSeconds(m.timeField.GetInput())
+	seconds, err := common.ParseSeconds(m.timeField.Text())
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	seconds = min(a.Seconds, seconds)
-	m.TimeMarker.Name = m.nameField.GetInput()
+	m.TimeMarker.Name = m.nameField.Text()
 	m.TimeMarker.Pcm = a.GetPcmFromSeconds(seconds)
 	m.TimeMarker.CategoryTags = m.tags
 	m.TimeMarker = nil
 }
 
+// TODO: redundant
 func (m *markerDialog) blur() {
 	m.focuser.RequestBlur()
 }
@@ -117,20 +116,24 @@ func (m *markerDialog) getCursorType() (pointer.Cursor, bool) {
 
 const suggestionsThreshold = 2
 
-func (m *markerDialog) getTagOptions() []common.ComboboxOption {
-	// Makes no sense unless dropdown situation is resolved
-	return m.tagOptions
-	// input := m.tagsField.GetInput()
-	// m.tagOptions = m.tagOptions[:0]
-	// if len(input) <= suggestionsThreshold {
-	// 	return m.tagOptions
-	// }
-	// for chipName, chipOption := range m.tagOptionsMap {
-	// 	if strings.Contains(strings.ToLower(chipName), strings.ToLower(input)) {
-	// 		m.tagOptions = append(m.tagOptions, chipOption)
-	// 	}
-	// }
-	// return m.tagOptions
+func (m *markerDialog) getTagOptions() (options []string, fresh bool) {
+	isDirty := m.tagsField.IsDirty()
+	input := m.tagsField.GetInput()
+	if !isDirty && len(m.tagOptions) > 0 {
+		return m.tagOptions, false
+	}
+	m.tagOptions = m.tagOptions[:0]
+	if len(input) <= suggestionsThreshold {
+		return m.tagOptions, false
+	}
+	inputLower := strings.ToLower(input)
+	for _, chipName := range m.allTags {
+		suchTagExists := slices.Contains(m.tags, chipName)
+		if !suchTagExists && strings.HasPrefix(strings.ToLower(chipName), inputLower) {
+			m.tagOptions = append(m.tagOptions, chipName)
+		}
+	}
+	return m.tagOptions, true
 }
 
 type drawMarkerDialogSizeSpecs struct {
@@ -192,7 +195,7 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 						Comboboxable: m.tagsField,
 						Chips:        m.tags,
 						MaxLen:       20,
-						Options:      m.getTagOptions(),
+						OptionsF:     m.getTagOptions,
 					})
 				}),
 			)
