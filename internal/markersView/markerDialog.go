@@ -20,7 +20,7 @@ func newMarkerDialog(tagLimit int, th *theme.RepeatTheme) markerDialog {
 	return markerDialog{
 		nameField:     &common.Inputable{Focuser: fm},
 		timeField:     &common.Inputable{Focuser: fm},
-		tagsField:     &common.Inputable{Focuser: fm},
+		tagsField:     new(common.Comboboxable).WithFocusManager(fm),
 		tagOptionsMap: make(map[string]common.ComboboxOption, tagLimit),
 		tagOptions:    make([]common.ComboboxOption, 0, tagLimit),
 		focuser:       fm,
@@ -35,7 +35,7 @@ type markerDialog struct {
 	tagOptions    []common.ComboboxOption
 	nameField     *common.Inputable
 	timeField     *common.Inputable
-	tagsField     *common.Inputable
+	tagsField     *common.Comboboxable
 	focuser       *common.FocusManager
 	th            *theme.RepeatTheme
 }
@@ -157,8 +157,8 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 					inputDims := common.DrawInputField(gtx, m.th, common.InputFieldProps{
 						Base: common.InputFieldBase{
 							LabelText: "Имя",
-							Inputable: m.nameField,
 						},
+						Inputable:   m.nameField,
 						MaxLen:      20,
 						Placeholder: "Новый маркер...",
 					})
@@ -170,8 +170,8 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 					inputDims := common.DrawInputField(gtx, m.th, common.InputFieldProps{
 						Base: common.InputFieldBase{
 							LabelText: "Время",
-							Inputable: m.timeField,
 						},
+						Inputable:   m.timeField,
 						MaxLen:      7,
 						Placeholder: common.FormatSeconds(totalSeconds),
 					})
@@ -183,11 +183,11 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 					return common.DrawCombobox(gtx, m.th, common.ComboboxProps{
 						Base: common.InputFieldBase{
 							LabelText: "Категории",
-							Inputable: m.tagsField,
 						},
-						Chips:   m.tags,
-						MaxLen:  20,
-						Options: m.getTagOptions(),
+						Comboboxable: m.tagsField,
+						Chips:        m.tags,
+						MaxLen:       20,
+						Options:      m.getTagOptions(),
 					})
 				}),
 			)

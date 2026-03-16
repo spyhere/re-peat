@@ -334,11 +334,11 @@ type InputFieldBase struct {
 	LabelText    string
 	LeadingIcon  *widget.Icon
 	TrailingIcon *widget.Icon
-	*Inputable
 }
 
 type inputFieldBaseProps struct {
 	InputFieldBase
+	*Inputable
 	content      func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions
 	chipsPresent bool
 }
@@ -481,7 +481,8 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 }
 
 type InputFieldProps struct {
-	Base        InputFieldBase
+	Base InputFieldBase
+	*Inputable
 	MaxLen      int
 	Filter      string
 	Placeholder string
@@ -489,15 +490,15 @@ type InputFieldProps struct {
 
 func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldProps) layout.Dimensions {
 	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
-		props.Base.Editor.MaxLen = props.MaxLen
-		props.Base.Editor.SingleLine = true
-		props.Base.Editor.Submit = true
-		props.Base.Editor.Filter = props.Filter
+		props.Editor.MaxLen = props.MaxLen
+		props.Editor.SingleLine = true
+		props.Editor.Submit = true
+		props.Editor.Filter = props.Filter
 		placeholder := ""
-		if props.Base.IsFocused() {
+		if props.IsFocused() {
 			placeholder = props.Placeholder
 		}
-		ed := material.Editor(th.Theme, &props.Base.Editor, placeholder)
+		ed := material.Editor(th.Theme, &props.Editor, placeholder)
 		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
 		ed.LineHeight = inputSpecs.lblHeightBig
@@ -510,6 +511,7 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 	}
 	return drawInputFieldBase(gtx, th, inputFieldBaseProps{
 		InputFieldBase: props.Base,
+		Inputable:      props.Inputable,
 		content:        editorRender,
 	})
 }
@@ -522,7 +524,8 @@ type ComboboxOption struct {
 }
 
 type ComboboxProps struct {
-	Base        InputFieldBase
+	Base InputFieldBase
+	*Comboboxable
 	MaxLen      int
 	Placeholder string
 	Chips       []string
@@ -532,13 +535,13 @@ type ComboboxProps struct {
 
 func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
 	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
-		props.Base.Editor.MaxLen = props.MaxLen
-		props.Base.Editor.Submit = true
+		props.Editor.MaxLen = props.MaxLen
+		props.Editor.Submit = true
 		placeholder := ""
-		if props.Base.IsFocused() {
+		if props.IsFocused() {
 			placeholder = props.Placeholder
 		}
-		ed := material.Editor(th.Theme, &props.Base.Editor, placeholder)
+		ed := material.Editor(th.Theme, &props.Editor, placeholder)
 		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
 		ed.LineHeight = inputSpecs.lblHeightBig
@@ -577,6 +580,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 	}
 	inputFieldDims := drawInputFieldBase(gtx, th, inputFieldBaseProps{
 		InputFieldBase: props.Base,
+		Inputable:      &props.Inputable,
 		content:        editorRender,
 		chipsPresent:   len(props.Chips) > 0,
 	})
@@ -588,7 +592,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 		*props.Dropdown, _ = MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			x0, y0 := AbsoluteOffset.X-inputFieldDims.Size.X/2, AbsoluteOffset.Y+inputFieldDims.Size.Y
 			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-				ls := &props.Base.Inputable.List
+				ls := &props.List
 				ls.Axis = layout.Vertical
 				gtx.Constraints.Min = image.Point{}
 				gtx.Constraints.Max = image.Pt(inputFieldDims.Size.X, gtx.Dp(comboboxMaxDropdown))

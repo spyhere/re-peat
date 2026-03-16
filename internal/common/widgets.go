@@ -31,7 +31,6 @@ type Inputable struct {
 	hasSubmitted        bool
 	hasEmptyDeleteEvent bool // delete button has been triggered when editor is empty. Useful for combobox
 	shouldResetCaret    bool
-	widget.List
 	widget.Editor
 	Cancel  widget.Clickable
 	Focuser Focuser // To manage focus between multiple inputables
@@ -81,7 +80,6 @@ func (in *Inputable) requestBlur(gtx layout.Context) {
 }
 
 func (in *Inputable) Blur(gtx layout.Context) {
-	in.List.ScrollTo(0)
 	gtx.Execute(key.FocusCmd{Tag: nil})
 	in.isFocused = false
 	in.shouldResetCaret = true
@@ -204,6 +202,21 @@ func (in *Inputable) processEditorEvents(gtx layout.Context) {
 			in.hasSubmitted = true
 		}
 	}
+}
+
+type Comboboxable struct {
+	Inputable
+	widget.List
+}
+
+func (c *Comboboxable) WithFocusManager(f Focuser) *Comboboxable {
+	c.Inputable.Focuser = f
+	return c
+}
+
+func (c *Comboboxable) Blur(gtx layout.Context) {
+	c.List.ScrollTo(0)
+	c.Inputable.Blur(gtx)
 }
 
 type TableProps[T any] struct {
