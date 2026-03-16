@@ -524,7 +524,7 @@ type ComboboxProps struct {
 	MaxLen      int
 	Placeholder string
 	Chips       []string
-	OptionsF    func() ([]string, bool)
+	OptionsF    func() []string // This is a function since editor events are happening before rendering dropdown
 }
 
 func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
@@ -580,12 +580,9 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 	})
 
 	// Dropdown
-	options, isOptionsFresh := props.OptionsF()
-	if isOptionsFresh {
-		gtx.Execute(op.InvalidateCmd{})
-	}
+	options := props.OptionsF()
 	if props.IsFocused() && len(options) > 0 {
-		props.Comboboxable.SetOptions(options, isOptionsFresh)
+		props.Comboboxable.SetOptions(options)
 		dropdown, _ := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			props.Comboboxable.HandleOptionsEvents(gtx)
 			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {

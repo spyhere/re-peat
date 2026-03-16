@@ -233,14 +233,15 @@ func (c *Comboboxable) HandleOptionsEvents(gtx layout.Context) {
 	}
 }
 
-func (c *Comboboxable) SetOptions(options []string, isFresh bool) {
-	if !isFresh {
-		return
+func (c *Comboboxable) SetOptions(options []string) {
+	for idx, it := range options {
+		if idx < len(c.options) {
+			c.options[idx].Text = it
+		} else {
+			c.options = append(c.options, ComboboxOption{Text: it})
+		}
 	}
-	c.options = c.options[:0]
-	for _, it := range options {
-		c.options = append(c.options, ComboboxOption{Text: it})
-	}
+	c.options = c.options[:len(options)]
 }
 
 func (c *Comboboxable) setSelectedValue(v string) {

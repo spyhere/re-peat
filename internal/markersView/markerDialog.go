@@ -42,6 +42,7 @@ type markerDialog struct {
 }
 
 func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, a audio.Audio, allChips map[string]struct{}) {
+	m.allTags = m.allTags[:0]
 	for chipName := range allChips {
 		m.allTags = append(m.allTags, chipName)
 	}
@@ -116,16 +117,17 @@ func (m *markerDialog) getCursorType() (pointer.Cursor, bool) {
 
 const suggestionsThreshold = 2
 
-func (m *markerDialog) getTagOptions() (options []string, fresh bool) {
+func (m *markerDialog) getTagOptions() []string {
 	isDirty := m.tagsField.IsDirty()
-	input := m.tagsField.GetInput()
 	if !isDirty && len(m.tagOptions) > 0 {
-		return m.tagOptions, false
+		return m.tagOptions
 	}
+	input := m.tagsField.GetInput()
 	m.tagOptions = m.tagOptions[:0]
 	if len(input) <= suggestionsThreshold {
-		return m.tagOptions, false
+		return m.tagOptions
 	}
+
 	inputLower := strings.ToLower(input)
 	for _, chipName := range m.allTags {
 		suchTagExists := slices.Contains(m.tags, chipName)
@@ -133,7 +135,7 @@ func (m *markerDialog) getTagOptions() (options []string, fresh bool) {
 			m.tagOptions = append(m.tagOptions, chipName)
 		}
 	}
-	return m.tagOptions, true
+	return m.tagOptions
 }
 
 type drawMarkerDialogSizeSpecs struct {
