@@ -5,6 +5,12 @@ import "image/color"
 var repeatPalette = palette{
 	Backdrop: argb(0xdd000000),
 	Divider:  rgb(0xCAC4D0),
+	ComboOption: comboOptionStatesPalette{
+		Hovered: comboOptionPalette{
+			Bg: rgb(0x7EB6D7),
+			Fg: rgb(0xffffff),
+		},
+	},
 	Selection: selectionPalette{
 		Bg: yellow,
 		Fg: black,
@@ -104,6 +110,7 @@ var (
 type palette struct {
 	Backdrop      color.NRGBA
 	Divider       color.NRGBA
+	ComboOption   comboOptionStatesPalette
 	Selection     selectionPalette
 	Chip          chipStatesPalette
 	IconButton    iconButtonStatesPalette
@@ -114,6 +121,13 @@ type palette struct {
 	SegButtons    segButtonsStatesPalette
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette
+}
+type comboOptionStatesPalette struct {
+	Hovered comboOptionPalette
+}
+type comboOptionPalette struct {
+	Bg color.NRGBA
+	Fg color.NRGBA
 }
 
 type selectionPalette struct {

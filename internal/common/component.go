@@ -529,7 +529,6 @@ type ComboboxProps struct {
 	MaxLen      int
 	Placeholder string
 	Chips       []string
-	Dropdown    *op.CallOp
 	Options     []ComboboxOption
 }
 
@@ -586,13 +585,18 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 	})
 
 	// Dropdown
-	if len(props.Options) > 0 {
-		// This is not working when inside macro. There is no other way to center/align it without macro
-		// Remove cringy AbsoluteOffset
-		*props.Dropdown, _ = MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-			x0, y0 := AbsoluteOffset.X-inputFieldDims.Size.X/2, AbsoluteOffset.Y+inputFieldDims.Size.Y
+	if props.IsFocused() && len(props.Options) > 0 {
+		dropdown, _ := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+			for _, it := range props.Options {
+				if it.Cl.Clicked(gtx) {
+					props.setSelectedValue(it.Text)
+				}
+				if it.Cl.Hovered() {
+					SetCursor(gtx, pointer.CursorPointer)
+				}
+			}
 			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-				ls := &props.List
+				ls := &props.optionsLs
 				ls.Axis = layout.Vertical
 				gtx.Constraints.Min = image.Point{}
 				gtx.Constraints.Max = image.Pt(inputFieldDims.Size.X, gtx.Dp(comboboxMaxDropdown))
@@ -603,32 +607,46 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 					txt.LineHeight = inputSpecs.lblHeightBig
 					txt.TextSize = inputSpecs.lblSizeBig
 					txt.Alignment = text.Middle
-					dims := layout.UniformInset(5).Layout(gtx, txt.Layout)
-					DrawBox(gtx, Box{
-						Size:      image.Rect(0, 0, dims.Size.X, dims.Size.Y),
-						Clickable: curOption.Cl,
-						HideInk:   true,
+					var bgC color.NRGBA
+					if curOption.Cl.Hovered() {
+						bgC = th.Palette.ComboOption.Hovered.Bg
+						txt.Color = th.Palette.ComboOption.Hovered.Fg
+					}
+					txtM, txtDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+						return layout.UniformInset(5).Layout(gtx, txt.Layout)
 					})
-					return dims
+					DrawBox(gtx, Box{
+						Size:       image.Rect(0, 0, txtDims.Size.X, txtDims.Size.Y),
+						Clickable:  curOption.Cl,
+						Color:      bgC,
+						HideInk:    true,
+						GeometryCb: func() { props.Inputable.Subscribe(gtx) },
+					})
+					txtM.Add(gtx.Ops)
+					return txtDims
 				})
 			})
 			var dims layout.Dimensions
-			OffsetBy(gtx, image.Pt(x0, y0), func(gtx layout.Context) {
+			OffsetBy(gtx, image.Pt(0, inputFieldDims.Size.Y), func(gtx layout.Context) {
 				shadowOff := gtx.Dp(2)
+				shape := inputSpecs.shape
 				DrawBox(gtx, Box{
 					Size:  image.Rect(0, 0, shadowOff+inputFieldDims.Size.X, shadowOff+lsDims.Size.Y),
 					Color: th.Palette.Backdrop,
-					R:     theme.CornerR(4, 4, 0, 0),
+					R:     theme.CornerR(shape, shape, 0, 0),
 				})
+				bgC := th.Palette.Input.Enabled.Bg
+				bgC.A = 0x77
 				dims = DrawBox(gtx, Box{
 					Size:  image.Rect(0, 0, inputFieldDims.Size.X, lsDims.Size.Y),
-					Color: th.Palette.Input.Enabled.Bg,
-					R:     theme.CornerR(4, 4, 0, 0),
+					Color: bgC,
+					R:     theme.CornerR(shape, shape, 0, 0),
 				})
 				lsM.Add(gtx.Ops)
 			})
 			return dims
 		})
+		op.Defer(gtx.Ops, dropdown)
 	}
 	return inputFieldDims
 }

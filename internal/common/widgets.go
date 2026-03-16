@@ -206,7 +206,12 @@ func (in *Inputable) processEditorEvents(gtx layout.Context) {
 
 type Comboboxable struct {
 	Inputable
-	widget.List
+	optionsLs widget.List
+	selectedV string
+}
+
+func (c *Comboboxable) setSelectedValue(v string) {
+	c.selectedV = v
 }
 
 func (c *Comboboxable) WithFocusManager(f Focuser) *Comboboxable {
@@ -214,8 +219,16 @@ func (c *Comboboxable) WithFocusManager(f Focuser) *Comboboxable {
 	return c
 }
 
+func (c *Comboboxable) HasSelectedValue() (string, bool) {
+	v := c.selectedV
+	if v != "" {
+		c.selectedV = ""
+	}
+	return v, v != ""
+}
+
 func (c *Comboboxable) Blur(gtx layout.Context) {
-	c.List.ScrollTo(0)
+	c.optionsLs.ScrollTo(0)
 	c.Inputable.Blur(gtx)
 }
 
