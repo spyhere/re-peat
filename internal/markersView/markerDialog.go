@@ -98,6 +98,11 @@ func (m *markerDialog) handleFieldsEvents() {
 		m.tags = append(m.tags, newTag)
 		m.tagsField.SetText("")
 	}
+	if v, ok := m.tagsField.HasSelectedValue(); ok {
+		m.tags = append(m.tags, v)
+		m.tagsField.SetText("")
+		m.tagOptions = m.tagOptions[:0]
+	}
 	if len(m.tags) > 0 && m.tagsField.HasEmptyDeleteEvent() {
 		m.tags = m.tags[:len(m.tags)-1]
 	}
