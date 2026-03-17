@@ -262,6 +262,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		if text == "" {
 			text = props.DefaultText
 		}
+		gtx.Constraints.Min = image.Point{}
 		ed := material.Editor(th.Theme, &props.Editor, text)
 		ed.Font.Typeface = "Roboto"
 		ed.Color = c.Text
