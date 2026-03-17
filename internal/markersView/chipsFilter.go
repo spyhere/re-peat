@@ -8,23 +8,19 @@ import (
 func newChipsFilter(capacity int) chipsFilter {
 	return chipsFilter{
 		all:        make(map[string]struct{}, capacity),
-		enabled:    make(map[string]struct{}, capacity),
-		enabledBuf: make([]string, 0, capacity),
+		enabledMap: make(map[string]struct{}, capacity),
+		enabled:    make([]string, 0, capacity),
 	}
 }
 
 type chipsFilter struct {
 	all        map[string]struct{}
-	enabled    map[string]struct{}
-	enabledBuf []string
+	enabledMap map[string]struct{} // optimisation to quickly look up when creating tags filter masonry
+	enabled    []string
 }
 
 func (c *chipsFilter) getEnabledChips() []string {
-	c.enabledBuf = c.enabledBuf[:0]
-	for chipName := range c.enabled {
-		c.enabledBuf = append(c.enabledBuf, chipName)
-	}
-	return c.enabledBuf
+	return c.enabled
 }
 
 func (c *chipsFilter) purge() {
@@ -33,6 +29,7 @@ func (c *chipsFilter) purge() {
 	}
 }
 
+// Calculate all unique tags from all markers
 func (c *chipsFilter) recreate(markers tm.TimeMarkers) {
 	c.purge()
 	for _, marker := range markers {
@@ -42,6 +39,7 @@ func (c *chipsFilter) recreate(markers tm.TimeMarkers) {
 	}
 }
 
+// Update all tags with unique tags if there are any
 func (c *chipsFilter) updateAll(tags []string) {
 	for _, tag := range tags {
 		if _, ok := c.all[tag]; !ok {
@@ -50,13 +48,16 @@ func (c *chipsFilter) updateAll(tags []string) {
 	}
 }
 
+// Update list of enabled tags
 func (c *chipsFilter) updateEnabled(chips []*common.FilterChip) {
-	for chip := range c.enabled {
-		delete(c.enabled, chip)
+	c.enabled = c.enabled[:0]
+	for chip := range c.enabledMap {
+		delete(c.enabledMap, chip)
 	}
 	for _, filterChip := range chips {
 		if filterChip.Selected {
-			c.enabled[filterChip.Text] = struct{}{}
+			c.enabled = append(c.enabled, filterChip.Text)
+			c.enabledMap[filterChip.Text] = struct{}{}
 		}
 	}
 }

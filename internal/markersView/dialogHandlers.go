@@ -79,7 +79,7 @@ const maxFilterW unit.Dp = 350
 func (m *MarkersView) openTagsFilterDialog() {
 	m.dialogOwner = tagFilter
 	m.chipsFilter.recreate(*m.timeMarkers)
-	filterChips := m.tagsDialog.createFreshChips(m.chipsFilter.all, m.chipsFilter.enabled)
+	filterChips := m.tagsDialog.createFreshChips(m.chipsFilter.all, m.chipsFilter.enabledMap)
 	m.dialog.Basic(m.th, "Tags Filter", func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X = gtx.Dp(maxFilterW)
 		return common.DrawChipsFilter(gtx, m.th, filterChips)
