@@ -367,7 +367,7 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 	})
 }
 
-const headerHDP = 40
+const headerHDP = 42
 const cellMarginDP = 5
 const rowHeightDP = 50
 
