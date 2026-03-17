@@ -367,19 +367,19 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 	})
 }
 
-const headerHDP = 42
-const cellMarginDP = 5
-const rowHeightDP = 50
+const headerH unit.Dp = 42
+const cellMargin unit.Dp = 5
+const rowHeight unit.Dp = 50
 
 func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargin int) {
-	headerH := gtx.Dp(headerHDP)
+	headerH := gtx.Dp(headerH)
 	for colIdx, it := range t.headCellFuncs {
 		t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			columnDims := layout.Dimensions{Size: image.Pt(t.columnWidths[colIdx], headerH)}
 			gtx.Constraints.Max = columnDims.Size
 			gtx.Constraints.Min = columnDims.Size
 			cellAl := t.hCellsAllignment[colIdx]
-			layout.UniformInset(cellMarginDP).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			layout.UniformInset(cellMargin).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return cellAl.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return it(gtx)
 				})
@@ -389,7 +389,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 	}
 	layout.Flex{}.Layout(gtx, t.cellsBuf...)
 
-	rowH := gtx.Dp(rowHeightDP)
+	rowH := gtx.Dp(rowHeight)
 	OffsetBy(gtx, image.Pt(0, headerH), func(gtx layout.Context) {
 		DrawDivider(gtx, th, DividerProps{})
 		gtx.Constraints.Max.Y -= bottomMargin
@@ -405,7 +405,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 					gtx.Constraints.Max = columnDims.Size
 					gtx.Constraints.Min = columnDims.Size
 
-					layout.UniformInset(cellMarginDP).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					layout.UniformInset(cellMargin).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						return cellAl.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 							return it(gtx, rowIdx, rowValue)
 						})
