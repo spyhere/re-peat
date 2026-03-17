@@ -32,6 +32,7 @@ type Inputable struct {
 	hasEmptyDeleteEvent bool // delete button has been triggered when editor is empty. Useful for combobox
 	shouldResetCaret    bool
 	onBlurF             func()
+	sanitizer           func(string) string
 	widget.Editor
 	Cancel  widget.Clickable
 	Focuser Focuser // To manage focus between multiple inputables
@@ -70,6 +71,10 @@ func (in *Inputable) Update(gtx layout.Context) {
 func (in *Inputable) Subscribe(gtx layout.Context) {
 	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 	event.Op(gtx.Ops, &in.Editor)
+}
+
+func (in *Inputable) SetSanitizer(f func(string) string) {
+	in.sanitizer = f
 }
 
 func (in *Inputable) requestBlur(gtx layout.Context) {
@@ -210,6 +215,14 @@ func (in *Inputable) processEditorEvents(gtx layout.Context) {
 		case widget.ChangeEvent:
 			in.isDirty = true
 			in.value = in.Editor.Text()
+			if in.sanitizer != nil {
+				clean := in.sanitizer(in.value)
+				if clean != in.value {
+					in.value = clean
+					in.Editor.SetText(clean)
+					in.Editor.SetCaret(len(clean), len(clean))
+				}
+			}
 		case widget.SelectEvent:
 			in.hasSelection = true
 		case widget.SubmitEvent:
