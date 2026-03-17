@@ -57,7 +57,7 @@ func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
 		return
 	}
 	m.dialogOwner = edit
-	m.markerDialog.prepareForOpening(curMarker, m.audio, m.chipsFilter.all)
+	m.markerDialog.prepareForOpening(curMarker, m.chipsFilter.all)
 
 	m.dialog.Basic(m.th, "Marker Edit", func(gtx layout.Context) layout.Dimensions {
 		return m.markerDialog.Layout(gtx, m.audio.Seconds)

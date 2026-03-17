@@ -3,6 +3,7 @@ package markersview
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -15,9 +16,10 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func newMarkerDialog(tagLimit int, th *theme.RepeatTheme) markerDialog {
+func newMarkerDialog(tagLimit int, th *theme.RepeatTheme, a audio.Audio) markerDialog {
 	fm := &common.FocusManager{}
 	return markerDialog{
+		a:          a,
 		nameField:  &common.Inputable{Focuser: fm},
 		timeField:  &common.Inputable{Focuser: fm},
 		tagsField:  new(common.Comboboxable).WithFocusManager(fm),
@@ -31,6 +33,7 @@ func newMarkerDialog(tagLimit int, th *theme.RepeatTheme) markerDialog {
 
 type markerDialog struct {
 	*tm.TimeMarker
+	a          audio.Audio
 	tags       []string
 	allTags    []string
 	tagOptions []string
@@ -41,7 +44,7 @@ type markerDialog struct {
 	th         *theme.RepeatTheme
 }
 
-func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, a audio.Audio, allChips map[string]struct{}) {
+func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, allChips map[string]struct{}) {
 	m.allTags = m.allTags[:0]
 	for chipName := range allChips {
 		m.allTags = append(m.allTags, chipName)
@@ -50,7 +53,7 @@ func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, a audio.Audio
 
 	m.TimeMarker = curMarker
 	m.nameField.SetText(curMarker.Name)
-	formattedSeconds := common.FormatSeconds(a.GetSecondsFromPCM(curMarker.Pcm))
+	formattedSeconds := common.FormatSeconds(m.a.GetSecondsFromPCM(curMarker.Pcm))
 	m.timeField.SetText(formattedSeconds)
 	m.tags = slices.Clone(curMarker.CategoryTags)
 	m.tagsField.SetText("")
@@ -69,11 +72,50 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker = nil
 }
 
+func (m *markerDialog) normalizeTimeInput() {
+	var minutes, seconds int
+	var err error
+	defer func() {
+		if err != nil {
+			// TODO: display validation error
+			fmt.Println(err)
+		}
+	}()
+
+	v := m.timeField.GetInput()
+	if !strings.Contains(v, ":") {
+		seconds, err = strconv.Atoi(v)
+		if err != nil {
+			return
+		}
+	} else {
+		parts := strings.SplitN(v, ":", 2)
+		if len(parts) != 2 {
+			err = fmt.Errorf("Invalid time format")
+			return
+		}
+		minutesStr, secondsStr := parts[0], parts[1]
+		minutes, err = strconv.Atoi(minutesStr)
+		if err != nil {
+			return
+		}
+		seconds, err = strconv.Atoi(secondsStr)
+		if err != nil {
+			return
+		}
+	}
+	maxSeconds := min(minutes*60+seconds, int(m.a.Seconds))
+	minutes = maxSeconds / 60
+	seconds = maxSeconds % 60
+	m.timeField.SetText(fmt.Sprintf("%02d:%02d", minutes, seconds))
+}
+
 func (m *markerDialog) handleFieldsEvents() {
 	if m.nameField.HasSubmit() {
 		m.focuser.RequestFocus(m.timeField)
 	}
 	if m.timeField.HasSubmit() {
+		m.normalizeTimeInput()
 		m.focuser.RequestFocus(m.tagsField)
 	}
 	if m.tagsField.HasSubmit() {
