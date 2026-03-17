@@ -10,6 +10,7 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/unit"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
@@ -95,20 +96,25 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if m.tagButton.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				iconDims := drawClickableIcon(gtx, m.th, clickableIconProps{
-					icon:     micons.Filter,
-					iconSize: 24,
-					cl:       m.tagButton,
-					disabled: len(m.chipsFilter.all) == 0,
-				})
+				var gap unit.Dp = 5
 				gtx.Constraints.Min = image.Point{}
-				txt := material.Body2(m.th.Theme, "Tags")
-				txt.Font.Weight = font.Bold
-				var textDim layout.Dimensions
-				common.OffsetBy(gtx, image.Pt(iconDims.Size.X, 0), func(gtx layout.Context) {
-					textDim = txt.Layout(gtx)
-				})
-				return layout.Dimensions{Size: image.Pt(iconDims.Size.X+textDim.Size.X, textDim.Size.Y)}
+				return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return drawClickableIcon(gtx, m.th, clickableIconProps{
+							icon:     micons.Filter,
+							iconSize: 24,
+							cl:       m.tagButton,
+							disabled: len(m.chipsFilter.all) == 0,
+						})
+					}),
+					layout.Rigid(layout.Spacer{Width: gap}.Layout),
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						gtx.Constraints.Min = image.Point{}
+						txt := material.Body2(m.th.Theme, "Tags")
+						txt.Font.Weight = font.Bold
+						return txt.Layout(gtx)
+					}),
+				)
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				return layout.Dimensions{}
@@ -217,7 +223,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				}
 				return drawClickableIcon(gtx, m.th, clickableIconProps{
 					icon:     micons.Delete,
-					iconSize: 26,
+					iconSize: 24,
 					cl:       curMarker.Delete,
 				})
 			},
