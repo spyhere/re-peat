@@ -56,6 +56,7 @@ func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, allChips map[
 	formattedSeconds := common.FormatSeconds(m.a.GetSecondsFromPCM(curMarker.Pcm))
 	m.timeField.SetText(formattedSeconds)
 	m.timeField.OnBlur(m.normalizeTimeInput)
+	m.timeField.SetSanitizer(m.sanitizeTimeInput)
 	m.tags = slices.Clone(curMarker.CategoryTags)
 	m.tagsField.SetText("")
 }
@@ -73,6 +74,20 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker = nil
 }
 
+func (m *markerDialog) sanitizeTimeInput(input string) string {
+	var b strings.Builder
+	isFirstRune, colonSeen := true, false
+	for _, r := range input {
+		if r >= '0' && r <= '9' {
+			b.WriteRune(r)
+		} else if r == ':' && !colonSeen && !isFirstRune {
+			b.WriteRune(r)
+			colonSeen = true
+		}
+		isFirstRune = false
+	}
+	return b.String()
+}
 func (m *markerDialog) normalizeTimeInput() {
 	var minutes, seconds int
 	var err error
