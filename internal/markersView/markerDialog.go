@@ -55,6 +55,7 @@ func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, allChips map[
 	m.nameField.SetText(curMarker.Name)
 	formattedSeconds := common.FormatSeconds(m.a.GetSecondsFromPCM(curMarker.Pcm))
 	m.timeField.SetText(formattedSeconds)
+	m.timeField.OnBlur(m.normalizeTimeInput)
 	m.tags = slices.Clone(curMarker.CategoryTags)
 	m.tagsField.SetText("")
 }
@@ -115,7 +116,6 @@ func (m *markerDialog) handleFieldsEvents() {
 		m.focuser.RequestFocus(m.timeField)
 	}
 	if m.timeField.HasSubmit() {
-		m.normalizeTimeInput()
 		m.focuser.RequestFocus(m.tagsField)
 	}
 	if m.tagsField.HasSubmit() {
