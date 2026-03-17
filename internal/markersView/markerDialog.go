@@ -69,11 +69,6 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker = nil
 }
 
-// TODO: redundant
-func (m *markerDialog) blur() {
-	m.focuser.RequestBlur()
-}
-
 func (m *markerDialog) handleFieldsEvents() {
 	if m.nameField.HasSubmit() {
 		m.focuser.RequestFocus(m.timeField)

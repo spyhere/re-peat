@@ -14,14 +14,6 @@ import (
 func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	if m.dialog.Cancel.Clicked(gtx) || m.dialog.Scrim.Clicked(gtx) {
 		m.closeDialog()
-		// TODO: Interface needed
-		switch m.dialogOwner {
-		case edit:
-			m.markerDialog.blur()
-		}
-	}
-	if m.dialog.Body.Clicked(gtx) {
-		m.markerDialog.blur()
 	}
 	if m.dialog.Ok.Clicked(gtx) {
 		switch m.dialogOwner {
@@ -48,7 +40,6 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 func (m *MarkersView) confirmEdit() {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)
-	m.blur()
 	m.closeDialog()
 }
 func (m *MarkersView) confirmTagFilter() {
