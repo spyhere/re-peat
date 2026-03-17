@@ -29,20 +29,21 @@ type Props struct {
 func NewMarkersView(props Props) *MarkersView {
 	fm := &common.FocusManager{}
 	mView := &MarkersView{
-		audio:        props.Audio,
-		th:           props.Th,
-		timeMarkers:  props.TimeMarkers,
-		p:            props.Player,
-		hotKeyBuf:    make([]rune, 0, selectionRuneLimit),
-		dialog:       props.Dialog,
-		searchbar:    &common.Inputable{Focuser: fm},
-		fm:           fm,
-		replayButton: &widget.Clickable{},
-		tagButton:    &widget.Clickable{},
-		deleteButton: &widget.Clickable{},
-		markerDialog: newMarkerDialog(globalChipsLimit, props.Th),
-		tagsDialog:   newTagsDialog(globalChipsLimit),
-		chipsFilter:  newChipsFilter(globalChipsLimit),
+		audio:         props.Audio,
+		th:            props.Th,
+		timeMarkers:   props.TimeMarkers,
+		p:             props.Player,
+		hotKeyBuf:     make([]rune, 0, selectionRuneLimit),
+		dialog:        props.Dialog,
+		searchbar:     &common.Inputable{Focuser: fm},
+		fm:            fm,
+		replayButton:  &widget.Clickable{},
+		tagButton:     &widget.Clickable{},
+		enabledTagsLs: &widget.List{},
+		deleteButton:  &widget.Clickable{},
+		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th),
+		tagsDialog:    newTagsDialog(globalChipsLimit),
+		chipsFilter:   newChipsFilter(globalChipsLimit),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis:      layout.Vertical,
@@ -82,17 +83,18 @@ const (
 )
 
 type MarkersView struct {
-	p            *p.Player
-	timeMarkers  *tm.TimeMarkers
-	markerInPlay *tm.TimeMarker
-	th           *theme.RepeatTheme
-	table        *common.Table[*tm.TimeMarker]
-	searchbar    *common.Inputable
-	fm           *common.FocusManager
-	replayButton *widget.Clickable
-	tagButton    *widget.Clickable
-	deleteButton *widget.Clickable
-	dialog       *common.Dialog
+	p             *p.Player
+	timeMarkers   *tm.TimeMarkers
+	markerInPlay  *tm.TimeMarker
+	th            *theme.RepeatTheme
+	table         *common.Table[*tm.TimeMarker]
+	searchbar     *common.Inputable
+	fm            *common.FocusManager
+	replayButton  *widget.Clickable
+	tagButton     *widget.Clickable
+	enabledTagsLs *widget.List
+	deleteButton  *widget.Clickable
+	dialog        *common.Dialog
 	dialogOwner
 	markerDialog
 	tagsDialog

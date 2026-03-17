@@ -114,6 +114,20 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 						txt.Font.Weight = font.Bold
 						return txt.Layout(gtx)
 					}),
+					layout.Rigid(layout.Spacer{Width: gap}.Layout),
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						enabledChips := m.chipsFilter.getEnabledChips()
+						inset := layout.Inset{Left: 2, Right: 2}
+						return m.enabledTagsLs.Layout(gtx, len(enabledChips), func(gtx layout.Context, index int) layout.Dimensions {
+							return inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+								return common.DrawChip(gtx, m.th, common.ChipProps{
+									Text:     enabledChips[index],
+									Selected: true,
+									HideIcon: true,
+								})
+							})
+						})
+					}),
 				)
 			},
 			func(gtx layout.Context) layout.Dimensions {
