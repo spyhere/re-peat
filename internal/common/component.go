@@ -721,6 +721,7 @@ var chipSpecs = chipMaterialSpecs{
 type ChipProps struct {
 	Text     string
 	Selected bool
+	HideIcon bool
 	Cl       *widget.Clickable
 }
 
@@ -751,7 +752,9 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 	xPadding := gtx.Dp(chipSpecs.xPadding)
 	chipSize := image.Rect(0, 0, textDim.Size.X+xPadding*2, h)
 	iconSize := gtx.Dp(chipSpecs.iconSize)
-	if props.Selected {
+
+	shouldShowIcon := props.Selected && !props.HideIcon
+	if shouldShowIcon {
 		chipSize.Max.X += iconSize
 	}
 	chipDims := DrawBox(gtx, Box{
@@ -765,7 +768,7 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 
 	// Icon + text
 	textOff := xPadding
-	if props.Selected {
+	if shouldShowIcon {
 		OffsetBy(gtx, image.Pt(xPadding/2, chipSize.Max.Y/2-iconSize/2), func(gtx layout.Context) {
 			gtx.Constraints.Min.X = gtx.Dp(chipSpecs.iconSize)
 			micons.Check.Layout(gtx, c.Text)
