@@ -181,6 +181,7 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 						Base: common.InputFieldBase{
 							LabelText: "Время",
 						},
+						Filter:      "1234567890:",
 						Inputable:   m.timeField,
 						MaxLen:      7,
 						Placeholder: common.FormatSeconds(totalSeconds),
