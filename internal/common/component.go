@@ -641,6 +641,8 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 			return dims
 		})
 		op.Defer(gtx.Ops, dropdown)
+	} else {
+		props.Comboboxable.ResetOptionScroll()
 	}
 	return inputFieldDims
 }

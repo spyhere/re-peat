@@ -264,6 +264,10 @@ func (c *Comboboxable) SetOptions(options []string) {
 	c.options = c.options[:len(options)]
 }
 
+func (c *Comboboxable) ResetOptionScroll() {
+	c.optionsLs.ScrollTo(0)
+}
+
 func (c *Comboboxable) setSelectedValue(v string) {
 	c.selected = v
 }
