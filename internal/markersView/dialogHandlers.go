@@ -2,7 +2,6 @@ package markersview
 
 import (
 	"gioui.org/layout"
-	"gioui.org/op"
 	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
@@ -18,12 +17,6 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	if m.dialog.Ok.Clicked(gtx) {
 		m.confirmDialog()
 	}
-
-	if cursor, ok := m.markerDialog.getCursorType(); ok {
-		common.SetCursor(gtx, cursor)
-		gtx.Execute(op.InvalidateCmd{})
-	}
-	m.markerDialog.handleFieldsEvents()
 
 	if cursor, ok := m.tagsDialog.getCursorAndHandleEvents(gtx); ok {
 		common.SetCursor(gtx, cursor)

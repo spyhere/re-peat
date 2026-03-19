@@ -205,6 +205,10 @@ var drawMarkerDialogSpecs = drawMarkerDialogSizeSpecs{
 }
 
 func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.Dimensions {
+	if cursor, ok := m.getCursorType(); ok {
+		common.SetCursor(gtx, cursor)
+	}
+	m.handleFieldsEvents()
 	s := drawMarkerDialogSpecs
 	inset := layout.Inset{Top: s.fieldsYMargin, Bottom: s.fieldsYMargin, Left: s.fieldsXMargin, Right: s.fieldsXMargin}
 	dims := inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
