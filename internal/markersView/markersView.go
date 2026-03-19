@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/audio"
@@ -77,6 +78,7 @@ type dialogOwner uint8
 
 const (
 	none dialogOwner = iota
+	create
 	edit
 	tagFilter
 	deleteAll
@@ -93,6 +95,7 @@ type MarkersView struct {
 	replayButton  *widget.Clickable
 	tagButton     *widget.Clickable
 	enabledTagsLs *widget.List
+	createButton  *widget.Clickable
 	deleteButton  *widget.Clickable
 	dialog        *common.Dialog
 	dialogOwner
@@ -199,6 +202,18 @@ func (m *MarkersView) clearHotKeyBuf() {
 }
 
 func (m *MarkersView) closeDialog() {
+	if m.dialogOwner == create && m.markerDialog.TimeMarker != nil {
+		m.markerDialog.TimeMarker.MarkDead()
+	}
 	m.dialog.Hide()
 	m.dialogOwner = none
+}
+
+func (m *MarkersView) handleAddMarkerButton(gtx layout.Context) {
+	if m.createButton.Clicked(gtx) {
+		m.openMarkerDialog(m.timeMarkers.NewMarker(0), create, "Creat Marker")
+	}
+	if m.createButton.Hovered() {
+		common.SetCursor(gtx, pointer.CursorPointer)
+	}
 }

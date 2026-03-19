@@ -43,6 +43,9 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			return searchDims
 		})
 	})
+
+	drawAddMarkerButton(gtx, m.th, m.createButton, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
+
 	common.OffsetBy(gtx, image.Pt(0, topM+searchDims.Size.Y+20), func(gtx layout.Context) {
 		common.DrawDivider(gtx, m.th, common.DividerProps{
 			Inset: common.DividerMiddleInset,
@@ -217,7 +220,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Edit.Clicked(gtx) {
-					m.openEditDialog(curMarker)
+					m.openMarkerDialog(curMarker, edit, "Marker Edit")
 				}
 				if curMarker.Edit.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)

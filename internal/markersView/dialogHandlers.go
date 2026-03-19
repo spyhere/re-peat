@@ -17,6 +17,8 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	}
 	if m.dialog.Ok.Clicked(gtx) {
 		switch m.dialogOwner {
+		case create:
+			m.confirmEdit()
 		case edit:
 			m.confirmEdit()
 		case tagFilter:
@@ -52,14 +54,14 @@ func (m *MarkersView) confirmDeleteAll() {
 	m.closeDialog()
 }
 
-func (m *MarkersView) openEditDialog(curMarker *tm.TimeMarker) {
+func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwner, title string) {
 	if curMarker == nil {
 		return
 	}
-	m.dialogOwner = edit
+	m.dialogOwner = owner
 	m.markerDialog.prepareForOpening(curMarker, m.chipsFilter.all)
 
-	m.dialog.Basic(m.th, "Marker Edit", func(gtx layout.Context) layout.Dimensions {
+	m.dialog.Basic(m.th, title, func(gtx layout.Context) layout.Dimensions {
 		return m.markerDialog.Layout(gtx, m.audio.Seconds)
 	})
 	m.dialog.Show()
