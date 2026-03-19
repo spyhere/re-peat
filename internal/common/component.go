@@ -609,12 +609,12 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 						return layout.UniformInset(5).Layout(gtx, txt.Layout)
 					})
 					DrawBox(gtx, Box{
-						Size:       image.Rect(0, 0, txtDims.Size.X, txtDims.Size.Y),
-						Clickable:  &curOption.Cl,
-						Color:      bgC,
-						HideInk:    true,
-						GeometryCb: func() { props.Inputable.Subscribe(gtx) },
+						Size:      image.Rect(0, 0, txtDims.Size.X, txtDims.Size.Y),
+						Clickable: &curOption.Cl,
+						Color:     bgC,
+						HideInk:   true,
 					})
+					props.Inputable.Subscribe(gtx)
 					txtM.Add(gtx.Ops)
 					return txtDims
 				})
