@@ -160,6 +160,10 @@ func (in *Inputable) HasEmptyDeleteEvent() bool {
 	return false
 }
 
+func (in *Inputable) ClearEmptyDeleteEvent() {
+	in.hasEmptyDeleteEvent = false
+}
+
 func (in *Inputable) IsHovered() bool {
 	return in.isHovered
 }
