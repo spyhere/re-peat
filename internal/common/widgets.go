@@ -500,6 +500,10 @@ func (d *Dialog) Hide() {
 	d.icon = nil
 }
 
+func (d *Dialog) protectDialogFromScrim(gtx layout.Context) {
+	event.Op(gtx.Ops, d)
+}
+
 type dialogMaterialSpecs struct {
 	shape              unit.Dp
 	padd               unit.Dp
@@ -654,9 +658,10 @@ func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.Y -= fullPadd
 		size := image.Rect(0, 0, Clamp(minW, innerDims.Size.X+fullPadd, maxW), innerDims.Size.Y)
 		dialogDims := DrawBox(gtx, Box{
-			Size:  size,
-			Color: d.th.Palette.CardBg,
-			R:     theme.CornerR(shape, shape, shape, shape),
+			Size:       size,
+			Color:      d.th.Palette.CardBg,
+			R:          theme.CornerR(shape, shape, shape, shape),
+			GeometryCb: func() { d.protectDialogFromScrim(gtx) },
 		})
 		OffsetBy(gtx, image.Pt(padd, padd), func(gtx layout.Context) {
 			innerM.Add(gtx.Ops)
