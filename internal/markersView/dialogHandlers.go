@@ -13,19 +13,10 @@ import (
 
 func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 	if m.dialog.Cancel.Clicked(gtx) || m.dialog.Scrim.Clicked(gtx) {
-		m.closeDialog()
+		m.cancelDialog()
 	}
 	if m.dialog.Ok.Clicked(gtx) {
-		switch m.dialogOwner {
-		case create:
-			m.confirmEdit()
-		case edit:
-			m.confirmEdit()
-		case tagFilter:
-			m.confirmTagFilter()
-		case deleteAll:
-			m.confirmDeleteAll()
-		}
+		m.confirmDialog()
 	}
 
 	if cursor, ok := m.markerDialog.getCursorType(); ok {
@@ -42,16 +33,13 @@ func (m *MarkersView) dialogUpdate(gtx layout.Context) {
 func (m *MarkersView) confirmEdit() {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)
-	m.closeDialog()
 }
 func (m *MarkersView) confirmTagFilter() {
 	m.chipsFilter.updateEnabled(m.tagsDialog.filterChips)
-	m.closeDialog()
 }
 func (m *MarkersView) confirmDeleteAll() {
 	m.deleteMarkers()
 	m.chipsFilter.purge()
-	m.closeDialog()
 }
 
 func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwner, title string) {

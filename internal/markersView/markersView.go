@@ -41,6 +41,7 @@ func NewMarkersView(props Props) *MarkersView {
 		replayButton:  &widget.Clickable{},
 		tagButton:     &widget.Clickable{},
 		enabledTagsLs: &widget.List{},
+		createButton:  &widget.Clickable{},
 		deleteButton:  &widget.Clickable{},
 		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th, props.Audio),
 		tagsDialog:    newTagsDialog(globalChipsLimit),
@@ -201,9 +202,24 @@ func (m *MarkersView) clearHotKeyBuf() {
 	m.hotKeyBuf = m.hotKeyBuf[:0]
 }
 
-func (m *MarkersView) closeDialog() {
+func (m *MarkersView) cancelDialog() {
 	if m.dialogOwner == create && m.markerDialog.TimeMarker != nil {
 		m.markerDialog.TimeMarker.MarkDead()
+	}
+	m.dialog.Hide()
+	m.dialogOwner = none
+}
+
+func (m *MarkersView) confirmDialog() {
+	switch m.dialogOwner {
+	case create:
+		m.confirmEdit()
+	case edit:
+		m.confirmEdit()
+	case tagFilter:
+		m.confirmTagFilter()
+	case deleteAll:
+		m.confirmDeleteAll()
 	}
 	m.dialog.Hide()
 	m.dialogOwner = none
