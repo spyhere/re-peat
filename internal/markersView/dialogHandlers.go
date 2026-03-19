@@ -40,6 +40,9 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 		return
 	}
 	m.dialogOwner = owner
+	if owner == create {
+		m.focuser.RequestFocus(m.nameField)
+	}
 	m.markerDialog.prepareForOpening(curMarker, m.chipsFilter.all)
 
 	m.dialog.Basic(m.th, title, func(gtx layout.Context) layout.Dimensions {
