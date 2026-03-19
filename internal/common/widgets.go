@@ -250,6 +250,10 @@ func (c *Comboboxable) HandleOptionsEvents(gtx layout.Context) {
 	for idx := range c.options {
 		if c.options[idx].Cl.Clicked(gtx) {
 			c.setSelectedValue(c.options[idx].Text)
+			// When click event is being read "selectedValue" was already checked
+			// and since Gio's idiomatic way is to check for events at the start
+			// of the frame, there is no other way except request a new frame
+			gtx.Execute(op.InvalidateCmd{})
 		}
 		if c.options[idx].Cl.Hovered() {
 			SetCursor(gtx, pointer.CursorPointer)
