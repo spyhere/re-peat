@@ -465,20 +465,24 @@ const (
 )
 
 type Dialog struct {
-	th          *theme.RepeatTheme
-	isOpen      bool
-	variant     dialogType
-	Ok          widget.Clickable
-	OkProps     dialogButton
-	Cancel      widget.Clickable
-	Scrim       widget.Clickable
-	CancelProps dialogButton
-	title       string
-	icon        *widget.Icon
-	iconC       color.NRGBA
-	hasIcon     bool
-	content     func(layout.Context) layout.Dimensions
-	contentLs   widget.List
+	th              *theme.RepeatTheme
+	isOpen          bool
+	isCanceled      bool
+	isConfirmed     bool
+	variant         dialogType
+	Ok              widget.Clickable
+	OkProps         dialogButton
+	Cancel          widget.Clickable
+	Scrim           widget.Clickable
+	CancelProps     dialogButton
+	title           string
+	icon            *widget.Icon
+	iconC           color.NRGBA
+	hasIcon         bool
+	content         func(layout.Context) layout.Dimensions
+	contentLs       widget.List
+	mustRedraw      bool // dialog's show or hide methods could be called via key, that is not requesting invalidation
+	inputBlockArmed bool // disable gtx when modal is open giving 1 extra frame
 }
 
 func (d *Dialog) SetIcon(icon *widget.Icon) {
@@ -505,15 +509,62 @@ func (d *Dialog) Error(th *theme.RepeatTheme, title string, w func(gtx layout.Co
 
 func (d *Dialog) Show() {
 	d.isOpen = true
+	d.mustRedraw = true
 }
-
 func (d *Dialog) Hide() {
 	d.isOpen = false
+	d.mustRedraw = true
 	d.icon = nil
+}
+func (d *Dialog) IsOpen() bool {
+	return d.isOpen
+}
+
+func (d *Dialog) IsCanceled() bool {
+	if d.isCanceled {
+		d.isCanceled = false
+		return true
+	}
+	return false
+}
+func (d *Dialog) IsConfirmed() bool {
+	if d.isConfirmed {
+		d.isConfirmed = false
+		return true
+	}
+	return false
+}
+
+func (d *Dialog) ShouldDisableGtx(gtx layout.Context) bool {
+	if d.isOpen {
+		if !d.inputBlockArmed {
+			d.inputBlockArmed = true
+			// We are giving 1 more frame to finish possible click events
+			gtx.Execute(op.InvalidateCmd{})
+		} else {
+			return true
+		}
+	} else {
+		d.inputBlockArmed = false
+	}
+	return false
 }
 
 func (d *Dialog) protectDialogFromScrim(gtx layout.Context) {
 	event.Op(gtx.Ops, d)
+}
+
+// This should be at the beginning of the frame
+func (d *Dialog) Update(gtx layout.Context) {
+	if !d.isOpen {
+		return
+	}
+	if d.Cancel.Clicked(gtx) || d.Scrim.Clicked(gtx) {
+		d.isCanceled = true
+	}
+	if d.Ok.Clicked(gtx) {
+		d.isConfirmed = true
+	}
 }
 
 type dialogMaterialSpecs struct {
@@ -543,6 +594,12 @@ var dialogSpecs = dialogMaterialSpecs{
 }
 
 func (d *Dialog) Layout(gtx layout.Context) layout.Dimensions {
+	if d.mustRedraw {
+		// pointer requests redraw, but key - not. So using Tab and Enter, could
+		// trigger modal to show/hide, but frame won't be requested by such action
+		gtx.Execute(op.InvalidateCmd{})
+		d.mustRedraw = false
+	}
 	if !d.isOpen {
 		return layout.Dimensions{}
 	}

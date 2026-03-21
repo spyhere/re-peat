@@ -11,10 +11,10 @@ import (
 )
 
 func (m *MarkersView) dialogUpdate(gtx layout.Context) {
-	if m.dialog.Cancel.Clicked(gtx) || m.dialog.Scrim.Clicked(gtx) {
+	if m.dialog.IsCanceled() {
 		m.cancelDialog()
 	}
-	if m.dialog.Ok.Clicked(gtx) {
+	if m.dialog.IsConfirmed() {
 		m.confirmDialog()
 	}
 

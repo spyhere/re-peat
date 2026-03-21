@@ -93,6 +93,12 @@ func (a *App) onStopMarkerEdit() {
 }
 
 func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
+	a.dialog.Update(gtx)
+	gtxEnabled := gtx
+	if a.dialog.ShouldDisableGtx(gtx) {
+		gtx = gtx.Disabled()
+	}
+
 	a.dispatch(gtx)
 	switch a.selectedTab {
 	case Project:
@@ -112,7 +118,7 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	if a.buttons.isPointerHitting {
 		common.SetCursor(gtx, pointer.CursorPointer)
 	}
-	a.dialog.Layout(gtx)
+	a.dialog.Layout(gtxEnabled)
 	if cursor, ok := a.dialog.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}
