@@ -43,6 +43,7 @@ func drawAddMarkerButton(gtx layout.Context, th *theme.RepeatTheme, cl *widget.C
 		iconStyle := material.IconButton(th.Theme, cl, micons.ContentAddCircle, "")
 		iconStyle.Size = 20
 		iconStyle.Inset = layout.UniformInset(7)
+		iconStyle.Background = th.Palette.Editor.SoundWave
 		gtx.Constraints.Min = image.Point{}
 		return iconStyle.Layout(gtx)
 	})
