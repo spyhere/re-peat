@@ -38,12 +38,7 @@ func NewMarkersView(props Props) *MarkersView {
 		dialog:        props.Dialog,
 		searchbar:     &common.Inputable{Focuser: fm},
 		fm:            fm,
-		replayButton:  &widget.Clickable{},
-		tagButton:     &widget.Clickable{},
 		enabledTagsLs: &widget.List{},
-		createButton:  &widget.Clickable{},
-		disabledCl:    &widget.Clickable{},
-		deleteButton:  &widget.Clickable{},
 		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th, props.Audio),
 		tagsDialog:    newTagsDialog(globalChipsLimit),
 		chipsFilter:   newChipsFilter(globalChipsLimit),
@@ -94,12 +89,12 @@ type MarkersView struct {
 	table         *common.Table[*tm.TimeMarker]
 	searchbar     *common.Inputable
 	fm            *common.FocusManager
-	replayButton  *widget.Clickable
-	tagButton     *widget.Clickable
+	replayButton  widget.Clickable
+	tagButton     widget.Clickable
 	enabledTagsLs *widget.List
-	createButton  *widget.Clickable
-	disabledCl    *widget.Clickable
-	deleteButton  *widget.Clickable
+	createButton  widget.Clickable
+	disabledCl    widget.Clickable
+	deleteButton  widget.Clickable
 	dialog        *common.Dialog
 	dialogOwner
 	markerDialog

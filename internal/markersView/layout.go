@@ -44,9 +44,9 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		})
 	})
 
-	cl := m.createButton
+	cl := &m.createButton
 	if !gtx.Enabled() {
-		cl = m.disabledCl
+		cl = &m.disabledCl
 	}
 	drawAddMarkerButton(gtx, m.th, cl, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
 
@@ -82,7 +82,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return drawClickableIcon(gtx, m.th, clickableIconProps{
 					icon:     icon,
 					iconSize: 24,
-					cl:       m.replayButton,
+					cl:       &m.replayButton,
 				})
 			},
 			func(gtx layout.Context) layout.Dimensions {
@@ -110,7 +110,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 						return drawClickableIcon(gtx, m.th, clickableIconProps{
 							icon:     micons.Filter,
 							iconSize: 24,
-							cl:       m.tagButton,
+							cl:       &m.tagButton,
 							disabled: len(m.chipsFilter.all) == 0,
 						})
 					}),
@@ -150,7 +150,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return common.DrawIconButton(gtx, common.IconButtonProps{
 					Icon:  micons.Delete,
 					Th:    m.th,
-					Cl:    m.deleteButton,
+					Cl:    &m.deleteButton,
 					IsOff: len(*m.timeMarkers) == 0,
 				})
 			},
