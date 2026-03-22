@@ -10,7 +10,7 @@ func (m *MarkersView) dispatch(gtx layout.Context) {
 	m.handleAddMarkerButton(gtx)
 
 	isModalOpen := m.dialogOwner != none
-	if !m.searchbar.IsFocused() && !isModalOpen {
+	if !m.searchbar.IsFocused(gtx) && !isModalOpen {
 		m.dispatchKeyEvents(gtx)
 	}
 }

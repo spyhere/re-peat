@@ -231,13 +231,14 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
 	// Hovered layer
+	isFocused := props.IsFocused(gtx)
 	if props.IsHovered() {
 		DrawBox(gtx, Box{
 			Size:  image.Rect(0, 0, containerW, containerH),
 			Color: th.Palette.Search.Hovered.Bg,
 			R:     theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
 		})
-	} else if props.IsFocused() {
+	} else if isFocused {
 		// Focused layer
 		DrawBox(gtx, Box{
 			Size:  image.Rect(0, 0, containerW, containerH),
@@ -251,7 +252,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 
 	// Inner text
 	c := th.Palette.Search.Enabled
-	if props.IsFocused() {
+	if isFocused {
 		c = th.Palette.Search.Pressed
 	}
 	textH := gtx.Sp(searchSpecs.fontLineHeight)
@@ -290,7 +291,6 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	return layout.Dimensions{Size: image.Pt(containerW, containerH)}
 }
 
-// TODO: Should we use Gio's way of hiding this?
 type inputFieldMaterialSpecs struct {
 	shape             int
 	defaultH          unit.Dp
@@ -381,7 +381,8 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	gtx.Constraints.Max.Y = defaultH
 	gtx.Constraints.Max.X = contDims.Size.X
 	indicatorH := gtx.Dp(inputSpecs.bLineUnfocused)
-	if props.IsFocused() {
+	isFocused := props.IsFocused(gtx)
+	if isFocused {
 		indicatorH = gtx.Dp(inputSpecs.bLineFocused)
 	}
 	// Indicator
@@ -408,7 +409,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 		lblTxtAlign := layout.W
 		var lblTxtSize unit.Sp = inputSpecs.lblSizeBig
 		var lblTxtHeight unit.Sp = inputSpecs.lblHeightBig
-		if props.IsFocused() || (props.chipsPresent || len(props.GetInput()) > 0) {
+		if isFocused || (props.chipsPresent || len(props.GetInput()) > 0) {
 			lblTxtAlign = layout.NW
 			lblTxtSize = inputSpecs.lblSizeSmall
 			lblTxtHeight = inputSpecs.lblHeightSmall
@@ -496,7 +497,7 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 		props.Editor.Submit = true
 		props.Editor.Filter = props.Filter
 		placeholder := ""
-		if props.IsFocused() {
+		if props.IsFocused(gtx) {
 			placeholder = props.Placeholder
 		}
 		ed := material.Editor(th.Theme, &props.Editor, placeholder)
@@ -529,11 +530,12 @@ type ComboboxProps struct {
 }
 
 func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
+	isFocused := props.IsFocused(gtx)
 	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
 		props.Editor.MaxLen = props.MaxLen
 		props.Editor.Submit = true
 		placeholder := ""
-		if props.IsFocused() {
+		if isFocused {
 			placeholder = props.Placeholder
 		}
 		ed := material.Editor(th.Theme, &props.Editor, placeholder)
@@ -582,7 +584,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 
 	// Dropdown
 	options := props.OptionsF()
-	if props.IsFocused() && len(options) > 0 {
+	if isFocused && len(options) > 0 {
 		props.Comboboxable.SetOptions(options)
 		dropdown, _ := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			props.Comboboxable.HandleOptionsEvents(gtx)

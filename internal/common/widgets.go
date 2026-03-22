@@ -19,12 +19,13 @@ import (
 
 type Focuser interface {
 	RequestFocus(f Focusable)
+	SetFocus(f Focusable)
 	RequestBlur()
 }
 
 type Inputable struct {
 	isHovered           bool
-	isFocused           bool
+	isFocused           bool // derived from gtx.Focused during layout
 	isDirty             bool
 	value               string
 	hasSelection        bool
@@ -35,7 +36,7 @@ type Inputable struct {
 	sanitizer           func(string) string
 	widget.Editor
 	Cancel  widget.Clickable
-	Focuser Focuser // To manage focus between multiple inputables
+	Focuser // To drop focus when clicking on any non-interactable widget
 }
 
 func (in *Inputable) Update(gtx layout.Context) {
@@ -56,15 +57,10 @@ func (in *Inputable) Update(gtx layout.Context) {
 	in.handleKeys(gtx)
 	in.processEditorEvents(gtx)
 
-	if in.isFocused && !gtx.Focused(&in.Editor) {
-		in.requestBlur(gtx)
-	}
-
 	if in.Cancel.Clicked(gtx) {
 		in.Editor.SetText("")
 		in.value = ""
 		in.requestBlur(gtx)
-		return
 	}
 }
 
@@ -89,7 +85,9 @@ func (in *Inputable) OnBlur(f func()) {
 	in.onBlurF = f
 }
 func (in *Inputable) Blur(gtx layout.Context) {
-	gtx.Execute(key.FocusCmd{Tag: nil})
+	if gtx.Focused(&in.Editor) {
+		gtx.Execute(key.FocusCmd{Tag: nil})
+	}
 	in.isFocused = false
 	in.shouldResetCaret = true
 	if in.onBlurF != nil {
@@ -168,7 +166,11 @@ func (in *Inputable) IsHovered() bool {
 	return in.isHovered
 }
 
-func (in *Inputable) IsFocused() bool {
+func (in *Inputable) IsFocused(gtx layout.Context) bool {
+	in.isFocused = gtx.Focused(&in.Editor)
+	if in.isFocused {
+		in.Focuser.SetFocus(in)
+	}
 	return in.isFocused
 }
 
@@ -757,6 +759,7 @@ type Focusable interface {
 // Focusable that is currently in focus - cancel blur.
 type FocusManager struct {
 	inFocus        Focusable
+	setFocus       Focusable
 	requestedFocus Focusable
 	requestedBlur  Focusable
 	scrimTag       struct{}
@@ -771,7 +774,6 @@ func (fm *FocusManager) blur(gtx layout.Context) {
 }
 func (fm *FocusManager) focus(gtx layout.Context) {
 	if fm.inFocus != fm.requestedFocus {
-		fm.blur(gtx)
 		fm.inFocus = fm.requestedFocus
 		fm.inFocus.Focus(gtx)
 	}
@@ -788,6 +790,10 @@ func (fm *FocusManager) update(gtx layout.Context) {
 		fm.requestedBlur, fm.requestedFocus = nil, nil
 		return
 	}
+	if fm.setFocus != nil {
+		fm.inFocus = fm.setFocus
+		fm.setFocus = nil
+	}
 	if fm.requestedFocus != nil {
 		fm.focus(gtx)
 	}
@@ -795,9 +801,18 @@ func (fm *FocusManager) update(gtx layout.Context) {
 		fm.blur(gtx)
 	}
 }
+
+// Tell FocusManager what has focus at the moment
+func (fm *FocusManager) SetFocus(it Focusable) {
+	fm.setFocus = it
+}
+
+// Request focus programatically
 func (fm *FocusManager) RequestFocus(it Focusable) {
 	fm.requestedFocus = it
 }
+
+// Request Blur programatically
 func (fm *FocusManager) RequestBlur() {
 	fm.requestedBlur = fm.inFocus
 }
