@@ -19,7 +19,6 @@ import (
 
 type Focuser interface {
 	RequestFocus(f Focusable)
-	SetFocus(f Focusable)
 	RequestBlur()
 }
 
@@ -104,9 +103,6 @@ func (in *Inputable) requestFocus(gtx layout.Context) {
 }
 
 func (in *Inputable) selectAllOnFocus() {
-	if in.isFocused {
-		return
-	}
 	line, col := in.Editor.CaretPos()
 	if line == 0 && col == 0 {
 		txtLen := strlen(in.Editor.Text())
@@ -167,9 +163,18 @@ func (in *Inputable) IsHovered() bool {
 }
 
 func (in *Inputable) IsFocused(gtx layout.Context) bool {
+	wasFocused := in.isFocused
 	in.isFocused = gtx.Focused(&in.Editor)
-	if in.isFocused {
-		in.Focuser.SetFocus(in)
+	if in.isFocused && !wasFocused {
+		// Focus operation is selecting the whole text (if clicked outside of editor)
+		// but since focus can happen with keyboard, then selection mechanism will
+		// only happen on the next frame, thus we need to call the next frame.
+		gtx.Execute(op.InvalidateCmd{})
+		in.requestFocus(gtx)
+	} else if !in.isFocused && wasFocused {
+		// Since editor used to be focused on the previous frame, we assume FocusManager
+		// has another target in focus. (via blurring this target, or selecting another)
+		in.Blur(gtx)
 	}
 	return in.isFocused
 }
@@ -762,7 +767,6 @@ type Focusable interface {
 // Focusable that is currently in focus - cancel blur.
 type FocusManager struct {
 	inFocus        Focusable
-	setFocus       Focusable
 	requestedFocus Focusable
 	requestedBlur  Focusable
 	scrimTag       struct{}
@@ -793,21 +797,12 @@ func (fm *FocusManager) update(gtx layout.Context) {
 		fm.requestedBlur, fm.requestedFocus = nil, nil
 		return
 	}
-	if fm.setFocus != nil {
-		fm.inFocus = fm.setFocus
-		fm.setFocus = nil
+	if fm.requestedBlur != nil {
+		fm.blur(gtx)
 	}
 	if fm.requestedFocus != nil {
 		fm.focus(gtx)
 	}
-	if fm.requestedBlur != nil {
-		fm.blur(gtx)
-	}
-}
-
-// Tell FocusManager what has focus at the moment
-func (fm *FocusManager) SetFocus(it Focusable) {
-	fm.setFocus = it
 }
 
 // Request focus programatically
