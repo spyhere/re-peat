@@ -72,6 +72,13 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker.Pcm = a.GetPcmFromSeconds(seconds)
 	m.TimeMarker.CategoryTags = m.tags
 	m.TimeMarker = nil
+	m.focuser.RequestBlur()
+}
+
+func (m *markerDialog) executeCancel() {
+	m.focuser.RequestBlur()
+	m.TimeMarker.MarkDead()
+	m.TimeMarker = nil
 }
 
 func (m *markerDialog) sanitizeTimeInput(input string) string {
