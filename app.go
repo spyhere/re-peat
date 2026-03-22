@@ -99,7 +99,6 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 		gtx = gtx.Disabled()
 	}
 
-	a.dispatch(gtx)
 	switch a.selectedTab {
 	case Project:
 		material.H1(a.th.Theme, "Project").Layout(gtx)
@@ -110,6 +109,8 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 		a.editorView.MakePeakMap()
 		a.editorView.Layout(gtx, e)
 	}
+	a.dispatch(gtx)
+
 	common.OffsetBy(gtx, image.Pt(0, a.th.Sizing.SegButtonsTopM), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			return groupedButtons(gtx, a.th, a.selectedTab, a.buttons)
