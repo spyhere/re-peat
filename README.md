@@ -11,6 +11,11 @@ This is an application that can display sound waves of a given MP3 track, you ca
 In theaters, philharmonics, and even amateur rehearsals, there is often a struggle to start playback from a specific point in the music. Since music usually serves as the backbone of a performance, and actors or dancers tend to repeat certain sections during rehearsals, they rely on music as a reference. The person responsible for the music then has to locate the correct point in the soundtrack, which is often a hassle.
 The goal of this application is to eliminate that hassle by allowing users to mark those points once and then start the music directly from them.
 
+## Demo
+
+https://github.com/user-attachments/assets/79ab31b1-1c0f-480f-8929-62a3db0ba0d3
+
+https://github.com/user-attachments/assets/f6ff0d69-59f8-435a-a323-af61ea62a51d
 
 ## Quick Start
 
@@ -49,7 +54,7 @@ WIP
 - nudge the playhead position with arrow keys
 - start the player from the set playhead position by pressing Space key
 - create a time marker from the set playhead position
-- edit, drag or delete the name of an existing time marker
+- edit, drag or delete an existing time marker
 - set the playhead to a time marker's position
 
 
