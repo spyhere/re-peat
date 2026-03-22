@@ -44,7 +44,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		})
 	})
 
-	drawAddMarkerButton(gtx, m.th, m.createButton, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
+	cl := m.createButton
+	if !gtx.Enabled() {
+		cl = m.disabledCl
+	}
+	drawAddMarkerButton(gtx, m.th, cl, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
 
 	common.OffsetBy(gtx, image.Pt(0, topM+searchDims.Size.Y+20), func(gtx layout.Context) {
 		common.DrawDivider(gtx, m.th, common.DividerProps{

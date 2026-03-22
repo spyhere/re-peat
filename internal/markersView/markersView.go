@@ -42,6 +42,7 @@ func NewMarkersView(props Props) *MarkersView {
 		tagButton:     &widget.Clickable{},
 		enabledTagsLs: &widget.List{},
 		createButton:  &widget.Clickable{},
+		disabledCl:    &widget.Clickable{},
 		deleteButton:  &widget.Clickable{},
 		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th, props.Audio),
 		tagsDialog:    newTagsDialog(globalChipsLimit),
@@ -97,6 +98,7 @@ type MarkersView struct {
 	tagButton     *widget.Clickable
 	enabledTagsLs *widget.List
 	createButton  *widget.Clickable
+	disabledCl    *widget.Clickable
 	deleteButton  *widget.Clickable
 	dialog        *common.Dialog
 	dialogOwner
