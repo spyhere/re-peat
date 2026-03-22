@@ -10,16 +10,12 @@ import (
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
 
-func (m *MarkersView) dialogUpdate(gtx layout.Context) {
+func (m *MarkersView) dialogUpdate() {
 	if m.dialog.IsCanceled() {
 		m.cancelDialog()
 	}
 	if m.dialog.IsConfirmed() {
 		m.confirmDialog()
-	}
-
-	if cursor, ok := m.tagsDialog.getCursorAndHandleEvents(gtx); ok {
-		common.SetCursor(gtx, cursor)
 	}
 }
 
@@ -59,6 +55,9 @@ func (m *MarkersView) openTagsFilterDialog() {
 	filterChips := m.tagsDialog.createFreshChips(m.chipsFilter.all, m.chipsFilter.enabledMap)
 	m.dialog.Basic(m.th, "Tags Filter", func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X = gtx.Dp(maxFilterW)
+		if cursor, ok := m.tagsDialog.getCursorAndHandleEvents(gtx); ok {
+			common.SetCursor(gtx, cursor)
+		}
 		return common.DrawChipsFilter(gtx, m.th, filterChips)
 	})
 	m.dialog.Show()

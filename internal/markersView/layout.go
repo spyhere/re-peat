@@ -23,7 +23,7 @@ var interval = 250 * time.Millisecond
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	m.dispatch(gtx)
-	m.dialogUpdate(gtx)
+	m.dialogUpdate()
 	isPlaying := m.p.IsPlaying()
 	if isPlaying {
 		m.listenToPlayerUpdates()
