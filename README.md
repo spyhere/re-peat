@@ -13,9 +13,9 @@ The goal of this application is to eliminate that hassle by allowing users to ma
 
 ## Demo
 
-https://github.com/user-attachments/assets/79ab31b1-1c0f-480f-8929-62a3db0ba0d3
+https://github.com/user-attachments/assets/233cf3d8-69d5-40ba-94cf-6a9ac8e92d9e
 
-https://github.com/user-attachments/assets/f6ff0d69-59f8-435a-a323-af61ea62a51d
+https://github.com/user-attachments/assets/de938d8c-4bb0-42dc-b3c9-d479ff98eb7b
 
 ## Quick Start
 
