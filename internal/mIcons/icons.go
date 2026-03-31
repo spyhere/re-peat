@@ -21,6 +21,7 @@ var (
 	Check            = newIcon(icons.NavigationCheck)
 	Search           = newIcon(icons.ActionSearch)
 	Cancel           = newIcon(icons.NavigationCancel)
+	Close            = newIcon(icons.NavigationClose)
 	Play             = newIcon(icons.AVPlayArrow)
 	Replay           = newIcon(icons.AVReplay)
 	Pause            = newIcon(icons.AVPause)

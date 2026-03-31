@@ -728,6 +728,7 @@ type ChipProps struct {
 	Selected bool
 	HideIcon bool
 	Cl       *widget.Clickable
+	CloseCl  *widget.Clickable
 }
 
 func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout.Dimensions {
@@ -757,9 +758,14 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 	xPadding := gtx.Dp(chipSpecs.xPadding)
 	chipSize := image.Rect(0, 0, textDim.Size.X+xPadding*2, h)
 	iconSize := gtx.Dp(chipSpecs.iconSize)
+	inBetweenPad := gtx.Dp(chipSpecs.betweenElementsPadding)
 
-	shouldShowIcon := props.Selected && !props.HideIcon
-	if shouldShowIcon {
+	shouldShowCheckIcon := props.Selected && !props.HideIcon
+	if shouldShowCheckIcon {
+		chipSize.Max.X += iconSize
+	}
+	shouldShowCloseIcon := props.CloseCl != nil && !props.HideIcon
+	if shouldShowCloseIcon {
 		chipSize.Max.X += iconSize
 	}
 	chipDims := DrawBox(gtx, Box{
@@ -773,9 +779,9 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 
 	// Icon + text
 	textOff := xPadding
-	if shouldShowIcon {
-		OffsetBy(gtx, image.Pt(xPadding/2, chipSize.Max.Y/2-iconSize/2), func(gtx layout.Context) {
-			gtx.Constraints.Min.X = gtx.Dp(chipSpecs.iconSize)
+	if shouldShowCheckIcon {
+		OffsetBy(gtx, image.Pt(inBetweenPad, chipSize.Max.Y/2-iconSize/2), func(gtx layout.Context) {
+			gtx.Constraints.Min.X = iconSize
 			micons.Check.Layout(gtx, c.Text)
 		})
 		textOff += iconSize
@@ -783,6 +789,12 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 	OffsetBy(gtx, image.Pt(textOff, textDim.Size.Y/2), func(gtx layout.Context) {
 		textM.Add(gtx.Ops)
 	})
+	if shouldShowCloseIcon {
+		OffsetBy(gtx, image.Pt(chipSize.Max.X-inBetweenPad-iconSize, chipSize.Max.Y/2-iconSize/2), func(gtx layout.Context) {
+			gtx.Constraints.Min.X = iconSize
+			micons.Close.Layout(gtx, th.Palette.Backdrop)
+		})
+	}
 	return chipDims
 }
 
