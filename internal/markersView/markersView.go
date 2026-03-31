@@ -200,8 +200,11 @@ func (m *MarkersView) clearHotKeyBuf() {
 }
 
 func (m *MarkersView) cancelDialog() {
-	if m.dialogOwner == create && m.markerDialog.TimeMarker != nil {
-		m.markerDialog.executeCancel()
+	if m.dialogOwner == create {
+		m.markerDialog.cancelCreate()
+	}
+	if m.dialogOwner == edit {
+		m.markerDialog.cancelEdit()
 	}
 	m.dialog.Hide()
 	m.dialogOwner = none
