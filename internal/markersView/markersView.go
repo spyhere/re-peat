@@ -89,13 +89,13 @@ type MarkersView struct {
 	table         *common.Table[*tm.TimeMarker]
 	searchbar     *common.Inputable
 	fm            *common.FocusManager
-	replayButton  widget.Clickable
-	tagButton     widget.Clickable
+	replayCl      widget.Clickable
+	tagCl         widget.Clickable
 	tagClearCl    widget.Clickable
 	enabledTagsLs *widget.List
-	createButton  widget.Clickable
+	createCl      widget.Clickable
 	disabledCl    widget.Clickable
-	deleteButton  widget.Clickable
+	deleteCl      widget.Clickable
 	dialog        *common.Dialog
 	dialogOwner
 	markerDialog
@@ -227,10 +227,10 @@ func (m *MarkersView) confirmDialog() {
 }
 
 func (m *MarkersView) handleAddMarkerButton(gtx layout.Context) {
-	if m.createButton.Clicked(gtx) {
+	if m.createCl.Clicked(gtx) {
 		m.openMarkerDialog(m.timeMarkers.NewMarker(0), create, "Create Marker")
 	}
-	if m.createButton.Hovered() {
+	if m.createCl.Hovered() {
 		common.SetCursor(gtx, pointer.CursorPointer)
 	}
 }

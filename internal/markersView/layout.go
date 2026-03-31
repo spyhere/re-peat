@@ -45,7 +45,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		})
 	})
 
-	cl := &m.createButton
+	cl := &m.createCl
 	if !gtx.Enabled() {
 		cl = &m.disabledCl
 	}
@@ -70,10 +70,10 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				if m.replayButton.Clicked(gtx) {
+				if m.replayCl.Clicked(gtx) {
 					m.replayMarkers()
 				}
-				if m.replayButton.Hovered() {
+				if m.replayCl.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
 				icon := micons.Replay
@@ -83,7 +83,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return drawClickableIcon(gtx, m.th, clickableIconProps{
 					icon:     icon,
 					iconSize: 24,
-					cl:       &m.replayButton,
+					cl:       &m.replayCl,
 				})
 			},
 			func(gtx layout.Context) layout.Dimensions {
@@ -98,13 +98,13 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				if m.tagButton.Clicked(gtx) {
+				if m.tagCl.Clicked(gtx) {
 					m.openTagsFilterDialog()
 				}
 				if m.tagClearCl.Clicked(gtx) {
 					m.clearTagFilter()
 				}
-				if m.tagButton.Hovered() || m.tagClearCl.Hovered() {
+				if m.tagCl.Hovered() || m.tagClearCl.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
 				var gap unit.Dp = 5
@@ -114,7 +114,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 						return drawClickableIcon(gtx, m.th, clickableIconProps{
 							icon:     micons.Filter,
 							iconSize: 24,
-							cl:       &m.tagButton,
+							cl:       &m.tagCl,
 							disabled: len(m.chipsFilter.all) == 0,
 						})
 					}),
@@ -155,16 +155,16 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return layout.Dimensions{}
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				if m.deleteButton.Clicked(gtx) {
+				if m.deleteCl.Clicked(gtx) {
 					m.openDeleteAllDialog()
 				}
-				if m.deleteButton.Hovered() {
+				if m.deleteCl.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
 				return common.DrawIconButton(gtx, common.IconButtonProps{
 					Icon:  micons.Delete,
 					Th:    m.th,
-					Cl:    &m.deleteButton,
+					Cl:    &m.deleteCl,
 					IsOff: len(*m.timeMarkers) == 0,
 				})
 			},
