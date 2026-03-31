@@ -1,6 +1,9 @@
 package markersview
 
 import (
+	"slices"
+	"strings"
+
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/widget"
@@ -31,6 +34,9 @@ func (t *tagsDialog) createFreshChips(allChips, enabledChips map[string]struct{}
 		}
 		t.filterChips = append(t.filterChips, newChip)
 	}
+	t.filterChips = slices.SortedFunc(slices.Values(t.filterChips), func(fc1, fc2 *common.FilterChip) int {
+		return strings.Compare(fc1.Text, fc2.Text)
+	})
 	return t.filterChips
 }
 
