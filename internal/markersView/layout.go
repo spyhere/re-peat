@@ -17,9 +17,10 @@ import (
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
 
-var topM = 140
-
-var interval = 250 * time.Millisecond
+var (
+	topM           = 140
+	redrawInterval = 250 * time.Millisecond
+)
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	m.dispatch(gtx)
@@ -27,7 +28,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	isPlaying := m.p.IsPlaying()
 	if isPlaying {
 		m.listenToPlayerUpdates()
-		gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(interval)})
+		gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(redrawInterval)})
 	} else {
 		m.pausePlaying()
 	}
