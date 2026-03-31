@@ -30,6 +30,9 @@ func drawClickableIcon(gtx layout.Context, th *theme.RepeatTheme, props clickabl
 		color = th.Palette.IconButton.Disabled.Bg
 		cl = nil
 	}
+	if !gtx.Enabled() {
+		cl = nil
+	}
 	common.DrawBox(gtx, common.Box{
 		Size:      image.Rect(0, 0, iconS, iconS),
 		R:         theme.CornerR(iconSizeHalf, iconSizeHalf, iconSizeHalf, iconSizeHalf),
