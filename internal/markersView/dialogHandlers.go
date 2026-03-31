@@ -63,6 +63,10 @@ func (m *MarkersView) openTagsFilterDialog() {
 	m.dialog.Show()
 }
 
+func (m *MarkersView) clearTagFilter() {
+	m.chipsFilter.updateEnabled(nil)
+}
+
 func (m *MarkersView) openDeleteAllDialog() {
 	m.dialogOwner = deleteAll
 	m.dialog.SetIcon(micons.Warning)

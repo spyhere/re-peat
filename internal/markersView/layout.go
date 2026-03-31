@@ -101,7 +101,10 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if m.tagButton.Clicked(gtx) {
 					m.openTagsFilterDialog()
 				}
-				if m.tagButton.Hovered() {
+				if m.tagClearCl.Clicked(gtx) {
+					m.clearTagFilter()
+				}
+				if m.tagButton.Hovered() || m.tagClearCl.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
 				var gap unit.Dp = 5
@@ -123,6 +126,16 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 						return txt.Layout(gtx)
 					}),
 					layout.Rigid(layout.Spacer{Width: gap}.Layout),
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						if len(m.chipsFilter.enabled) == 0 {
+							return layout.Dimensions{}
+						}
+						return drawClickableIcon(gtx, m.th, clickableIconProps{
+							icon:     micons.Cancel,
+							iconSize: 24,
+							cl:       &m.tagClearCl,
+						})
+					}),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						enabledChips := m.chipsFilter.getEnabledChips()
 						inset := layout.Inset{Left: 2, Right: 2}

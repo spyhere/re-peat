@@ -91,6 +91,7 @@ type MarkersView struct {
 	fm            *common.FocusManager
 	replayButton  widget.Clickable
 	tagButton     widget.Clickable
+	tagClearCl    widget.Clickable
 	enabledTagsLs *widget.List
 	createButton  widget.Clickable
 	disabledCl    widget.Clickable
