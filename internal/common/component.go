@@ -7,6 +7,7 @@ import (
 	"math"
 
 	"gioui.org/font"
+	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -555,7 +556,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 				props.Comboboxable.HandleChipEvents(gtx, idx)
 				comboChip := &props.Comboboxable.chips[idx]
 				chipM, chipDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-					return DrawChip(gtx, th, ChipProps{Text: comboChip.Text, CloseCl: &comboChip.Cl})
+					return DrawChip(gtx, th, ChipProps{Text: comboChip.Text, CloseTag: &comboChip.Tag})
 				})
 				if offset != 0 && gtx.Constraints.Max.X-offset-chipDims.Size.X < 0 {
 					offset = 0
@@ -731,7 +732,7 @@ type ChipProps struct {
 	Selected bool
 	HideIcon bool
 	Cl       *widget.Clickable
-	CloseCl  *widget.Clickable
+	CloseTag event.Tag
 }
 
 func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout.Dimensions {
@@ -767,7 +768,7 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 	if shouldShowCheckIcon {
 		chipSize.Max.X += iconSize
 	}
-	shouldShowCloseIcon := props.CloseCl != nil && !props.HideIcon
+	shouldShowCloseIcon := props.CloseTag != nil && !props.HideIcon
 	if shouldShowCloseIcon {
 		chipSize.Max.X += iconSize
 	}
@@ -796,11 +797,7 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 		OffsetBy(gtx, image.Pt(chipSize.Max.X-inBetweenPad-iconSize, chipSize.Max.Y/2-iconSize/2), func(gtx layout.Context) {
 			gtx.Constraints.Min.X = iconSize
 			micons.Close.Layout(gtx, th.Palette.Backdrop)
-			DrawBox(gtx, Box{
-				Size:      image.Rect(0, 0, iconSize, iconSize),
-				Clickable: props.CloseCl,
-				HideInk:   true,
-			})
+			RegisterTag(gtx, props.CloseTag, image.Rect(0, 0, iconSize, iconSize))
 		})
 	}
 	return chipDims

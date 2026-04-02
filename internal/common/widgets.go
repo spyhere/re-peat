@@ -247,16 +247,17 @@ type comboboxOption struct {
 }
 type comboboxChip struct {
 	Text string
-	Cl   widget.Clickable
+	Tag  struct{}
 }
 type Comboboxable struct {
 	Inputable
-	optionsLs  widget.List
-	options    []comboboxOption
-	selected   string
-	chips      []comboboxChip
-	removedIdx int
-	hasRemoved bool
+	optionsLs          widget.List
+	options            []comboboxOption
+	selected           string
+	chips              []comboboxChip
+	removedIdx         int
+	hasRemoved         bool
+	isChipCloseHovered bool
 }
 
 func (c *Comboboxable) HandleOptionEvents(gtx layout.Context, idx int) {
@@ -274,12 +275,19 @@ func (c *Comboboxable) HandleOptionEvents(gtx layout.Context, idx int) {
 }
 
 func (c *Comboboxable) HandleChipEvents(gtx layout.Context, idx int) {
-	if c.chips[idx].Cl.Clicked(gtx) {
-		c.setRemovedChip(idx)
-		// Read "HandleOptionsEvents comment"
-		gtx.Execute(op.InvalidateCmd{})
-	}
-	if c.chips[idx].Cl.Hovered() {
+	HandlePointerEvents(gtx, &c.chips[idx].Tag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
+		switch e.Kind {
+		case pointer.Enter:
+			c.isChipCloseHovered = true
+		case pointer.Leave:
+			c.isChipCloseHovered = false
+		case pointer.Press:
+			c.setRemovedChip(idx)
+			// Read "HandleOptionsEvents comment"
+			gtx.Execute(op.InvalidateCmd{})
+		}
+	})
+	if c.isChipCloseHovered {
 		SetCursor(gtx, pointer.CursorPointer)
 	}
 }
