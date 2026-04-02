@@ -172,9 +172,7 @@ func (in *Inputable) IsFocused(gtx layout.Context) bool {
 		gtx.Execute(op.InvalidateCmd{})
 		in.requestFocus(gtx)
 	} else if !in.isFocused && wasFocused {
-		// Since editor used to be focused on the previous frame, we assume FocusManager
-		// has another target in focus. (via blurring this target, or selecting another)
-		in.Blur(gtx)
+		in.requestBlur(gtx)
 	}
 	return in.isFocused
 }
