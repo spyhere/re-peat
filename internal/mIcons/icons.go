@@ -29,5 +29,6 @@ var (
 	Edit             = newIcon(icons.EditorModeEdit)
 	Warning          = newIcon(icons.AlertWarning)
 	Tick             = newIcon(icons.NavigationCheck)
-	Comment          = newIcon(icons.CommunicationComment)
+	Comment          = newIcon(icons.EditorModeComment)
+	CommentInsert    = newIcon(icons.EditorInsertComment)
 )

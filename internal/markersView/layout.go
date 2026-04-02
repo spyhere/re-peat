@@ -246,8 +246,13 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if curMarker.Comment.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
+				hasNotes := curMarker.Notes != ""
+				icon := micons.Comment
+				if hasNotes {
+					icon = micons.CommentInsert
+				}
 				return drawClickableIcon(gtx, m.th, clickableIconProps{
-					icon:     micons.Comment,
+					icon:     icon,
 					iconSize: 24,
 					cl:       &curMarker.Comment,
 				})
