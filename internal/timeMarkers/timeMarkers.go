@@ -24,15 +24,15 @@ type TimeMarker struct {
 	Notes        string
 	CategoryTags []string
 	List         widget.List
-	*ListTags
+	ListTags
 	*EditorTags
 }
 
 type ListTags struct {
-	Play    *widget.Clickable
+	Play    widget.Clickable
 	Comment widget.Clickable
-	Edit    *widget.Clickable
-	Delete  *widget.Clickable
+	Edit    widget.Clickable
+	Delete  widget.Clickable
 }
 
 type EditorTags struct {
@@ -66,11 +66,6 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 			Flag:  &struct{}{},
 			Pole:  &struct{}{},
 			Label: &struct{}{},
-		},
-		ListTags: &ListTags{
-			Play:   &widget.Clickable{},
-			Edit:   &widget.Clickable{},
-			Delete: &widget.Clickable{},
 		},
 		List: widget.List{},
 	}

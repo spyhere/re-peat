@@ -209,7 +209,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return drawClickableIcon(gtx, m.th, clickableIconProps{
 					icon:     icon,
 					iconSize: 26,
-					cl:       curMarker.Play,
+					cl:       &curMarker.Play,
 				})
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
@@ -267,7 +267,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return drawClickableIcon(gtx, m.th, clickableIconProps{
 					icon:     micons.Edit,
 					iconSize: 24,
-					cl:       curMarker.Edit,
+					cl:       &curMarker.Edit,
 				})
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
@@ -280,7 +280,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return drawClickableIcon(gtx, m.th, clickableIconProps{
 					icon:     micons.Delete,
 					iconSize: 24,
-					cl:       curMarker.Delete,
+					cl:       &curMarker.Delete,
 				})
 			},
 		)
