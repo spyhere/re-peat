@@ -91,6 +91,7 @@ func (in *Inputable) Blur(gtx layout.Context) {
 	in.shouldResetCaret = true
 	if in.onBlurF != nil {
 		in.onBlurF()
+		gtx.Execute(op.InvalidateCmd{})
 	}
 }
 
