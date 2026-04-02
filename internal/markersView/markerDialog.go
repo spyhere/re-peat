@@ -72,17 +72,17 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	m.TimeMarker.Pcm = a.GetPcmFromSeconds(seconds)
 	m.TimeMarker.CategoryTags = m.tags
 	m.TimeMarker = nil
-	m.focuser.RequestBlur()
+	m.focuser.RequestBlur(nil)
 }
 
 func (m *markerDialog) cancelCreate() {
-	m.focuser.RequestBlur()
+	m.focuser.RequestBlur(nil)
 	m.TimeMarker.MarkDead()
 	m.TimeMarker = nil
 }
 
 func (m *markerDialog) cancelEdit() {
-	m.focuser.RequestBlur()
+	m.focuser.RequestBlur(nil)
 	m.TimeMarker = nil
 }
 

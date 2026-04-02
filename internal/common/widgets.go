@@ -19,7 +19,7 @@ import (
 
 type Focuser interface {
 	RequestFocus(f Focusable)
-	RequestBlur()
+	RequestBlur(f Focusable)
 }
 
 type Inputable struct {
@@ -74,7 +74,7 @@ func (in *Inputable) SetSanitizer(f func(string) string) {
 
 func (in *Inputable) requestBlur(gtx layout.Context) {
 	if in.Focuser != nil {
-		in.Focuser.RequestBlur()
+		in.Focuser.RequestBlur(in)
 	} else {
 		in.Blur(gtx)
 	}
@@ -815,10 +815,12 @@ type FocusManager struct {
 }
 
 func (fm *FocusManager) blur(gtx layout.Context) {
-	if fm.inFocus != nil {
-		fm.inFocus.Blur(gtx)
+	if fm.requestedBlur != nil {
+		fm.requestedBlur.Blur(gtx)
 	}
-	fm.inFocus = nil
+	if fm.requestedBlur == fm.inFocus {
+		fm.inFocus = nil
+	}
 	fm.requestedBlur = nil
 }
 func (fm *FocusManager) focus(gtx layout.Context) {
@@ -832,7 +834,7 @@ func (fm *FocusManager) focus(gtx layout.Context) {
 func (fm *FocusManager) update(gtx layout.Context) {
 	HandlePointerEvents(gtx, &fm.scrimTag, pointer.Press, func(e pointer.Event) {
 		if e.Kind == pointer.Press {
-			fm.RequestBlur()
+			fm.RequestBlur(nil)
 		}
 	})
 	if (fm.requestedFocus != nil) && (fm.requestedBlur != nil) && (fm.requestedFocus == fm.requestedBlur) {
@@ -853,8 +855,11 @@ func (fm *FocusManager) RequestFocus(it Focusable) {
 }
 
 // Request Blur programatically
-func (fm *FocusManager) RequestBlur() {
-	fm.requestedBlur = fm.inFocus
+func (fm *FocusManager) RequestBlur(it Focusable) {
+	if it == nil {
+		it = fm.inFocus
+	}
+	fm.requestedBlur = it
 }
 
 // This should be placed as lower as possible at the frame creation
