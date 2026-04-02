@@ -292,7 +292,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	return layout.Dimensions{Size: image.Pt(containerW, containerH)}
 }
 
-type inputFieldMaterialSpecs struct {
+type inputFieldMaterialStyle struct {
 	shape             int
 	defaultH          unit.Dp
 	yPadding          unit.Dp
@@ -312,24 +312,26 @@ type inputFieldMaterialSpecs struct {
 	supTxtHeight      unit.Sp
 }
 
-var inputSpecs = inputFieldMaterialSpecs{
-	shape:             4,
-	defaultH:          56,
-	yPadding:          8,
-	outterIconPadding: 12,
-	textXPadding:      16,
-	supTextPadding:    16,
-	supTextTopPadding: 4,
-	bLineFocused:      4,
-	bLineUnfocused:    1,
-	icon:              24,
-	lblSizeBig:        16,
-	lblHeightBig:      24,
-	lblSizeSmall:      12,
-	lblHeightSmall:    16,
-	lblWeight:         400,
-	supTxtSize:        12,
-	supTxtHeight:      16,
+func inputFieldBase() inputFieldMaterialStyle {
+	return inputFieldMaterialStyle{
+		shape:             4,
+		defaultH:          56,
+		yPadding:          8,
+		outterIconPadding: 12,
+		textXPadding:      16,
+		supTextPadding:    16,
+		supTextTopPadding: 4,
+		bLineFocused:      4,
+		bLineUnfocused:    1,
+		icon:              24,
+		lblSizeBig:        16,
+		lblHeightBig:      24,
+		lblSizeSmall:      12,
+		lblHeightSmall:    16,
+		lblWeight:         400,
+		supTxtSize:        12,
+		supTxtHeight:      16,
+	}
 }
 
 type InputFieldBase struct {
@@ -345,14 +347,14 @@ type inputFieldBaseProps struct {
 	chipsPresent bool
 }
 
-func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFieldBaseProps) layout.Dimensions {
+func (s inputFieldMaterialStyle) layout(gtx layout.Context, th *theme.RepeatTheme, props inputFieldBaseProps) layout.Dimensions {
 	props.Inputable.Update(gtx)
 
-	yPadding, defaultH := gtx.Dp(inputSpecs.yPadding), gtx.Dp(inputSpecs.defaultH)
-	outterIconPadding, textXPadding := gtx.Dp(inputSpecs.outterIconPadding), gtx.Dp(inputSpecs.textXPadding)
-	supTextPadding, supTextTopPadding := gtx.Dp(inputSpecs.supTextPadding), gtx.Dp(inputSpecs.supTextTopPadding)
+	yPadding, defaultH := gtx.Dp(s.yPadding), gtx.Dp(s.defaultH)
+	outterIconPadding, textXPadding := gtx.Dp(s.outterIconPadding), gtx.Dp(s.textXPadding)
+	supTextPadding, supTextTopPadding := gtx.Dp(s.supTextPadding), gtx.Dp(s.supTextTopPadding)
 
-	iconSize := gtx.Dp(inputSpecs.icon)
+	iconSize := gtx.Dp(s.icon)
 	// Determine dimensions
 	iconWidthSum := 0
 	if props.LeadingIcon != nil {
@@ -367,7 +369,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 		gtx.Constraints.Max.X -= iconWidthSum + textXPadding*2
 		return props.content(gtx, c)
 	})
-	var defaultContentH unit.Sp = inputSpecs.lblHeightBig
+	var defaultContentH unit.Sp = s.lblHeightBig
 	contentH := max(gtx.Sp(defaultContentH), contentDims.Size.Y)
 	height := max(defaultH, textXPadding*2+contentH)
 
@@ -376,15 +378,15 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	contDims := DrawBox(gtx, Box{
 		Size:       contArea,
 		Color:      c.Bg,
-		R:          theme.CornerR(0, 0, inputSpecs.shape, inputSpecs.shape),
+		R:          theme.CornerR(0, 0, s.shape, s.shape),
 		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
 	gtx.Constraints.Max.Y = defaultH
 	gtx.Constraints.Max.X = contDims.Size.X
-	indicatorH := gtx.Dp(inputSpecs.bLineUnfocused)
+	indicatorH := gtx.Dp(s.bLineUnfocused)
 	isFocused := props.IsFocused(gtx)
 	if isFocused {
-		indicatorH = gtx.Dp(inputSpecs.bLineFocused)
+		indicatorH = gtx.Dp(s.bLineFocused)
 	}
 	// Indicator
 	OffsetBy(gtx, image.Pt(0, contDims.Size.Y-indicatorH), func(gtx layout.Context) {
@@ -408,12 +410,12 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 	// Label
 	OffsetBy(gtx, image.Pt(textXPadding+incrDims.Size.X, yPadding), func(gtx layout.Context) {
 		lblTxtAlign := layout.W
-		var lblTxtSize unit.Sp = inputSpecs.lblSizeBig
-		var lblTxtHeight unit.Sp = inputSpecs.lblHeightBig
+		var lblTxtSize unit.Sp = s.lblSizeBig
+		var lblTxtHeight unit.Sp = s.lblHeightBig
 		if isFocused || (props.chipsPresent || len(props.GetInput()) > 0) {
 			lblTxtAlign = layout.NW
-			lblTxtSize = inputSpecs.lblSizeSmall
-			lblTxtHeight = inputSpecs.lblHeightSmall
+			lblTxtSize = s.lblSizeSmall
+			lblTxtHeight = s.lblHeightSmall
 		}
 		gtx.Constraints.Max.X -= incrDims.Size.X + textXPadding*2
 		gtx.Constraints.Max.Y -= yPadding * 2
@@ -424,7 +426,7 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 			labelTxt.Font.Typeface = "Roboto"
 			labelTxt.TextSize = lblTxtSize
 			labelTxt.LineHeight = lblTxtHeight
-			labelTxt.Font.Weight = inputSpecs.lblWeight
+			labelTxt.Font.Weight = s.lblWeight
 			labelTxt.Color = c.LabelText
 			txtDims := labelTxt.Layout(gtx)
 			incrDims.Size.Y += txtDims.Size.Y
@@ -470,8 +472,8 @@ func drawInputFieldBase(gtx layout.Context, th *theme.RepeatTheme, props inputFi
 			gtx.Constraints.Min = image.Point{}
 			txt := material.Body2(th.Theme, fmt.Sprintf("%d/%d", strlen(props.GetInput()), props.MaxLen))
 			txt.Color = c.SupportingText
-			txt.TextSize = inputSpecs.supTxtSize
-			txt.LineHeight = inputSpecs.supTxtHeight
+			txt.TextSize = s.supTxtSize
+			txt.LineHeight = s.supTxtHeight
 			return txt.Layout(gtx)
 		})
 		incrDims.Size.Y += supTextDims.Size.Y
@@ -504,15 +506,51 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 		ed := material.Editor(th.Theme, &props.Editor, placeholder)
 		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
-		ed.LineHeight = inputSpecs.lblHeightBig
-		ed.TextSize = inputSpecs.lblSizeBig
-		ed.Font.Weight = inputSpecs.lblWeight
+		inputFieldSpecs := inputFieldBase()
+		ed.LineHeight = inputFieldSpecs.lblHeightBig
+		ed.TextSize = inputFieldSpecs.lblSizeBig
+		ed.Font.Weight = inputFieldSpecs.lblWeight
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
 		edDims := ed.Layout(gtx)
 		passOp.Pop()
 		return edDims
 	}
-	return drawInputFieldBase(gtx, th, inputFieldBaseProps{
+	return inputFieldBase().layout(gtx, th, inputFieldBaseProps{
+		InputFieldBase: props.Base,
+		Inputable:      props.Inputable,
+		content:        editorRender,
+	})
+}
+
+type TextFieldProps struct {
+	Base InputFieldBase
+	*Inputable
+	MaxLen      int
+	Filter      string
+	Placeholder string
+}
+
+func DrawTextField(gtx layout.Context, th *theme.RepeatTheme, props TextFieldProps) layout.Dimensions {
+	inputFieldStyle := inputFieldBase()
+	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
+		props.Editor.MaxLen = props.MaxLen
+		placeholder := ""
+		if props.IsFocused(gtx) {
+			placeholder = props.Placeholder
+		}
+		ed := material.Editor(th.Theme, &props.Editor, placeholder)
+		ed.Font.Typeface = "Roboto"
+		ed.Color = c.InputText
+		ed.LineHeight = inputFieldStyle.lblHeightBig
+		ed.TextSize = inputFieldStyle.lblSizeBig
+		ed.Font.Weight = inputFieldStyle.lblWeight
+		passOp := pointer.PassOp{}.Push(gtx.Ops)
+		edDims := ed.Layout(gtx)
+		passOp.Pop()
+		return edDims
+	}
+	inputFieldStyle.defaultH *= 4
+	return inputFieldStyle.layout(gtx, th, inputFieldBaseProps{
 		InputFieldBase: props.Base,
 		Inputable:      props.Inputable,
 		content:        editorRender,
@@ -532,6 +570,7 @@ type ComboboxProps struct {
 
 func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps) layout.Dimensions {
 	isFocused := props.IsFocused(gtx)
+	inputFieldStyle := inputFieldBase()
 	editorRender := func(gtx layout.Context, c theme.InputFieldPalette) layout.Dimensions {
 		props.Editor.MaxLen = props.MaxLen
 		props.Editor.Submit = true
@@ -542,9 +581,9 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 		ed := material.Editor(th.Theme, &props.Editor, placeholder)
 		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
-		ed.LineHeight = inputSpecs.lblHeightBig
-		ed.TextSize = inputSpecs.lblSizeBig
-		ed.Font.Weight = inputSpecs.lblWeight
+		ed.LineHeight = inputFieldStyle.lblHeightBig
+		ed.TextSize = inputFieldStyle.lblSizeBig
+		ed.Font.Weight = inputFieldStyle.lblWeight
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
 
 		var dims layout.Dimensions
@@ -579,7 +618,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 		passOp.Pop()
 		return dims
 	}
-	inputFieldDims := drawInputFieldBase(gtx, th, inputFieldBaseProps{
+	inputFieldDims := inputFieldStyle.layout(gtx, th, inputFieldBaseProps{
 		InputFieldBase: props.Base,
 		Inputable:      &props.Inputable,
 		content:        editorRender,
@@ -590,6 +629,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 	options := props.OptionsF()
 	if isFocused && len(options) > 0 {
 		props.Comboboxable.SetOptions(options)
+		inputFieldStyle := inputFieldBase()
 		dropdown, _ := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 				ls := &props.optionsLs
@@ -603,8 +643,8 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 					curOption := &props.Comboboxable.options[index]
 					txt := material.Body2(th.Theme, curOption.Text)
 					gtx.Constraints.Min.X = gtx.Constraints.Max.X
-					txt.LineHeight = inputSpecs.lblHeightBig
-					txt.TextSize = inputSpecs.lblSizeBig
+					txt.LineHeight = inputFieldStyle.lblHeightBig
+					txt.TextSize = inputFieldStyle.lblSizeBig
 					txt.Alignment = text.Middle
 					var bgC color.NRGBA
 					if curOption.Cl.Hovered() {
@@ -629,7 +669,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 			var dims layout.Dimensions
 			OffsetBy(gtx, image.Pt(0, inputFieldDims.Size.Y), func(gtx layout.Context) {
 				shadowOff := gtx.Dp(2)
-				shape := inputSpecs.shape
+				shape := inputFieldStyle.shape
 				DrawBox(gtx, Box{
 					Size:  image.Rect(0, 0, shadowOff+inputFieldDims.Size.X, shadowOff+lsDims.Size.Y),
 					Color: th.Palette.Backdrop,
