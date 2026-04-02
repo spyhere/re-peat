@@ -590,7 +590,6 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 	if isFocused && len(options) > 0 {
 		props.Comboboxable.SetOptions(options)
 		dropdown, _ := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-			props.Comboboxable.HandleOptionsEvents(gtx)
 			lsM, lsDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 				ls := &props.optionsLs
 				ls.Axis = layout.Vertical
@@ -599,6 +598,7 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 				list := material.List(th.Theme, ls)
 				list.AnchorStrategy = material.Overlay
 				return list.Layout(gtx, len(options), func(gtx layout.Context, index int) layout.Dimensions {
+					props.Comboboxable.HandleOptionEvents(gtx, index)
 					curOption := &props.Comboboxable.options[index]
 					txt := material.Body2(th.Theme, curOption.Text)
 					gtx.Constraints.Min.X = gtx.Constraints.Max.X

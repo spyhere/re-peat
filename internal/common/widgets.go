@@ -240,8 +240,7 @@ func (in *Inputable) processEditorEvents(gtx layout.Context) {
 	}
 }
 
-// TODO: Make it unexported
-type ComboboxOption struct {
+type comboboxOption struct {
 	Text string
 	Cl   widget.Clickable
 }
@@ -252,26 +251,24 @@ type comboboxChip struct {
 type Comboboxable struct {
 	Inputable
 	optionsLs  widget.List
-	options    []ComboboxOption
+	options    []comboboxOption
 	selected   string
 	chips      []comboboxChip
 	removedIdx int
 	hasRemoved bool
 }
 
-// TODO: use index from the list
-func (c *Comboboxable) HandleOptionsEvents(gtx layout.Context) {
-	for idx := range c.options {
-		if c.options[idx].Cl.Clicked(gtx) {
-			c.setSelectedValue(c.options[idx].Text)
-			// When click event is being read "selectedValue" was already checked
-			// and since Gio's idiomatic way is to check for events at the start
-			// of the frame, there is no other way except request a new frame
-			gtx.Execute(op.InvalidateCmd{})
-		}
-		if c.options[idx].Cl.Hovered() {
-			SetCursor(gtx, pointer.CursorPointer)
-		}
+func (c *Comboboxable) HandleOptionEvents(gtx layout.Context, idx int) {
+	curOption := &c.options[idx]
+	if curOption.Cl.Clicked(gtx) {
+		c.setSelectedValue(curOption.Text)
+		// When click event is being read "selectedValue" was already checked
+		// and since Gio's idiomatic way is to check for events at the start
+		// of the frame, there is no other way except request a new frame
+		gtx.Execute(op.InvalidateCmd{})
+	}
+	if curOption.Cl.Hovered() {
+		SetCursor(gtx, pointer.CursorPointer)
 	}
 }
 
@@ -291,7 +288,7 @@ func (c *Comboboxable) SetOptions(options []string) {
 		if idx < len(c.options) {
 			c.options[idx].Text = it
 		} else {
-			c.options = append(c.options, ComboboxOption{Text: it})
+			c.options = append(c.options, comboboxOption{Text: it})
 		}
 	}
 	c.options = c.options[:len(options)]
