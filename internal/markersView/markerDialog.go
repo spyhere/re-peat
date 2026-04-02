@@ -64,8 +64,7 @@ func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, allChips map[
 func (m *markerDialog) executeConfirm(a audio.Audio) {
 	seconds, err := common.ParseSeconds(m.timeField.Text())
 	if err != nil {
-		fmt.Println(err)
-		return
+		seconds = 0
 	}
 	seconds = min(a.Seconds, seconds)
 	m.TimeMarker.Name = m.nameField.Text()
@@ -111,6 +110,9 @@ func (m *markerDialog) normalizeTimeInput() {
 	}()
 
 	v := m.timeField.GetInput()
+	if v == "" {
+		return
+	}
 	if !strings.Contains(v, ":") {
 		seconds, err = strconv.Atoi(v)
 		if err != nil {
