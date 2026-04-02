@@ -9,7 +9,6 @@ import (
 
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
-	"gioui.org/unit"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
@@ -212,26 +211,12 @@ func (m *markerDialog) getTagOptions() []string {
 	return m.tagOptions
 }
 
-type drawMarkerDialogSizeSpecs struct {
-	fieldsYMargin unit.Dp
-	fieldsXMargin unit.Dp
-	fieldW        unit.Dp
-	gap           unit.Dp
-}
-
-var drawMarkerDialogSpecs = drawMarkerDialogSizeSpecs{
-	fieldsYMargin: 10,
-	fieldsXMargin: 10,
-	fieldW:        270,
-	gap:           20,
-}
-
 func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.Dimensions {
 	if cursor, ok := m.getCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}
 	m.handleFieldsEvents()
-	s := drawMarkerDialogSpecs
+	s := defaultFieldGroupStyle()
 	inset := layout.Inset{Top: s.fieldsYMargin, Bottom: s.fieldsYMargin, Left: s.fieldsXMargin, Right: s.fieldsXMargin}
 	dims := inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		gapPx := gtx.Dp(s.gap)

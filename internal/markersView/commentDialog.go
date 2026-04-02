@@ -51,8 +51,7 @@ func (c *commentDialog) Layout(gtx layout.Context) layout.Dimensions {
 	if cursor, ok := c.getCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}
-	// TODO: Keep it generic for dialogs
-	s := drawMarkerDialogSpecs
+	s := defaultFieldGroupStyle()
 	inset := layout.Inset{Top: s.fieldsYMargin, Bottom: s.fieldsYMargin, Left: s.fieldsXMargin, Right: s.fieldsXMargin}
 	dims := inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X

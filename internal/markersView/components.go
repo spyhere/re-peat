@@ -54,3 +54,19 @@ func drawAddMarkerButton(gtx layout.Context, th *theme.RepeatTheme, cl *widget.C
 		addIconM.Add(gtx.Ops)
 	})
 }
+
+type fieldGroupStyle struct {
+	fieldsYMargin unit.Dp
+	fieldsXMargin unit.Dp
+	fieldW        unit.Dp
+	gap           unit.Dp
+}
+
+func defaultFieldGroupStyle() fieldGroupStyle {
+	return fieldGroupStyle{
+		fieldsYMargin: 10,
+		fieldsXMargin: 10,
+		fieldW:        270,
+		gap:           20,
+	}
+}
