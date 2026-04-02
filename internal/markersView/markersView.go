@@ -42,6 +42,7 @@ func NewMarkersView(props Props) *MarkersView {
 		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th, props.Audio),
 		tagsDialog:    newTagsDialog(globalChipsLimit),
 		chipsFilter:   newChipsFilter(globalChipsLimit),
+		commentDialog: newCommentDialog(props.Th),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis: layout.Vertical,
@@ -75,6 +76,7 @@ type dialogOwner uint8
 const (
 	none dialogOwner = iota
 	create
+	comment
 	edit
 	tagFilter
 	deleteAll
@@ -99,6 +101,7 @@ type MarkersView struct {
 	dialogOwner
 	markerDialog
 	tagsDialog
+	commentDialog commentDialog
 	chipsFilter
 	hotKeyBuf []rune
 	audio     audio.Audio
@@ -200,10 +203,12 @@ func (m *MarkersView) clearHotKeyBuf() {
 }
 
 func (m *MarkersView) cancelDialog() {
-	if m.dialogOwner == create {
+	switch m.dialogOwner {
+	case create:
 		m.markerDialog.cancelCreate()
-	}
-	if m.dialogOwner == edit {
+	case comment:
+		m.commentDialog.cancelComment()
+	case edit:
 		m.markerDialog.cancelEdit()
 	}
 	m.dialog.Hide()
@@ -214,6 +219,8 @@ func (m *MarkersView) confirmDialog() {
 	switch m.dialogOwner {
 	case create:
 		m.confirmEdit()
+	case comment:
+		m.confirmComment()
 	case edit:
 		m.confirmEdit()
 	case tagFilter:

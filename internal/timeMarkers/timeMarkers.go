@@ -21,6 +21,7 @@ type TimeMarker struct {
 	Pcm          int64
 	Name         string
 	isDead       bool
+	Notes        string
 	CategoryTags []string
 	List         widget.List
 	*ListTags
@@ -28,9 +29,10 @@ type TimeMarker struct {
 }
 
 type ListTags struct {
-	Play   *widget.Clickable
-	Edit   *widget.Clickable
-	Delete *widget.Clickable
+	Play    *widget.Clickable
+	Comment widget.Clickable
+	Edit    *widget.Clickable
+	Delete  *widget.Clickable
 }
 
 type EditorTags struct {

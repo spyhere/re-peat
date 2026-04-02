@@ -155,6 +155,9 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return layout.Dimensions{}
 			},
 			func(gtx layout.Context) layout.Dimensions {
+				return layout.Dimensions{}
+			},
+			func(gtx layout.Context) layout.Dimensions {
 				if m.deleteCl.Clicked(gtx) {
 					m.openDeleteAllDialog()
 				}
@@ -237,6 +240,19 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				})
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
+				if curMarker.Comment.Clicked(gtx) {
+					m.openCommentDialog(curMarker)
+				}
+				if curMarker.Comment.Hovered() {
+					common.SetCursor(gtx, pointer.CursorPointer)
+				}
+				return drawClickableIcon(gtx, m.th, clickableIconProps{
+					icon:     micons.Comment,
+					iconSize: 24,
+					cl:       &curMarker.Comment,
+				})
+			},
+			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Edit.Clicked(gtx) {
 					m.openMarkerDialog(curMarker, edit, "Marker Edit")
 				}
@@ -263,7 +279,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				})
 			},
 		)
-		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 46, 4, 6})
+		m.table.Layout(gtx, m.th, []int{4, 4, 28, 6, 44, 4, 4, 6})
 	})
 
 	m.fm.PlaceScrim(gtx)

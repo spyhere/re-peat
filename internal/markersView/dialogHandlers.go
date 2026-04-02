@@ -37,7 +37,7 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 	}
 	m.dialogOwner = owner
 	if owner == create {
-		m.focuser.RequestFocus(m.nameField)
+		m.markerDialog.focuser.RequestFocus(m.nameField)
 	}
 	m.markerDialog.prepareForOpening(curMarker, m.chipsFilter.all)
 
@@ -45,6 +45,19 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 		return m.markerDialog.Layout(gtx, m.audio.Seconds)
 	})
 	m.dialog.Show()
+}
+
+func (m *MarkersView) openCommentDialog(curMarker *tm.TimeMarker) {
+	m.dialogOwner = comment
+	m.commentDialog.prepareForOpening(curMarker)
+	m.dialog.Basic(m.th, curMarker.Name, func(gtx layout.Context) layout.Dimensions {
+		return m.commentDialog.Layout(gtx)
+	})
+	m.dialog.Show()
+}
+
+func (m *MarkersView) confirmComment() {
+	m.commentDialog.executeConfirm()
 }
 
 const maxFilterW unit.Dp = 350
