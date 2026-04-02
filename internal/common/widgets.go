@@ -358,25 +358,25 @@ func (c *Comboboxable) Blur(gtx layout.Context) {
 
 type TableProps[T any] struct {
 	Axis                 layout.Axis
-	ColumsNum            int
 	HeaderCellsAlignment []layout.Direction
 	RowCellsAlignment    []layout.Direction
 	RowValueCb           func(int) T
 	RowFilterCb          func(T) bool
 }
 
+const tableColumnsInitAmount = 16
+
 func NewTable[T any](props TableProps[T]) *Table[T] {
 	l := widget.List{}
 	l.Axis = props.Axis
 	return &Table[T]{
-		columns:          props.ColumsNum,
 		list:             &l,
-		columnWidths:     make([]int, props.ColumsNum),
+		columnWidths:     make([]int, 0, tableColumnsInitAmount),
 		hCellsAllignment: props.HeaderCellsAlignment,
-		headCellFuncs:    make([]HeadCellComp, props.ColumsNum),
+		headCellFuncs:    make([]HeadCellComp, 0, tableColumnsInitAmount),
 		rCellsAllignment: props.RowCellsAlignment,
-		rowCellFuncs:     make([]CellComp[T], props.ColumsNum),
-		cellsBuf:         make([]layout.FlexChild, props.ColumsNum),
+		rowCellFuncs:     make([]CellComp[T], 0, tableColumnsInitAmount),
+		cellsBuf:         make([]layout.FlexChild, 0, tableColumnsInitAmount),
 		rowValueCb:       props.RowValueCb,
 		rowFilterCb:      props.RowFilterCb,
 	}
@@ -385,7 +385,6 @@ func NewTable[T any](props TableProps[T]) *Table[T] {
 type HeadCellComp func(gtx layout.Context) layout.Dimensions
 type CellComp[T any] func(gtx layout.Context, rowIdx int, rowValue T) layout.Dimensions
 type Table[T any] struct {
-	columns          int
 	Rows             int
 	rowValueCb       func(int) T
 	rowFilterCb      func(T) bool
@@ -400,15 +399,12 @@ type Table[T any] struct {
 }
 
 func (t *Table[T]) HeadCells(hFuncs ...HeadCellComp) {
-	if len(hFuncs) != t.columns {
-		log.Fatal("Incorrect usage of table! Header: number of cell render functions are not equal to set columns amount")
-	}
 	t.headCellFuncs = hFuncs
 }
 
 func (t *Table[T]) RowCells(rFuncs ...CellComp[T]) {
-	if len(rFuncs) != t.columns {
-		log.Fatal("Incorrect usage of table! Row: number of cell render functions are not equal to set columns amount")
+	if len(rFuncs) != len(t.headCellFuncs) {
+		log.Fatal("Incorrect usage of table! Row: number of cell render functions are not equal to set headers amount")
 	}
 	t.rowCellFuncs = rFuncs
 }
@@ -440,7 +436,7 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 		}
 		v := it * maxX / 100
 		cellWidthSum += v
-		t.columnWidths[idx] = v
+		t.columnWidths = append(t.columnWidths, v)
 		if idx < len(colWidths)-1 {
 			OffsetBy(gtx, image.Pt(cellWidthSum+xMargin, yMargin), func(gtx layout.Context) {
 				DrawDivider(gtx, th, DividerProps{Axis: Vertical})
@@ -463,12 +459,16 @@ const rowHeight unit.Dp = 50
 
 func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargin int) {
 	headerH := gtx.Dp(headerH)
+	t.cellsBuf = t.cellsBuf[:0]
 	for colIdx, it := range t.headCellFuncs {
-		t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		fxChild := layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			columnDims := layout.Dimensions{Size: image.Pt(t.columnWidths[colIdx], headerH)}
 			gtx.Constraints.Max = columnDims.Size
 			gtx.Constraints.Min = columnDims.Size
-			cellAl := t.hCellsAllignment[colIdx]
+			cellAl := layout.Center
+			if colIdx < len(t.hCellsAllignment) {
+				cellAl = t.hCellsAllignment[colIdx]
+			}
 			layout.UniformInset(cellMargin).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return cellAl.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return it(gtx)
@@ -476,6 +476,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 			})
 			return columnDims
 		})
+		t.cellsBuf = append(t.cellsBuf, fxChild)
 	}
 	layout.Flex{}.Layout(gtx, t.cellsBuf...)
 
@@ -491,7 +492,10 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 			for colIdx, it := range t.rowCellFuncs {
 				t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 					columnDims := layout.Dimensions{Size: image.Pt(t.columnWidths[colIdx], rowH)}
-					cellAl := t.rCellsAllignment[colIdx]
+					cellAl := layout.Center
+					if colIdx < len(t.rCellsAllignment) {
+						cellAl = t.rCellsAllignment[colIdx]
+					}
 					gtx.Constraints.Max = columnDims.Size
 					gtx.Constraints.Min = columnDims.Size
 

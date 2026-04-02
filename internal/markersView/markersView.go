@@ -44,8 +44,7 @@ func NewMarkersView(props Props) *MarkersView {
 		chipsFilter:   newChipsFilter(globalChipsLimit),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
-		Axis:      layout.Vertical,
-		ColumsNum: 7,
+		Axis: layout.Vertical,
 		HeaderCellsAlignment: []layout.Direction{
 			layout.Center,
 			layout.Center,
