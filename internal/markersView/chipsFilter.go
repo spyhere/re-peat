@@ -33,6 +33,9 @@ func (c *chipsFilter) purge() {
 func (c *chipsFilter) recreate(markers tm.TimeMarkers) {
 	c.purge()
 	for _, marker := range markers {
+		if !marker.IsAlive() {
+			continue
+		}
 		for _, tag := range marker.CategoryTags {
 			c.all[tag] = struct{}{}
 		}
@@ -48,7 +51,22 @@ func (c *chipsFilter) updateAll(tags []string) {
 	}
 }
 
-// Update list of enabled tags
+// Check whether enabled chips still exist in "all"
+func (c *chipsFilter) reconcileEnabled(markers tm.TimeMarkers) {
+	c.recreate(markers)
+	idx := 0
+	for _, enabledChip := range c.enabled {
+		if _, ok := c.all[enabledChip]; ok {
+			c.enabled[idx] = enabledChip
+			idx++
+		} else {
+			delete(c.enabledMap, enabledChip)
+		}
+	}
+	c.enabled = c.enabled[:idx]
+}
+
+// Incremental update list of enabled tags
 func (c *chipsFilter) updateEnabled(chips []*common.FilterChip) {
 	c.enabled = c.enabled[:0]
 	for chip := range c.enabledMap {

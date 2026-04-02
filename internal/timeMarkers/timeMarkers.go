@@ -41,8 +41,11 @@ type EditorTags struct {
 	Label *struct{}
 }
 
-func (tm *TimeMarker) MarkDead() {
-	tm.isDead = true
+func (m *TimeMarker) MarkDead() {
+	m.isDead = true
+}
+func (m *TimeMarker) IsAlive() bool {
+	return !m.isDead
 }
 
 func (tm *TimeMarkers) MarkAllDead() {
@@ -75,11 +78,17 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 	return newT
 }
 
-func (t *TimeMarkers) DeleteDead() {
+func (t *TimeMarkers) DeleteDead() bool {
+	noDead := true
 	*t = slices.DeleteFunc(*t, func(it *TimeMarker) bool {
-		return it.isDead
+		if it.isDead {
+			noDead = false
+			return true
+		}
+		return false
 	})
 	t.Sort()
+	return noDead
 }
 
 func (t *TimeMarkers) Get(idx int, asc bool) *TimeMarker {

@@ -6,6 +6,7 @@ import (
 
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
@@ -138,8 +139,11 @@ func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
 	return m.markerInPlay == curMarker
 }
 
-func (m *MarkersView) updateDefferedState() {
-	m.timeMarkers.DeleteDead()
+func (m *MarkersView) updateDefferedState(gtx layout.Context) {
+	if m.timeMarkers.DeleteDead() {
+		m.chipsFilter.reconcileEnabled(*m.timeMarkers)
+		gtx.Execute(op.InvalidateCmd{})
+	}
 }
 
 func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {

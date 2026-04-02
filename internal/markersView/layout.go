@@ -291,6 +291,6 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	if cursor, ok := m.searchbar.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}
-	m.updateDefferedState()
+	m.updateDefferedState(gtx)
 	return layout.Dimensions{}
 }
