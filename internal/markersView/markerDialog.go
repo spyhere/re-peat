@@ -171,6 +171,10 @@ func (m *markerDialog) handleFieldsEvents() {
 		m.tagsField.ClearEmptyDeleteEvent()
 		return
 	}
+	if remIdx := m.tagsField.HasRemovedChip(); remIdx >= 0 {
+		copy(m.tags[remIdx:], m.tags[remIdx+1:])
+		m.tags = m.tags[:len(m.tags)-1]
+	}
 	if len(m.tags) > 0 && m.tagsField.HasEmptyDeleteEvent() {
 		m.tags = m.tags[:len(m.tags)-1]
 	}

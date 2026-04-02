@@ -242,17 +242,26 @@ func (in *Inputable) processEditorEvents(gtx layout.Context) {
 	}
 }
 
+// TODO: Make it unexported
 type ComboboxOption struct {
+	Text string
+	Cl   widget.Clickable
+}
+type comboboxChip struct {
 	Text string
 	Cl   widget.Clickable
 }
 type Comboboxable struct {
 	Inputable
-	optionsLs widget.List
-	options   []ComboboxOption
-	selected  string
+	optionsLs  widget.List
+	options    []ComboboxOption
+	selected   string
+	chips      []comboboxChip
+	removedIdx int
+	hasRemoved bool
 }
 
+// TODO: use index from the list
 func (c *Comboboxable) HandleOptionsEvents(gtx layout.Context) {
 	for idx := range c.options {
 		if c.options[idx].Cl.Clicked(gtx) {
@@ -268,6 +277,17 @@ func (c *Comboboxable) HandleOptionsEvents(gtx layout.Context) {
 	}
 }
 
+func (c *Comboboxable) HandleChipEvents(gtx layout.Context, idx int) {
+	if c.chips[idx].Cl.Clicked(gtx) {
+		c.setRemovedChip(idx)
+		// Read "HandleOptionsEvents comment"
+		gtx.Execute(op.InvalidateCmd{})
+	}
+	if c.chips[idx].Cl.Hovered() {
+		SetCursor(gtx, pointer.CursorPointer)
+	}
+}
+
 func (c *Comboboxable) SetOptions(options []string) {
 	for idx, it := range options {
 		if idx < len(c.options) {
@@ -279,12 +299,31 @@ func (c *Comboboxable) SetOptions(options []string) {
 	c.options = c.options[:len(options)]
 }
 
+func (c *Comboboxable) SetChips(values []string) {
+	if len(c.chips) == len(values) {
+		return
+	}
+	for idx, it := range values {
+		if idx < len(c.chips) {
+			c.chips[idx].Text = it
+		} else {
+			c.chips = append(c.chips, comboboxChip{Text: it})
+		}
+	}
+	c.chips = c.chips[:len(values)]
+}
+
 func (c *Comboboxable) ResetOptionScroll() {
 	c.optionsLs.ScrollTo(0)
 }
 
 func (c *Comboboxable) setSelectedValue(v string) {
 	c.selected = v
+}
+
+func (c *Comboboxable) setRemovedChip(idx int) {
+	c.removedIdx = idx
+	c.hasRemoved = true
 }
 
 func (c *Comboboxable) WithFocusManager(f Focuser) *Comboboxable {
@@ -298,6 +337,14 @@ func (c *Comboboxable) HasSelectedValue() (string, bool) {
 		c.selected = ""
 	}
 	return v, v != ""
+}
+
+func (c *Comboboxable) HasRemovedChip() int {
+	if !c.hasRemoved {
+		return -1
+	}
+	c.hasRemoved = false
+	return c.removedIdx
 }
 
 func (c *Comboboxable) Blur(gtx layout.Context) {

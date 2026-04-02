@@ -550,9 +550,12 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 		// Chips
 		offset, gap, chipHeight := 0, gtx.Dp(5), gtx.Dp(chipSpecs.height)
 		if len(props.Chips) > 0 {
-			for _, it := range props.Chips {
+			props.Comboboxable.SetChips(props.Chips)
+			for idx := range props.Chips {
+				props.Comboboxable.HandleChipEvents(gtx, idx)
+				comboChip := &props.Comboboxable.chips[idx]
 				chipM, chipDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-					return DrawChip(gtx, th, ChipProps{Text: it})
+					return DrawChip(gtx, th, ChipProps{Text: comboChip.Text, CloseCl: &comboChip.Cl})
 				})
 				if offset != 0 && gtx.Constraints.Max.X-offset-chipDims.Size.X < 0 {
 					offset = 0
@@ -793,6 +796,11 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 		OffsetBy(gtx, image.Pt(chipSize.Max.X-inBetweenPad-iconSize, chipSize.Max.Y/2-iconSize/2), func(gtx layout.Context) {
 			gtx.Constraints.Min.X = iconSize
 			micons.Close.Layout(gtx, th.Palette.Backdrop)
+			DrawBox(gtx, Box{
+				Size:      image.Rect(0, 0, iconSize, iconSize),
+				Clickable: props.CloseCl,
+				HideInk:   true,
+			})
 		})
 	}
 	return chipDims
