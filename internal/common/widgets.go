@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"log"
 
+	"gioui.org/font"
 	"gioui.org/io/event"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
@@ -467,12 +468,50 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 	})
 }
 
-const headerH unit.Dp = 42
-const cellMargin unit.Dp = 5
-const rowHeight unit.Dp = 50
+type tableStyle struct {
+	headerH          unit.Dp
+	cellMargin       unit.Dp
+	rowHeight        unit.Dp
+	noEntriesMarginT unit.Dp
+}
+
+func defaultTableStyle() tableStyle {
+	return tableStyle{
+		headerH:          42,
+		cellMargin:       5,
+		rowHeight:        50,
+		noEntriesMarginT: 6,
+	}
+}
+
+func (t *Table[T]) drawNoResultsInfo(gtx layout.Context, th *theme.RepeatTheme, s tableStyle) layout.Dimensions {
+	textM, textDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		txtStyle := material.H6(th.Theme, "нет совпадений, очистите фильтр")
+		txtStyle.Alignment = text.Middle
+		txtStyle.Font.Style = font.Italic
+		gtx.Constraints.Min = image.Pt(gtx.Constraints.Max.X, 0)
+		return layout.UniformInset(s.cellMargin).Layout(gtx, txtStyle.Layout)
+	})
+	var bgDims layout.Dimensions
+	marginT := gtx.Dp(s.noEntriesMarginT)
+	OffsetBy(gtx, image.Pt(0, marginT), func(gtx layout.Context) {
+		bgDims = layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			white := th.Palette.CardBg
+			white.A = 0xbb
+			return DrawBox(gtx, Box{
+				Size:  image.Rect(0, 0, textDims.Size.X, textDims.Size.Y),
+				Color: white,
+			})
+		})
+		bgDims.Size.Y += marginT
+		textM.Add(gtx.Ops)
+	})
+	return bgDims
+}
 
 func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargin int) {
-	headerH := gtx.Dp(headerH)
+	s := defaultTableStyle()
+	headerH := gtx.Dp(s.headerH)
 	t.cellsBuf = t.cellsBuf[:0]
 	for colIdx, it := range t.headCellFuncs {
 		fxChild := layout.Rigid(func(gtx layout.Context) layout.Dimensions {
@@ -483,7 +522,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 			if colIdx < len(t.hCellsAllignment) {
 				cellAl = t.hCellsAllignment[colIdx]
 			}
-			layout.UniformInset(cellMargin).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			layout.UniformInset(s.cellMargin).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return cellAl.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return it(gtx)
 				})
@@ -494,14 +533,20 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 	}
 	layout.Flex{}.Layout(gtx, t.cellsBuf...)
 
-	rowH := gtx.Dp(rowHeight)
+	rowH := gtx.Dp(s.rowHeight)
 	OffsetBy(gtx, image.Pt(0, headerH), func(gtx layout.Context) {
 		DrawDivider(gtx, th, DividerProps{})
 		gtx.Constraints.Max.Y -= bottomMargin
+		var rowsSkipped int
 		material.List(th.Theme, t.list).Layout(gtx, t.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
 			rowValue := t.rowValueCb(rowIdx)
 			if t.rowFilterCb != nil && !t.rowFilterCb(rowValue) {
-				return layout.Dimensions{}
+				if rowsSkipped < t.Rows-1 {
+					rowsSkipped++
+					return layout.Dimensions{}
+				} else {
+					return t.drawNoResultsInfo(gtx, th, s)
+				}
 			}
 			for colIdx, it := range t.rowCellFuncs {
 				t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
@@ -513,7 +558,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 					gtx.Constraints.Max = columnDims.Size
 					gtx.Constraints.Min = columnDims.Size
 
-					layout.UniformInset(cellMargin).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					layout.UniformInset(s.cellMargin).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						return cellAl.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 							return it(gtx, rowIdx, rowValue)
 						})
