@@ -133,10 +133,8 @@ func (m *markerDialog) normalizeTimeInput() {
 			return
 		}
 	}
-	maxSeconds := min(minutes*60+seconds, int(m.a.Seconds))
-	minutes = maxSeconds / 60
-	seconds = maxSeconds % 60
-	m.timeField.SetText(fmt.Sprintf("%02d:%02d", minutes, seconds))
+	maxSeconds := min(float64(minutes*60+seconds), m.a.Seconds)
+	m.timeField.SetText(common.FormatSeconds(maxSeconds))
 }
 
 func (m *markerDialog) handleFieldsEvents() {
