@@ -19,6 +19,12 @@ func (m *MarkersView) dialogUpdate() {
 	}
 }
 
+func (m *MarkersView) confirmCreate() {
+	m.chipsFilter.updateAll(m.markerDialog.tags)
+	m.markerDialog.executeConfirm(m.audio)
+	m.timeMarkers.AttachNewMarker(m.draftMarker)
+	m.draftMarker = tm.TimeMarker{}
+}
 func (m *MarkersView) confirmEdit() {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.audio)

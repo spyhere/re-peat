@@ -75,7 +75,6 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 
 func (m *markerDialog) cancelCreate() {
 	m.focuser.RequestBlur(nil)
-	m.TimeMarker.MarkDead()
 	m.TimeMarker = nil
 }
 

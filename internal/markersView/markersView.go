@@ -85,6 +85,7 @@ const (
 type MarkersView struct {
 	p             *p.Player
 	timeMarkers   *tm.TimeMarkers
+	draftMarker   tm.TimeMarker
 	markerInPlay  *tm.TimeMarker
 	th            *theme.RepeatTheme
 	table         *common.Table[*tm.TimeMarker]
@@ -223,7 +224,7 @@ func (m *MarkersView) cancelDialog() {
 func (m *MarkersView) confirmDialog() {
 	switch m.dialogOwner {
 	case create:
-		m.confirmEdit()
+		m.confirmCreate()
 	case comment:
 		m.confirmComment()
 	case edit:
@@ -239,7 +240,7 @@ func (m *MarkersView) confirmDialog() {
 
 func (m *MarkersView) handleAddMarkerButton(gtx layout.Context) {
 	if m.createCl.Clicked(gtx) {
-		m.openMarkerDialog(m.timeMarkers.NewMarker(0), create, "Create Marker")
+		m.openMarkerDialog(&m.draftMarker, create, "Create Marker")
 	}
 	if m.createCl.Hovered() {
 		common.SetCursor(gtx, pointer.CursorPointer)

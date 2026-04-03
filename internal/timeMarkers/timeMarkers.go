@@ -73,6 +73,20 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 	return newT
 }
 
+func (t *TimeMarkers) AttachNewMarker(newT TimeMarker) bool {
+	if len(*t)+1 > Limit {
+		// TODO: display error
+		return false
+	}
+	newT.EditorTags = EditorTags{
+		Flag:  &struct{}{},
+		Pole:  &struct{}{},
+		Label: &struct{}{},
+	}
+	*t = append(*t, &newT)
+	return true
+}
+
 func (t *TimeMarkers) DeleteDead() (hasDeletion bool) {
 	hasDeletion = false
 	*t = slices.DeleteFunc(*t, func(it *TimeMarker) bool {
