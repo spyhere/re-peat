@@ -451,6 +451,7 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 	var cellWidthSum int
 	var colSum int
 	maxX := gtx.Constraints.Max.X
+	t.columnWidths = t.columnWidths[:0]
 	for idx, it := range colWidths {
 		colSum += it
 		if colSum > 100 {
