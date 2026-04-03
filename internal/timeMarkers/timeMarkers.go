@@ -11,6 +11,7 @@ const (
 	TagsLimit = 10
 )
 
+// TODO: Maybe we can live without pointers here
 type TimeMarkers []*TimeMarker
 
 func NewTimeMarkers() TimeMarkers {
