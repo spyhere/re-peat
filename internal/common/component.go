@@ -214,11 +214,17 @@ var searchSpecs = searchMaterialSpecs{
 }
 
 type SProps struct {
+	Disabled    bool
 	DefaultText string
 	*Inputable
 }
 
 func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.Dimensions {
+	c := th.Palette.Search.Enabled
+	if props.Disabled {
+		c = th.Palette.Search.Disabled
+		gtx = gtx.Disabled()
+	}
 	props.Inputable.Update(gtx)
 
 	containerH := gtx.Dp(searchSpecs.height)
@@ -227,7 +233,7 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	// Background
 	bDims := DrawBox(gtx, Box{
 		Size:       image.Rect(0, 0, containerW, containerH),
-		Color:      th.Palette.Search.Enabled.Bg,
+		Color:      c.Bg,
 		R:          theme.CornerR(containerHHalft, containerHHalft, containerHHalft, containerHHalft),
 		GeometryCb: func() { props.Inputable.Subscribe(gtx) },
 	})
@@ -252,7 +258,6 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 	iconSz, iconPadding := gtx.Dp(searchSpecs.iconSize), gtx.Dp(searchSpecs.iconXPadding)
 
 	// Inner text
-	c := th.Palette.Search.Enabled
 	if isFocused {
 		c = th.Palette.Search.Pressed
 	}
@@ -272,21 +277,23 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		ed.LineHeight = searchSpecs.fontLineHeight
 		ed.TextSize = searchSpecs.fontSize
 		ed.Font.Weight = 400
-		passOp := pointer.PassOp{}.Push(gtx.Ops)
-		ed.Layout(gtx)
-		passOp.Pop()
+		if !props.Disabled {
+			passOp := pointer.PassOp{}.Push(gtx.Ops)
+			ed.Layout(gtx)
+			passOp.Pop()
+		}
 	})
 
 	OffsetBy(gtx, image.Pt(bDims.Size.X-iconPadding-xPadd-iconSz/2, bDims.Size.Y/2-iconSz/2), func(gtx layout.Context) {
 		gtx.Constraints.Min.X = iconSz
 		if len(props.GetInput()) > 0 {
-			micons.Cancel.Layout(gtx, th.Palette.Search.Enabled.Icon)
+			micons.Cancel.Layout(gtx, c.Icon)
 			DrawBox(gtx, Box{
 				Size:      image.Rect(0, 0, iconSz, iconSz),
 				Clickable: &props.Cancel,
 			})
 		} else {
-			micons.Search.Layout(gtx, th.Palette.Search.Enabled.Icon)
+			micons.Search.Layout(gtx, c.Icon)
 		}
 	})
 	return layout.Dimensions{Size: image.Pt(containerW, containerH)}

@@ -43,6 +43,10 @@ var repeatPalette = palette{
 			Icon: rgb(0x49454F),
 			Text: rgb(0x49454F),
 		},
+		Disabled: searchPalette{
+			Bg:   rgb(0xDFDFDF),
+			Icon: rgb(0xCCC2DC),
+		},
 		Hovered: searchPalette{
 			Bg:   argb(0x141D1B20),
 			Icon: rgb(0x49454F),
@@ -163,9 +167,10 @@ type searchPalette struct {
 }
 
 type searchStatesPalette struct {
-	Enabled searchPalette
-	Pressed searchPalette
-	Hovered searchPalette
+	Enabled  searchPalette
+	Disabled searchPalette
+	Pressed  searchPalette
+	Hovered  searchPalette
 }
 
 type segButtonsStatesPalette struct {

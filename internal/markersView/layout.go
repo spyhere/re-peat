@@ -40,6 +40,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
 				Inputable:   m.searchbar,
+				Disabled:    len(*m.timeMarkers) == 0,
 			})
 			return searchDims
 		})

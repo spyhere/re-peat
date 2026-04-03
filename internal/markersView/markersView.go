@@ -142,6 +142,9 @@ func (m *MarkersView) updateDefferedState() {
 	if m.timeMarkers.DeleteDead() {
 		m.chipsFilter.reconcileEnabled(*m.timeMarkers)
 	}
+	if len(*m.timeMarkers) == 0 && m.searchbar.GetInput() != "" {
+		m.searchbar.SetText("")
+	}
 }
 
 func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {
