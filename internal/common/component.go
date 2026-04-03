@@ -863,18 +863,19 @@ var filterChipsSpecs = filterChipsSizeSpecs{
 type FilterChip struct {
 	Text     string
 	Selected bool
-	Cl       *widget.Clickable
+	Cl       widget.Clickable
 }
 
-func DrawChipsFilter(gtx layout.Context, th *theme.RepeatTheme, chips []*FilterChip) layout.Dimensions {
+func DrawChipsFilter(gtx layout.Context, th *theme.RepeatTheme, chips []FilterChip) layout.Dimensions {
 	xGap, yGap := gtx.Dp(filterChipsSpecs.xGap), gtx.Dp(filterChipsSpecs.yGap)
 	xOffset, yOffset := 0, 0
-	for _, it := range chips {
+	for idx := range chips {
+		it := &chips[idx]
 		chipM, chipDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			return DrawChip(gtx, th, ChipProps{
 				Text:     it.Text,
 				Selected: it.Selected,
-				Cl:       it.Cl,
+				Cl:       &it.Cl,
 			})
 		})
 		if gtx.Constraints.Max.X-chipDims.Size.X-xOffset < 0 {

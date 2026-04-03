@@ -67,7 +67,7 @@ func (c *chipsFilter) reconcileEnabled(markers tm.TimeMarkers) {
 }
 
 // Incremental update list of enabled tags
-func (c *chipsFilter) updateEnabled(chips []*common.FilterChip) {
+func (c *chipsFilter) updateEnabled(chips []common.FilterChip) {
 	c.enabled = c.enabled[:0]
 	for chip := range c.enabledMap {
 		delete(c.enabledMap, chip)
