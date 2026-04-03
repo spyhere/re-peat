@@ -54,8 +54,9 @@ func (in *Inputable) Update(gtx layout.Context) {
 			in.requestFocus(gtx)
 		}
 	})
-	in.processEditorEvents(gtx)
 	in.handleKeys(gtx)
+	in.processEditorEvents(gtx)
+	in.handleSelectionCollapse(gtx)
 
 	if in.Cancel.Clicked(gtx) {
 		in.Editor.SetText("")
@@ -189,11 +190,24 @@ func (in *Inputable) GetCursorType() (cursor pointer.Cursor, ok bool) {
 	return pointer.CursorDefault, false
 }
 
-func (in *Inputable) collapseSelection() {
-	start, end := in.Editor.Selection()
-	if start != end {
-		in.Editor.SetCaret(start, start)
+func (in *Inputable) handleSelectionCollapse(gtx layout.Context) {
+	rightArrow := key.Filter{Name: key.NameRightArrow, Focus: &in.Editor}
+	if !in.isFocused {
+		rightArrow.Focus = &in
 	}
+	HandleKeyEvents(gtx, func(e key.Event) {
+		if e.State == key.Release {
+			return
+		}
+		if e.Name == key.NameRightArrow {
+			start, end := in.Editor.Selection()
+			if start != end {
+				in.Editor.SetCaret(start, start)
+			}
+		}
+	},
+		rightArrow,
+	)
 }
 
 func (in *Inputable) handleKeys(gtx layout.Context) {
@@ -207,10 +221,6 @@ func (in *Inputable) handleKeys(gtx layout.Context) {
 		// Disable escape listener when this inputable is not in focus
 		escapeFilter.Focus = &in
 	}
-	rightArrow := key.Filter{Name: key.NameRightArrow, Focus: &in.Editor}
-	if !in.isFocused {
-		rightArrow.Focus = &in
-	}
 	HandleKeyEvents(gtx, func(e key.Event) {
 		if e.State == key.Release {
 			return
@@ -220,13 +230,10 @@ func (in *Inputable) handleKeys(gtx layout.Context) {
 			in.requestBlur(gtx)
 		case key.NameDeleteBackward:
 			in.hasEmptyDeleteEvent = true
-		case key.NameRightArrow:
-			in.collapseSelection()
 		}
 	},
 		escapeFilter,
 		backspaceFilter,
-		rightArrow,
 	)
 }
 
