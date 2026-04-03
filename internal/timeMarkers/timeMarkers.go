@@ -73,17 +73,17 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 	return newT
 }
 
-func (t *TimeMarkers) DeleteDead() bool {
-	noDead := true
+func (t *TimeMarkers) DeleteDead() (hasDeletion bool) {
+	hasDeletion = false
 	*t = slices.DeleteFunc(*t, func(it *TimeMarker) bool {
 		if it.isDead {
-			noDead = false
+			hasDeletion = true
 			return true
 		}
 		return false
 	})
 	t.Sort()
-	return noDead
+	return hasDeletion
 }
 
 func (t *TimeMarkers) Get(idx int, asc bool) *TimeMarker {
