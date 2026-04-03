@@ -25,7 +25,7 @@ type TimeMarker struct {
 	CategoryTags []string
 	List         widget.List
 	ListTags
-	*EditorTags
+	EditorTags
 }
 
 type ListTags struct {
@@ -62,7 +62,7 @@ func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
 	newT := &TimeMarker{
 		Pcm:          pcm,
 		CategoryTags: make([]string, 0, TagsLimit),
-		EditorTags: &EditorTags{
+		EditorTags: EditorTags{
 			Flag:  &struct{}{},
 			Pole:  &struct{}{},
 			Label: &struct{}{},
