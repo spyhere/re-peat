@@ -62,7 +62,6 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	common.OffsetBy(gtx, image.Pt(marginX, topM+searchDims.Size.Y+50), func(gtx layout.Context) {
 		gtx.Constraints.Max.X -= marginX * 2
 		gtx.Constraints.Max.Y -= topM + searchDims.Size.Y + 50
-		m.table.Rows = len(*m.timeMarkers)
 
 		m.table.HeadCells(
 			func(gtx layout.Context) layout.Dimensions {
@@ -285,7 +284,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				})
 			},
 		)
-		m.table.Layout(gtx, m.th, []int{4, 4, 30, 6, 44, 4, 4, 4})
+		m.table.Layout(gtx, m.th, len(*m.timeMarkers), []int{4, 4, 30, 6, 44, 4, 4, 4})
 	})
 
 	if isPlaying {

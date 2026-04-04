@@ -414,7 +414,7 @@ func NewTable[T any](props TableProps[T]) *Table[T] {
 type HeadCellComp func(gtx layout.Context) layout.Dimensions
 type CellComp[T any] func(gtx layout.Context, rowIdx int, rowValue T) layout.Dimensions
 type Table[T any] struct {
-	Rows             int
+	rowsAmount       int
 	rowValueCb       func(int) T
 	rowFilterCb      func(T) bool
 	rowsVisibility   []bool
@@ -440,10 +440,10 @@ func (t *Table[T]) RowCells(rFuncs ...CellComp[T]) {
 	t.rowCellFuncs = rFuncs
 }
 
-func (t *Table[T]) prefilterRows() {
+func (t *Table[T]) prefilterRows(rowsAmount int) {
 	t.rowsVisibility = t.rowsVisibility[:0]
 	t.rowsSkipped = 0
-	for idx := range t.Rows {
+	for idx := range rowsAmount {
 		if !t.rowFilterCb(t.rowValueCb(idx)) {
 			t.rowsVisibility = append(t.rowsVisibility, false)
 			t.rowsSkipped++
@@ -456,7 +456,8 @@ func (t *Table[T]) prefilterRows() {
 const tableXMargin = 8
 const tableYMargin = 12
 
-func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths []int) {
+func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, rowsAmount int, colWidths []int) {
+	t.rowsAmount = rowsAmount
 	DrawBox(gtx, Box{
 		Size:  image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y),
 		Color: th.Palette.CardBg,
@@ -489,7 +490,7 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 		}
 	}
 
-	t.prefilterRows()
+	t.prefilterRows(rowsAmount)
 
 	if cellWidthSum < gtx.Constraints.Max.X {
 		t.columnWidths[len(t.columnWidths)-1] += gtx.Constraints.Max.X - cellWidthSum
@@ -569,17 +570,17 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 	OffsetBy(gtx, image.Pt(0, headerH), func(gtx layout.Context) {
 		DrawDivider(gtx, th, DividerProps{})
 		gtx.Constraints.Max.Y -= bottomMargin
-		rowsAmount := t.Rows
-		if t.rowsSkipped == t.Rows {
-			rowsAmount = min(t.Rows, 1)
+		rowsAmount := t.rowsAmount
+		if t.rowsSkipped == t.rowsAmount {
+			rowsAmount = min(t.rowsAmount, 1)
 		}
 		material.List(th.Theme, t.list).Layout(gtx, rowsAmount, func(gtx layout.Context, rowIdx int) layout.Dimensions {
 			rowValue := t.rowValueCb(rowIdx)
 			if !t.rowsVisibility[rowIdx] {
-				if t.rowsSkipped == t.Rows {
+				if t.rowsSkipped == t.rowsAmount {
 					return t.drawEmptyRowInfo(gtx, th, s, "нет совпадений, очистите фильтр")
 				}
-				if rowIdx == t.Rows-1 {
+				if rowIdx == t.rowsAmount-1 {
 					return t.drawEmptyRowInfo(gtx, th, s, "...")
 				}
 				return layout.Dimensions{}
