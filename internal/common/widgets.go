@@ -389,6 +389,12 @@ type TableProps[T any] struct {
 const tableColumnsInitAmount = 16
 
 func NewTable[T any](props TableProps[T]) *Table[T] {
+	if props.RowValueCb == nil {
+		log.Fatal("You should provide RowValueCb for the table")
+	}
+	if props.RowFilterCb == nil {
+		props.RowFilterCb = func(t T) bool { return true }
+	}
 	l := widget.List{}
 	l.Axis = props.Axis
 	return &Table[T]{
