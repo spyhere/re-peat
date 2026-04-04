@@ -68,6 +68,9 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	seconds = min(a.Seconds, seconds)
 	m.TimeMarker.Name = m.nameField.Text()
 	m.TimeMarker.Pcm = a.GetPcmFromSeconds(seconds)
+	if m.tagsField.GetInput() != "" {
+		m.handleTagsFieldNewChip()
+	}
 	m.TimeMarker.CategoryTags = m.tags
 	m.TimeMarker = nil
 	m.focuser.RequestBlur(nil)
@@ -136,30 +139,36 @@ func (m *markerDialog) normalizeTimeInput() {
 	m.timeField.SetText(common.FormatSeconds(maxSeconds))
 }
 
+func (m *markerDialog) handleTagsFieldNewChip() {
+	newTag := m.tagsField.GetInput()
+	if newTag == "" {
+		return
+	}
+	runes := []rune(newTag)
+	runes[0] = unicode.ToUpper(runes[0])
+	newTag = string(runes)
+	suchTagExists := slices.ContainsFunc(m.tags, func(it string) bool {
+		return it == newTag
+	})
+	if suchTagExists {
+		return
+	}
+	m.tags = append(m.tags, newTag)
+	m.tagsField.SetText("")
+	m.tagsField.ClearEmptyDeleteEvent()
+}
+
 func (m *markerDialog) handleFieldsEvents() {
 	if m.nameField.HasSubmit() {
 		m.focuser.RequestFocus(m.timeField)
+		return
 	}
 	if m.timeField.HasSubmit() {
 		m.focuser.RequestFocus(m.tagsField)
+		return
 	}
 	if m.tagsField.HasSubmit() {
-		newTag := m.tagsField.GetInput()
-		if newTag == "" {
-			return
-		}
-		runes := []rune(newTag)
-		runes[0] = unicode.ToUpper(runes[0])
-		newTag = string(runes)
-		suchTagExists := slices.ContainsFunc(m.tags, func(it string) bool {
-			return it == newTag
-		})
-		if suchTagExists {
-			return
-		}
-		m.tags = append(m.tags, newTag)
-		m.tagsField.SetText("")
-		m.tagsField.ClearEmptyDeleteEvent()
+		m.handleTagsFieldNewChip()
 		return
 	}
 	if v, ok := m.tagsField.HasSelectedValue(); ok {
@@ -172,6 +181,7 @@ func (m *markerDialog) handleFieldsEvents() {
 	if remIdx := m.tagsField.HasRemovedChip(); remIdx >= 0 {
 		copy(m.tags[remIdx:], m.tags[remIdx+1:])
 		m.tags = m.tags[:len(m.tags)-1]
+		return
 	}
 	if len(m.tags) > 0 && m.tagsField.HasEmptyDeleteEvent() {
 		m.tags = m.tags[:len(m.tags)-1]
