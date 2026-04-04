@@ -405,6 +405,7 @@ func NewTable[T any](props TableProps[T]) *Table[T] {
 		rCellsAllignment: props.RowCellsAlignment,
 		rowCellFuncs:     make([]CellComp[T], 0, tableColumnsInitAmount),
 		cellsBuf:         make([]layout.FlexChild, 0, tableColumnsInitAmount),
+		rowsVisibility:   make([]bool, 0, 32),
 		rowValueCb:       props.RowValueCb,
 		rowFilterCb:      props.RowFilterCb,
 	}
@@ -416,6 +417,8 @@ type Table[T any] struct {
 	Rows             int
 	rowValueCb       func(int) T
 	rowFilterCb      func(T) bool
+	rowsVisibility   []bool
+	rowsSkipped      int
 	cellsBuf         []layout.FlexChild
 	list             *widget.List
 	columnWidths     []int
@@ -435,6 +438,19 @@ func (t *Table[T]) RowCells(rFuncs ...CellComp[T]) {
 		log.Fatal("Incorrect usage of table! Row: number of cell render functions are not equal to set headers amount")
 	}
 	t.rowCellFuncs = rFuncs
+}
+
+func (t *Table[T]) prefilterRows() {
+	t.rowsVisibility = t.rowsVisibility[:0]
+	t.rowsSkipped = 0
+	for idx := range t.Rows {
+		if !t.rowFilterCb(t.rowValueCb(idx)) {
+			t.rowsVisibility = append(t.rowsVisibility, false)
+			t.rowsSkipped++
+		} else {
+			t.rowsVisibility = append(t.rowsVisibility, true)
+		}
+	}
 }
 
 const tableXMargin = 8
@@ -471,8 +487,10 @@ func (t *Table[T]) Layout(gtx layout.Context, th *theme.RepeatTheme, colWidths [
 				DrawDivider(gtx, th, DividerProps{Axis: Vertical})
 			})
 		}
-
 	}
+
+	t.prefilterRows()
+
 	if cellWidthSum < gtx.Constraints.Max.X {
 		t.columnWidths[len(t.columnWidths)-1] += gtx.Constraints.Max.X - cellWidthSum
 	}
@@ -498,9 +516,9 @@ func defaultTableStyle() tableStyle {
 	}
 }
 
-func (t *Table[T]) drawNoResultsInfo(gtx layout.Context, th *theme.RepeatTheme, s tableStyle) layout.Dimensions {
+func (t *Table[T]) drawEmptyRowInfo(gtx layout.Context, th *theme.RepeatTheme, s tableStyle, info string) layout.Dimensions {
 	textM, textDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-		txtStyle := material.H6(th.Theme, "нет совпадений, очистите фильтр")
+		txtStyle := material.H6(th.Theme, info)
 		txtStyle.Alignment = text.Middle
 		txtStyle.Font.Style = font.Italic
 		gtx.Constraints.Min = image.Pt(gtx.Constraints.Max.X, 0)
@@ -551,16 +569,20 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 	OffsetBy(gtx, image.Pt(0, headerH), func(gtx layout.Context) {
 		DrawDivider(gtx, th, DividerProps{})
 		gtx.Constraints.Max.Y -= bottomMargin
-		var rowsSkipped int
-		material.List(th.Theme, t.list).Layout(gtx, t.Rows, func(gtx layout.Context, rowIdx int) layout.Dimensions {
+		rowsAmount := t.Rows
+		if t.rowsSkipped == t.Rows {
+			rowsAmount = min(t.Rows, 1)
+		}
+		material.List(th.Theme, t.list).Layout(gtx, rowsAmount, func(gtx layout.Context, rowIdx int) layout.Dimensions {
 			rowValue := t.rowValueCb(rowIdx)
-			if t.rowFilterCb != nil && !t.rowFilterCb(rowValue) {
-				if rowsSkipped < t.Rows-1 {
-					rowsSkipped++
-					return layout.Dimensions{}
-				} else {
-					return t.drawNoResultsInfo(gtx, th, s)
+			if !t.rowsVisibility[rowIdx] {
+				if t.rowsSkipped == t.Rows {
+					return t.drawEmptyRowInfo(gtx, th, s, "нет совпадений, очистите фильтр")
 				}
+				if rowIdx == t.Rows-1 {
+					return t.drawEmptyRowInfo(gtx, th, s, "...")
+				}
+				return layout.Dimensions{}
 			}
 			for colIdx, it := range t.rowCellFuncs {
 				t.cellsBuf[colIdx] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
