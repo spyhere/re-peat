@@ -395,7 +395,7 @@ func NewTable[T any](props TableProps[T]) *Table[T] {
 	l := widget.List{}
 	l.Axis = props.Axis
 	return &Table[T]{
-		list:             &l,
+		list:             l,
 		columnWidths:     make([]int, 0, tableColumnsInitAmount),
 		hCellsAllignment: props.HeaderCellsAlignment,
 		headCellFuncs:    make([]HeadCellComp, 0, tableColumnsInitAmount),
@@ -417,7 +417,7 @@ type Table[T any] struct {
 	rowsVisibility   []bool
 	rowsSkipped      int
 	cellsBuf         []layout.FlexChild
-	list             *widget.List
+	list             widget.List
 	columnWidths     []int
 	hCellsAllignment []layout.Direction
 	rCellsAllignment []layout.Direction
@@ -571,7 +571,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 		if t.rowsSkipped == t.rowsAmount {
 			rowsAmount = min(t.rowsAmount, 1)
 		}
-		material.List(th.Theme, t.list).Layout(gtx, rowsAmount, func(gtx layout.Context, rowIdx int) layout.Dimensions {
+		material.List(th.Theme, &t.list).Layout(gtx, rowsAmount, func(gtx layout.Context, rowIdx int) layout.Dimensions {
 			rowValue := t.rowValueCb(rowIdx)
 			if !t.rowsVisibility[rowIdx] {
 				if t.rowsSkipped == t.rowsAmount {
