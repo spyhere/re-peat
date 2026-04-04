@@ -155,7 +155,6 @@ func (m *markerDialog) handleTagsFieldNewChip() {
 	}
 	m.tags = append(m.tags, newTag)
 	m.tagsField.SetText("")
-	m.tagsField.ClearEmptyDeleteEvent()
 }
 
 func (m *markerDialog) handleFieldsEvents() {
@@ -175,7 +174,6 @@ func (m *markerDialog) handleFieldsEvents() {
 		m.tags = append(m.tags, v)
 		m.tagsField.SetText("")
 		m.tagOptions = m.tagOptions[:0]
-		m.tagsField.ClearEmptyDeleteEvent()
 		return
 	}
 	if remIdx := m.tagsField.HasRemovedChip(); remIdx >= 0 {
@@ -183,7 +181,7 @@ func (m *markerDialog) handleFieldsEvents() {
 		m.tags = m.tags[:len(m.tags)-1]
 		return
 	}
-	if len(m.tags) > 0 && m.tagsField.HasEmptyDeleteEvent() {
+	if m.tagsField.HasEmptyDeleteEvent() && len(m.tags) > 0 {
 		m.tags = m.tags[:len(m.tags)-1]
 	}
 }
