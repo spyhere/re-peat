@@ -49,7 +49,7 @@ func populateCache(cache map[int][][2]float32, samples []float32, workers []*cac
 			}
 			w.count--
 			if w.count == 0 {
-				cache[w.samplesPerPx][w.sliceIdx] = [2]float32{w.min, w.max}
+				cache[w.samplesPerPx] = append(cache[w.samplesPerPx], [2]float32{w.min, w.max})
 				w.sliceIdx++
 				w.min = 1
 				w.max = -1

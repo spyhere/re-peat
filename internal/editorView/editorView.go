@@ -119,7 +119,7 @@ func (ed *Editor) SetSize(size image.Point) {
 	}
 }
 
-// TODO: optimisation - debounce on window resize
+// TODO: optimization - parallelise samples scan (~60 ms on resize for now)
 func (ed *Editor) MakePeakMap() {
 	if ed.cache.isPopulated {
 		return
@@ -138,7 +138,10 @@ func (ed *Editor) MakePeakMap() {
 			max:          -1,
 			count:        i,
 		}
-		ed.cache.peakMap[i] = make([][2]float32, len(ed.monoSamples)/i)
+		if cap(ed.cache.peakMap[i]) == 0 {
+			ed.cache.peakMap[i] = make([][2]float32, len(ed.monoSamples)/i)
+		}
+		ed.cache.peakMap[i] = ed.cache.peakMap[i][:0]
 		ed.cache.levels[idx] = i
 		idx++
 	}
