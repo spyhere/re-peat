@@ -326,9 +326,6 @@ func (c *Comboboxable) SetOptions(options []string) {
 }
 
 func (c *Comboboxable) SetChips(values []string) {
-	if len(c.chips) == len(values) {
-		return
-	}
 	for idx, it := range values {
 		if idx < len(c.chips) {
 			c.chips[idx].Text = it
