@@ -510,7 +510,7 @@ func defaultTableStyle() tableStyle {
 		headerH:          42,
 		cellMargin:       5,
 		rowHeight:        50,
-		noEntriesMarginT: 6,
+		noEntriesMarginT: 3,
 	}
 }
 
@@ -575,7 +575,7 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 			rowValue := t.rowValueCb(rowIdx)
 			if !t.rowsVisibility[rowIdx] {
 				if t.rowsSkipped == t.rowsAmount {
-					return t.drawEmptyRowInfo(gtx, th, s, "нет совпадений, очистите фильтр")
+					return t.drawEmptyRowInfo(gtx, th, s, "нет совпадений, уточните фильтры")
 				}
 				if rowIdx == t.rowsAmount-1 {
 					return t.drawEmptyRowInfo(gtx, th, s, "...")
