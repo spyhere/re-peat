@@ -88,6 +88,7 @@ func Clamp[T cmp.Ordered](from T, this T, to T) T {
 	return min(max(from, this), to)
 }
 
+// TODO: Get rig of Atoi on every frame
 func PrcToPx(origin int, prc string) int {
 	prc = strings.Split(prc, "%")[0]
 	prcInt, err := strconv.Atoi(prc)

@@ -7,12 +7,12 @@ import (
 	"gioui.org/app"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
-	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	editorview "github.com/spyhere/re-peat/internal/editorView"
 	markersview "github.com/spyhere/re-peat/internal/markersView"
 	p "github.com/spyhere/re-peat/internal/player"
+	projectview "github.com/spyhere/re-peat/internal/projectView"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -40,6 +40,9 @@ func newApp() *App {
 		th:      th,
 		dialog:  &d,
 		buttons: newButtons(),
+		projectView: projectview.NewProjectView(projectview.Props{
+			Th: th,
+		}),
 		markersView: markersview.NewMarkersView(markersview.Props{
 			Audio:       a,
 			Th:          th,
@@ -76,6 +79,7 @@ const (
 
 type App struct {
 	dialog      *common.Dialog
+	projectView projectview.ProjectView
 	markersView *markersview.MarkersView
 	editorView  *editorview.Editor
 	selectedTab tab
@@ -101,7 +105,7 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 
 	switch a.selectedTab {
 	case Project:
-		material.H1(a.th.Theme, "Project").Layout(gtx)
+		a.projectView.Layout(gtx)
 	case Markers:
 		a.markersView.Layout(gtx)
 	case Editor:
