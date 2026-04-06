@@ -107,7 +107,7 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	case Editor:
 		a.editorView.SetSize(e.Size)
 		a.editorView.MakePeakMap()
-		a.editorView.Layout(gtx, e)
+		a.editorView.Layout(gtx)
 	}
 	a.dispatch(gtx)
 

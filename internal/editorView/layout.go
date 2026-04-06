@@ -3,13 +3,12 @@ package editorview
 import (
 	"image"
 
-	"gioui.org/app"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"github.com/spyhere/re-peat/internal/common"
 )
 
-func (ed *Editor) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
+func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 	ed.dispatch(gtx)
 	ed.updateDifferedState()
 	if ed.p.IsPlaying() {
