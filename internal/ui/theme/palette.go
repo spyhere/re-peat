@@ -82,8 +82,7 @@ var repeatPalette = palette{
 			UnSelected: argb(0x141D1B20),
 		},
 	},
-	ProjectViewBg: rgb(0xE0E0E0),
-	ProjectCardS:  rgb(0x6750A4),
+	Project:       project,
 	MarkersViewBg: rgb(0x7EB6D7),
 	Editor: editorPalette{
 		Bg:        tan,
@@ -125,8 +124,7 @@ type palette struct {
 	Input         inputFieldStatePalette
 	CardBg        color.NRGBA
 	SegButtons    segButtonsStatesPalette
-	ProjectViewBg color.NRGBA
-	ProjectCardS  color.NRGBA
+	Project       projectPalette
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette
 }

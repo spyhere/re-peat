@@ -31,4 +31,6 @@ var (
 	Tick             = newIcon(icons.NavigationCheck)
 	Comment          = newIcon(icons.EditorModeComment)
 	CommentInsert    = newIcon(icons.EditorInsertComment)
+	Folder           = newIcon(icons.FileFolder)
+	Save             = newIcon(icons.ContentSave)
 )
