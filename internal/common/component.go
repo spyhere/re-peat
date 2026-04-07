@@ -991,3 +991,85 @@ func DrawIconButton(gtx layout.Context, props IconButtonProps) layout.Dimensions
 	})
 	return boxDim
 }
+
+type buttonMaterialSpecs struct {
+	mH           unit.Dp
+	mPad         unit.Dp
+	mIconTextPad unit.Dp
+	mShape       int
+	mIcon        unit.Dp
+}
+
+type ButtonStyle struct {
+	th        *theme.RepeatTheme
+	Bg        color.NRGBA
+	Fg        color.NRGBA
+	Cl        *widget.Clickable
+	Icon      *widget.Icon
+	Text      string
+	WExpanded bool
+	buttonMaterialSpecs
+}
+
+func Button(th *theme.RepeatTheme, cl *widget.Clickable, icon *widget.Icon, text string) ButtonStyle {
+	return ButtonStyle{
+		th:   th,
+		Bg:   th.Palette.IconButton.Enabled.Bg,
+		Fg:   th.Palette.IconButton.Enabled.Icon,
+		Cl:   cl,
+		Icon: icon,
+		Text: text,
+		buttonMaterialSpecs: buttonMaterialSpecs{
+			mH:           56,
+			mPad:         24,
+			mIconTextPad: 8,
+			mShape:       16,
+			mIcon:        18,
+		},
+	}
+}
+
+func (b ButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
+	textM, dims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		txtStyle := material.Label(b.th.Theme, 14, b.Text)
+		txtStyle.LineHeight = 20
+		txtStyle.Color = b.Fg
+		txtStyle.Font = fonts.GoMedium(font.Medium, font.Regular)
+		gtx.Constraints.Min = image.Point{}
+		return txtStyle.Layout(gtx)
+	})
+	mPad, mIcon, mIconTextPad := gtx.Dp(b.mPad), gtx.Dp(b.mIcon), gtx.Dp(b.mIconTextPad)
+	mH := gtx.Dp(b.mH)
+	dims.Size.X += mPad * 2
+
+	if b.Icon != nil {
+		dims.Size.X += mIcon + mIconTextPad
+	}
+
+	btnDims := layout.Dimensions{Size: image.Pt(dims.Size.X, mH)}
+	if b.WExpanded {
+		btnDims.Size.X = gtx.Constraints.Min.X
+		mPad += (btnDims.Size.X - dims.Size.X) / 2
+	}
+
+	DrawBox(gtx, Box{
+		Size:      image.Rect(0, 0, btnDims.Size.X, btnDims.Size.Y),
+		Color:     b.Bg,
+		Clickable: b.Cl,
+		R:         theme.CornerR(b.mShape, b.mShape, b.mShape, b.mShape),
+	})
+	OffsetBy(gtx, image.Pt(mPad, 0), func(gtx layout.Context) {
+		var xOffset layout.Dimensions
+		if b.Icon != nil {
+			OffsetBy(gtx, image.Pt(0, mH/2-mIcon/2), func(gtx layout.Context) {
+				gtx.Constraints.Min.X = mIcon
+				b.Icon.Layout(gtx, b.Fg)
+			})
+			xOffset.Size.X += mIcon + mIconTextPad
+		}
+		OffsetBy(gtx, image.Pt(xOffset.Size.X, mH/2-dims.Size.Y/2), func(gtx layout.Context) {
+			textM.Add(gtx.Ops)
+		})
+	})
+	return btnDims
+}
