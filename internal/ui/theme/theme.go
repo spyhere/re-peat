@@ -19,6 +19,7 @@ func New() (*RepeatTheme, error) {
 	if err != nil {
 		return nil, err
 	}
+	fonts.FontsCollection.RememberFonts(fontFaces)
 	newTheme := &RepeatTheme{
 		Theme:   material.NewTheme(),
 		Palette: repeatPalette,
