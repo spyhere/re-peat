@@ -10,6 +10,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/fonts"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -21,7 +22,6 @@ type segButtMaterialSpecs struct {
 	minPad        unit.Dp
 	iconSize      unit.Dp
 	elementsGap   unit.Dp
-	fontFace      font.Typeface
 	fontWeight    font.Weight
 	fontSize      unit.Sp
 	fontLineHeigt unit.Sp
@@ -33,8 +33,7 @@ var segButtSpecs segButtMaterialSpecs = segButtMaterialSpecs{
 	minPad:        16,
 	iconSize:      18,
 	elementsGap:   8,
-	fontFace:      "Roboto",
-	fontWeight:    500,
+	fontWeight:    font.Medium,
 	fontSize:      14,
 	fontLineHeigt: 20,
 }
@@ -61,8 +60,7 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 			} else {
 				textBody2.Color = segButtonP.UnSelText
 			}
-			textBody2.Font.Typeface = segButtSpecs.fontFace
-			textBody2.Font.Weight = segButtSpecs.fontWeight
+			textBody2.Font = fonts.GoMedium(segButtSpecs.fontWeight, font.Regular)
 			textBody2.TextSize = segButtSpecs.fontSize
 			textBody2.LineHeight = segButtSpecs.fontLineHeigt
 			return textBody2.Layout(gtx)

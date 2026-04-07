@@ -12,6 +12,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/fonts"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
@@ -178,6 +179,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				rowNum := fmt.Sprintf("%02d", rowIdx+1)
 				curInput := string(m.hotKeyBuf)
 				txt := material.Body2(m.th.Theme, rowNum)
+				txt.Font = fonts.GoMedium(font.Medium, font.Regular)
 				dims := txt.Layout(gtx)
 				if strings.HasPrefix(rowNum, curInput) {
 					var highlightTDim layout.Dimensions
@@ -215,6 +217,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
 				txt := material.Body2(m.th.Theme, (*m.timeMarkers).Get(rowIdx, true).Name)
+				txt.Font = fonts.GoMedium(font.Medium, font.Regular)
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {

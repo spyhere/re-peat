@@ -17,6 +17,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/fonts"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -272,12 +273,11 @@ func DrawSearch(gtx layout.Context, th *theme.RepeatTheme, props SProps) layout.
 		}
 		gtx.Constraints.Min = image.Point{}
 		ed := material.Editor(th.Theme, &props.Editor, text)
-		ed.Font.Typeface = "Roboto"
+		ed.Font = fonts.GoMedium(font.Medium, font.Regular)
 		ed.Color = c.Text
 		ed.HintColor = th.Palette.Search.Enabled.Text
 		ed.LineHeight = searchSpecs.fontLineHeight
 		ed.TextSize = searchSpecs.fontSize
-		ed.Font.Weight = 400
 		if !props.Disabled {
 			passOp := pointer.PassOp{}.Push(gtx.Ops)
 			ed.Layout(gtx)
@@ -336,7 +336,7 @@ func inputFieldBase() inputFieldMaterialStyle {
 		lblHeightBig:      24,
 		lblSizeSmall:      12,
 		lblHeightSmall:    16,
-		lblWeight:         400,
+		lblWeight:         font.Medium,
 		supTxtSize:        12,
 		supTxtHeight:      16,
 	}
@@ -431,10 +431,9 @@ func (s inputFieldMaterialStyle) layout(gtx layout.Context, th *theme.RepeatThem
 		lblTxtAlign.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 			gtx.Constraints.Min = image.Point{}
 			labelTxt := material.Body2(th.Theme, props.LabelText)
-			labelTxt.Font.Typeface = "Roboto"
+			labelTxt.Font = fonts.GoMedium(s.lblWeight, font.Regular)
 			labelTxt.TextSize = lblTxtSize
 			labelTxt.LineHeight = lblTxtHeight
-			labelTxt.Font.Weight = s.lblWeight
 			labelTxt.Color = c.LabelText
 			txtDims := labelTxt.Layout(gtx)
 			incrDims.Size.Y += txtDims.Size.Y
@@ -512,12 +511,11 @@ func DrawInputField(gtx layout.Context, th *theme.RepeatTheme, props InputFieldP
 			placeholder = props.Placeholder
 		}
 		ed := material.Editor(th.Theme, &props.Editor, placeholder)
-		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
 		inputFieldSpecs := inputFieldBase()
 		ed.LineHeight = inputFieldSpecs.lblHeightBig
 		ed.TextSize = inputFieldSpecs.lblSizeBig
-		ed.Font.Weight = inputFieldSpecs.lblWeight
+		ed.Font = fonts.GoMedium(inputFieldSpecs.lblWeight, font.Regular)
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
 		edDims := ed.Layout(gtx)
 		passOp.Pop()
@@ -547,11 +545,10 @@ func DrawTextField(gtx layout.Context, th *theme.RepeatTheme, props TextFieldPro
 			placeholder = props.Placeholder
 		}
 		ed := material.Editor(th.Theme, &props.Editor, placeholder)
-		ed.Font.Typeface = "Roboto"
+		ed.Font = fonts.GoMedium(inputFieldStyle.lblWeight, font.Regular)
 		ed.Color = c.InputText
 		ed.LineHeight = inputFieldStyle.lblHeightBig
 		ed.TextSize = inputFieldStyle.lblSizeBig
-		ed.Font.Weight = inputFieldStyle.lblWeight
 		passOp := pointer.PassOp{}.Push(gtx.Ops)
 		edDims := ed.Layout(gtx)
 		passOp.Pop()
@@ -587,7 +584,6 @@ func DrawCombobox(gtx layout.Context, th *theme.RepeatTheme, props ComboboxProps
 			placeholder = props.Placeholder
 		}
 		ed := material.Editor(th.Theme, &props.Editor, placeholder)
-		ed.Font.Typeface = "Roboto"
 		ed.Color = c.InputText
 		ed.LineHeight = inputFieldStyle.lblHeightBig
 		ed.TextSize = inputFieldStyle.lblSizeBig
@@ -796,10 +792,9 @@ func DrawChip(gtx layout.Context, th *theme.RepeatTheme, props ChipProps) layout
 		gtx.Constraints.Min = image.Point{}
 		txt := material.Body2(th.Theme, props.Text)
 		txt.Color = c.Text
-		txt.Font.Typeface = "Roboto"
+		txt.Font = fonts.GoMedium(font.Medium, font.Regular)
 		txt.LineHeight = 20
 		txt.TextSize = 14
-		txt.Font.Weight = 500
 		txt.WrapPolicy = text.WrapWords
 		return txt.Layout(gtx)
 	})
