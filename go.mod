@@ -4,8 +4,14 @@ go 1.25.4
 
 require (
 	gioui.org v0.9.0
+	gioui.org/x v0.9.0
 	github.com/ebitengine/oto/v3 v3.4.0
 	github.com/tosone/minimp3 v1.0.2
+)
+
+require (
+	git.wow.st/gmp/jni v0.0.0-20210610011705-34026c7e22d0 // indirect
+	github.com/godbus/dbus/v5 v5.0.6 // indirect
 )
 
 require (
