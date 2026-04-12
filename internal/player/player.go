@@ -1,82 +1,146 @@
 package player
 
 import (
-	"bytes"
-	"io"
+	"math"
+	"os"
+	"time"
 
-	"github.com/ebitengine/oto/v3"
-	"github.com/spyhere/re-peat/internal/constants"
-	"github.com/tosone/minimp3"
+	"github.com/gopxl/beep"
+	"github.com/gopxl/beep/effects"
+	"github.com/gopxl/beep/mp3"
+	"github.com/gopxl/beep/speaker"
 )
 
+const defaultSampleRate = 44100
+
+func NewPlayer() *Player {
+	speaker.Init(defaultSampleRate, beep.SampleRate(defaultSampleRate).N(time.Second/10))
+	return &Player{
+		format: beep.Format{
+			SampleRate:  defaultSampleRate,
+			NumChannels: 2,
+		},
+	}
+}
+
 type Player struct {
-	player *oto.Player
-	reader *bytes.Reader
-	// Amount of PCM bytes
-	dataLen  int
-	totalSec float32
+	streamer beep.StreamSeekCloser
+	format   beep.Format
+	ctrl     *beep.Ctrl
+	volume   *effects.Volume
+	eof      bool
 }
 
-func (p *Player) Play() {
-	p.player.Play()
+func (p *Player) attachStreamer(str beep.Streamer, f beep.Format) {
+	if f.SampleRate != p.format.SampleRate {
+		resampled := beep.Resample(4, f.SampleRate, p.format.SampleRate, p.volume)
+		str = resampled
+	}
+	p.format = f
+	speaker.Play(beep.Seq(str, beep.Callback(func() {
+		p.eof = true
+	})))
 }
 
-func (p *Player) Pause() {
-	p.player.Pause()
-}
+func (p *Player) SetAudio(f *os.File) error {
+	if p.streamer != nil {
+		p.streamer.Close()
+	}
+	// f.Name -> mp3, wav, flac
+	streamer, format, err := mp3.Decode(f)
+	if err != nil {
+		return err
+	}
 
-func (p *Player) IsPlaying() bool {
-	return p.player.IsPlaying()
+	p.streamer = streamer
+	// NOTE: Use this to create audio struct?
+	p.ctrl = &beep.Ctrl{Streamer: streamer, Paused: true}
+	p.volume = &effects.Volume{
+		Streamer: p.ctrl,
+		Base:     2,
+		Volume:   0,
+		Silent:   false,
+	}
+	p.attachStreamer(p.volume, format)
+	return nil
 }
 
 func (p *Player) SetVolume(volume float64) {
-	p.player.SetVolume(volume)
+	speaker.Lock()
+	defer speaker.Unlock()
+	if volume <= 0 {
+		p.volume.Silent = true
+		return
+	}
+	p.volume.Silent = false
+	v := math.Pow(volume, 2.0)
+	p.volume.Volume = math.Log2(v)
 }
 
-func (p *Player) Search(seconds float32) (int64, error) {
-	value := int64(seconds * float32(p.dataLen) / p.totalSec)
-	value -= value % constants.BytesPerSample
-	return p.player.Seek(value, io.SeekStart)
+func (p *Player) Play() {
+	if p.eof {
+		return
+	}
+	speaker.Lock()
+	defer speaker.Unlock()
+	p.ctrl.Paused = false
+}
+func (p *Player) Pause() {
+	if p.eof {
+		return
+	}
+	speaker.Lock()
+	defer speaker.Unlock()
+	p.ctrl.Paused = true
+}
+func (p *Player) IsPlaying() bool {
+	if p.eof {
+		return false
+	}
+	return !p.ctrl.Paused
+}
+func (p *Player) IsEOF() bool {
+	return p.eof
 }
 
+// FIX: we should get rid of double conversion and pass samples instead
 func (p *Player) Set(pcm int64) (int64, error) {
-	wasPlaying := p.player.IsPlaying()
-	// Pausing to avoid possible race condition problems
-	p.player.Pause()
-	val, err := p.player.Seek(pcm, io.SeekStart)
-	if wasPlaying {
-		p.player.Play()
+	if p.eof == true {
+		speaker.Lock()
+		p.ctrl.Paused = true
+		speaker.Unlock()
+		p.eof = false
+		p.attachStreamer(p.volume, p.format)
 	}
-	return val, err
-}
-
-func (p *Player) BufferedSize() int {
-	return p.player.BufferedSize()
-}
-
-func (p *Player) GetReadAmount() int64 {
-	current, _ := p.reader.Seek(0, io.SeekCurrent)
-	return current - int64(p.player.BufferedSize())
-}
-
-func NewPlayer(dec *minimp3.Decoder, data []byte) (*Player, error) {
-	var err error
-	op := &oto.NewContextOptions{
-		SampleRate:   dec.SampleRate,
-		ChannelCount: dec.Channels,
-		Format:       oto.FormatSignedInt16LE,
-	}
-	otoCtx, readyChan, err := oto.NewContext(op)
+	speaker.Lock()
+	defer speaker.Unlock()
+	// FIX: should be not pcm, but samples
+	err := p.streamer.Seek(int(pcm))
 	if err != nil {
-		return &Player{}, err
+		return 0, err
 	}
-	<-readyChan
-	reader := bytes.NewReader(data)
-	player := otoCtx.NewPlayer(reader)
-	return &Player{
-		player:   player,
-		reader:   reader,
-		dataLen:  len(data),
-		totalSec: float32(len(data)) / float32(dec.SampleRate) * 0.25,
-	}, nil
+	pos := p.streamer.Position()
+	return int64(pos), nil
+}
+func (p *Player) Search(seconds float32) (int, error) {
+	if p.eof == true {
+		speaker.Lock()
+		p.ctrl.Paused = true
+		speaker.Unlock()
+		p.eof = false
+		p.attachStreamer(p.volume, p.format)
+	}
+	speaker.Lock()
+	defer speaker.Unlock()
+	dur := time.Duration(seconds * float32(time.Second))
+	samplesN := p.format.SampleRate.N(dur)
+	if err := p.streamer.Seek(samplesN); err != nil {
+		return 0, err
+	}
+	return p.streamer.Position(), nil
+}
+func (p *Player) GetReadAmount() int {
+	speaker.Lock()
+	defer speaker.Unlock()
+	return p.streamer.Position()
 }

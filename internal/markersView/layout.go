@@ -291,7 +291,9 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	})
 
 	if isPlaying {
-		drawPlayerState(gtx, m.th, m.audio.GetSecondsFromPCM(m.p.GetReadAmount()), m.audio.Seconds)
+		// FIX: this is samples instead of pcm
+		pcm := int64(m.p.GetReadAmount() * 4)
+		drawPlayerState(gtx, m.th, m.audio.GetSecondsFromPCM(pcm), m.audio.Seconds)
 	}
 
 	m.fm.PlaceScrim(gtx)

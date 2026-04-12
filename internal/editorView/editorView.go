@@ -154,7 +154,8 @@ func (ed *Editor) playheadPosFromX(posX float32) {
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.SampleRate))
 	// TODO: handle error here
 	seekVal, _ := ed.p.Search(seconds)
-	ed.playhead.set(seekVal)
+	// FIX: this is samples instead of pcm
+	ed.playhead.set(int64(seekVal) * 4)
 }
 
 func (ed *Editor) setPlayhead(pcmValue int64) {
@@ -246,7 +247,8 @@ func (ed *Editor) pausePlay() {
 }
 
 func (ed *Editor) listenToPlayerUpdates() {
-	ed.playhead.bytes = ed.p.GetReadAmount()
+	// FIX: This is samples instead of pcm
+	ed.playhead.bytes = int64(ed.p.GetReadAmount() * 4)
 }
 
 func (ed *Editor) isCreateButtonVisible() bool {

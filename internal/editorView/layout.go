@@ -12,7 +12,7 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 	ed.dispatch(gtx)
 	ed.updateDifferedState()
 	if ed.p.IsPlaying() {
-		if ed.playhead.bytes < ed.audio.PcmLen {
+		if !ed.p.IsEOF() {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playhead.update)})
 		}
 		ed.listenToPlayerUpdates()
