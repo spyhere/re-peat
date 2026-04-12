@@ -30,7 +30,7 @@ func offsetBy(gtx layout.Context, amount image.Point, w func()) {
 	w()
 }
 
-func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int, audio audio.Audio, scroll scroll) layout.Dimensions {
+func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int, scroll scroll) layout.Dimensions {
 	maxX := gtx.Constraints.Max.X
 	currSamples := playhead - scroll.leftB
 	x := int(float32(currSamples) * float32(maxX) / float32(scroll.rightB-scroll.leftB))
@@ -199,7 +199,7 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio.Audio, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
