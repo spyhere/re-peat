@@ -155,8 +155,7 @@ func (ed *Editor) handleDragMarker(p pointerEvent) {
 		dSamples := int(ed.scroll.samplesPerPx * p.Event.Position.X)
 		m := p.Target.Marker
 		m.Samples = ed.scroll.leftB + int(dSamples)
-		// FIX: audio needs revision
-		m.Samples = common.Clamp(0, m.Samples, ed.audio.MonoSamplesLen*ed.audio.Channels)
+		m.Samples = common.Clamp(0, m.Samples, ed.audio.GetSamplesAmount())
 		ed.markers.sort()
 	case pointer.Release:
 		ed.mode = modeHitWave

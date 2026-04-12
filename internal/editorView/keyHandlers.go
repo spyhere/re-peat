@@ -7,8 +7,7 @@ func (ed *Editor) switchPlayerState() {
 		return
 	}
 	if !ed.p.IsPlaying() {
-		// FIX: needs revision
-		if ed.playhead.samples >= ed.audio.MonoSamplesLen*ed.audio.Channels {
+		if ed.playhead.samples >= ed.audio.GetSamplesAmount() {
 			return
 		}
 		ed.startPlay()
