@@ -52,7 +52,7 @@ func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, allChips map[
 
 	m.TimeMarker = curMarker
 	m.nameField.SetText(curMarker.Name)
-	formattedSeconds := common.FormatSeconds(m.a.GetSecondsFromPCM(curMarker.Pcm))
+	formattedSeconds := common.FormatSeconds(m.a.GetSecondsFromSamples(curMarker.Samples))
 	m.timeField.SetText(formattedSeconds)
 	m.timeField.OnBlur(m.normalizeTimeInput)
 	m.timeField.SetSanitizer(m.sanitizeTimeInput)
@@ -67,7 +67,7 @@ func (m *markerDialog) executeConfirm(a audio.Audio) {
 	}
 	seconds = min(a.Seconds, seconds)
 	m.TimeMarker.Name = m.nameField.Text()
-	m.TimeMarker.Pcm = a.GetPcmFromSeconds(seconds)
+	m.TimeMarker.Samples = a.GetSamplesFromSeconds(seconds)
 	if m.tagsField.GetInput() != "" {
 		m.handleTagsFieldNewChip()
 	}

@@ -153,15 +153,14 @@ func (ed *Editor) playheadPosFromX(posX float32) {
 	pxPerSec := float32(ed.audio.SampleRate) / float32(ed.scroll.samplesPerPx)
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.SampleRate))
 	// TODO: handle error here
-	seekVal, _ := ed.p.Search(seconds)
-	// FIX: this is samples instead of pcm
-	ed.playhead.set(int64(seekVal) * 4)
+	seekSamples, _ := ed.p.Search(seconds)
+	ed.playhead.set(seekSamples)
 }
 
-func (ed *Editor) setPlayhead(pcmValue int64) {
+func (ed *Editor) setPlayhead(samples int) {
 	// TODO: handle error here
-	seekValue, _ := ed.p.Set(pcmValue)
-	ed.playhead.set(seekValue)
+	seekSamples, _ := ed.p.Set(samples)
+	ed.playhead.set(seekSamples)
 }
 
 func (ed *Editor) handleWaveClick(pCoords f32.Point, buttons pointer.Buttons) {
@@ -197,7 +196,7 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 func (ed *Editor) startEdit(m *tm.TimeMarker) {
 	ed.mode = modeMEdit
 	if m == nil {
-		ed.markers.newMarker(ed.playhead.bytes)
+		ed.markers.newMarker(ed.playhead.samples)
 	} else {
 		ed.mEditor.SetText(m.Name)
 		ed.mEditor.SetCaret(len(m.Name), 0)
@@ -243,12 +242,11 @@ func (ed *Editor) startPlay() {
 func (ed *Editor) pausePlay() {
 	ed.p.Pause()
 	ed.playhead.reset()
-	ed.p.Set(ed.playhead.bytes)
+	ed.p.Set(ed.playhead.samples)
 }
 
 func (ed *Editor) listenToPlayerUpdates() {
-	// FIX: This is samples instead of pcm
-	ed.playhead.bytes = int64(ed.p.GetReadAmount() * 4)
+	ed.playhead.samples = ed.p.GetReadAmount()
 }
 
 func (ed *Editor) isCreateButtonVisible() bool {

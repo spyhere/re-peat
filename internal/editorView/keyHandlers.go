@@ -7,7 +7,8 @@ func (ed *Editor) switchPlayerState() {
 		return
 	}
 	if !ed.p.IsPlaying() {
-		if ed.playhead.bytes >= ed.audio.PcmLen {
+		// FIX: needs revision
+		if ed.playhead.samples >= ed.audio.MonoSamplesLen*ed.audio.Channels {
 			return
 		}
 		ed.startPlay()
@@ -16,15 +17,17 @@ func (ed *Editor) switchPlayerState() {
 	}
 }
 
+const nudgeMultiplier = 4
+
 func (ed *Editor) nudgePlayhead(forward bool) {
 	if ed.markers.isEditing() {
 		return
 	}
-	dPcm := ed.audio.GetPcmFromSamples(int(ed.scroll.samplesPerPx))
+	dSamples := ed.scroll.samplesPerPx
 	if !forward {
-		dPcm *= -1
+		dSamples = -dSamples
 	}
-	ed.setPlayhead(ed.playhead.bytes + dPcm*4)
+	ed.setPlayhead(ed.playhead.samples + int(dSamples*nudgeMultiplier))
 }
 
 func (ed *Editor) collapseRenamerSelection() {

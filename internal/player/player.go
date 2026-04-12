@@ -103,8 +103,7 @@ func (p *Player) IsEOF() bool {
 	return p.eof
 }
 
-// FIX: we should get rid of double conversion and pass samples instead
-func (p *Player) Set(pcm int64) (int64, error) {
+func (p *Player) Set(samples int) (int, error) {
 	if p.eof == true {
 		speaker.Lock()
 		p.ctrl.Paused = true
@@ -114,13 +113,11 @@ func (p *Player) Set(pcm int64) (int64, error) {
 	}
 	speaker.Lock()
 	defer speaker.Unlock()
-	// FIX: should be not pcm, but samples
-	err := p.streamer.Seek(int(pcm))
+	err := p.streamer.Seek(samples)
 	if err != nil {
 		return 0, err
 	}
-	pos := p.streamer.Position()
-	return int64(pos), nil
+	return p.streamer.Position(), nil
 }
 func (p *Player) Search(seconds float32) (int, error) {
 	if p.eof == true {
@@ -139,8 +136,13 @@ func (p *Player) Search(seconds float32) (int, error) {
 	}
 	return p.streamer.Position(), nil
 }
+
 func (p *Player) GetReadAmount() int {
 	speaker.Lock()
 	defer speaker.Unlock()
 	return p.streamer.Position()
+}
+
+func (p *Player) GetCurrentSecond() float64 {
+	return math.Round(float64(p.format.SampleRate.D(p.GetReadAmount())/time.Second)*100) / 100
 }

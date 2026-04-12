@@ -126,7 +126,7 @@ func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 
 func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
 	m.markerInPlay = curMarker
-	m.p.Set(curMarker.Pcm)
+	m.p.Set(curMarker.Samples)
 	m.p.Play()
 }
 
@@ -181,14 +181,12 @@ func (m *MarkersView) deleteMarkers() {
 }
 
 func (m *MarkersView) listenToPlayerUpdates() {
-	playerPos := m.p.GetReadAmount()
-	// FIX: This is samples instead of pcm
-	pcmPos := int64(playerPos * 4)
-	if m.markerInPlay != nil && pcmPos < m.markerInPlay.Pcm {
+	playerSamples := m.p.GetReadAmount()
+	if m.markerInPlay != nil && playerSamples < m.markerInPlay.Samples {
 		// time markers were dragged in EditorView, so MarkersView should be updated as well
 		var prev *tm.TimeMarker
 		for _, it := range *m.timeMarkers {
-			if it.Pcm > pcmPos {
+			if it.Samples > playerSamples {
 				m.markerInPlay = prev
 				return
 			}
@@ -201,7 +199,7 @@ func (m *MarkersView) listenToPlayerUpdates() {
 	if nextMarker == nil {
 		return
 	}
-	if pcmPos >= nextMarker.Pcm {
+	if playerSamples >= nextMarker.Samples {
 		m.markerInPlay = nextMarker
 	}
 }

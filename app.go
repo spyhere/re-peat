@@ -37,7 +37,6 @@ func newApp() *App {
 		log.Fatal(err)
 	}
 	player.SetVolume(0.4)
-	player.Play()
 	// TODO: Create app state and put it there
 	timeMarkers := tm.NewTimeMarkers()
 	a := audio.NewAudio(decoder, pcm)

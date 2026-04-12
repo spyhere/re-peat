@@ -221,8 +221,8 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
-				curPcm := (*m.timeMarkers).Get(rowIdx, true).Pcm
-				formattedSeconds := common.FormatSeconds(m.audio.GetSecondsFromSamples(m.audio.GetSamplesFromPCM(curPcm)))
+				currSamples := (*m.timeMarkers).Get(rowIdx, true).Samples
+				formattedSeconds := common.FormatSeconds(m.audio.GetSecondsFromSamples(currSamples))
 				txt := material.Body2(m.th.Theme, formattedSeconds)
 				return txt.Layout(gtx)
 			},
@@ -291,9 +291,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	})
 
 	if isPlaying {
-		// FIX: this is samples instead of pcm
-		pcm := int64(m.p.GetReadAmount() * 4)
-		drawPlayerState(gtx, m.th, m.audio.GetSecondsFromPCM(pcm), m.audio.Seconds)
+		drawPlayerState(gtx, m.th, m.p.GetCurrentSecond(), m.audio.Seconds)
 	}
 
 	m.fm.PlaceScrim(gtx)
