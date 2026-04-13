@@ -15,7 +15,7 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func newMarkerDialog(tagLimit int, th *theme.RepeatTheme, a audio.Audio) markerDialog {
+func newMarkerDialog(tagLimit int, th *theme.RepeatTheme, a audio.AudioMeta) markerDialog {
 	fm := &common.FocusManager{}
 	return markerDialog{
 		a:          a,
@@ -32,7 +32,7 @@ func newMarkerDialog(tagLimit int, th *theme.RepeatTheme, a audio.Audio) markerD
 
 type markerDialog struct {
 	*tm.TimeMarker
-	a          audio.Audio
+	a          audio.AudioMeta
 	tags       []string
 	allTags    []string
 	tagOptions []string
@@ -60,7 +60,7 @@ func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, allChips map[
 	m.tagsField.SetText("")
 }
 
-func (m *markerDialog) executeConfirm(a audio.Audio) {
+func (m *markerDialog) executeConfirm(a audio.AudioMeta) {
 	seconds, err := common.ParseSeconds(m.timeField.Text())
 	if err != nil {
 		seconds = 0

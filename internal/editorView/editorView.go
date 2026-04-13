@@ -13,7 +13,6 @@ import (
 	"github.com/spyhere/re-peat/internal/player"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
-	"github.com/tosone/minimp3"
 )
 
 const (
@@ -23,25 +22,19 @@ const (
 )
 
 type EditorProps struct {
-	Dec           *minimp3.Decoder
 	Player        *player.Player
 	Th            *theme.RepeatTheme
 	OnStartEditCb func()
 	OnStopEditCb  func()
-	Audio         audio.Audio
-	Pcm           []byte
+	Audio         audio.AudioMeta
+	MonoSamples   []float32
 	*tm.TimeMarkers
 }
 
 func NewEditor(props EditorProps) (*Editor, error) {
-	normSamples, err := getNormalisedSamples(props.Pcm)
-	if err != nil {
-		return &Editor{}, err
-	}
-	monoSamples := makeSamplesMono(normSamples, props.Dec.Channels)
 	return &Editor{
 		p:             props.Player,
-		monoSamples:   monoSamples,
+		monoSamples:   props.MonoSamples,
 		audio:         props.Audio,
 		playhead:      newPlayhead(playheadInitDur),
 		cache:         newCache(),
@@ -73,7 +66,7 @@ type Editor struct {
 	mode          interactionMode
 	cursor        pointer.Cursor
 	playhead      *playhead
-	audio         audio.Audio
+	audio         audio.AudioMeta
 	monoSamples   []float32
 	cache         cache
 	markers       *markers

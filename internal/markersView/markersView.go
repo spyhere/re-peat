@@ -20,7 +20,7 @@ const (
 )
 
 type Props struct {
-	Audio       audio.Audio
+	Audio       audio.AudioMeta
 	Th          *theme.RepeatTheme
 	TimeMarkers *tm.TimeMarkers
 	Player      *p.Player
@@ -105,7 +105,7 @@ type MarkersView struct {
 	commentDialog commentDialog
 	chipsFilter
 	hotKeyBuf []rune
-	audio     audio.Audio
+	audio     audio.AudioMeta
 }
 
 func (m *MarkersView) togglePlayer(curMarker *tm.TimeMarker) {

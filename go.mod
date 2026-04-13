@@ -5,7 +5,6 @@ go 1.25.4
 require (
 	gioui.org v0.9.0
 	github.com/gopxl/beep v1.4.1
-	github.com/tosone/minimp3 v1.0.2
 )
 
 require (
