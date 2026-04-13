@@ -7,9 +7,8 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/widget"
-	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
-	p "github.com/spyhere/re-peat/internal/player"
+	"github.com/spyhere/re-peat/internal/state"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -20,26 +19,23 @@ const (
 )
 
 type Props struct {
-	Audio       audio.AudioMeta
 	Th          *theme.RepeatTheme
 	TimeMarkers *tm.TimeMarkers
-	Player      *p.Player
 	Dialog      *common.Dialog
+	State       *state.AppState
 }
 
 func NewMarkersView(props Props) *MarkersView {
 	fm := &common.FocusManager{}
 	mView := &MarkersView{
-		audio:         props.Audio,
 		th:            props.Th,
-		timeMarkers:   props.TimeMarkers,
-		p:             props.Player,
+		AppState:      props.State,
 		hotKeyBuf:     make([]rune, 0, selectionRuneLimit),
 		dialog:        props.Dialog,
 		searchbar:     &common.Inputable{Focuser: fm},
 		fm:            fm,
 		enabledTagsLs: &widget.List{},
-		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th, props.Audio),
+		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th, props.State.AudioMeta),
 		tagsDialog:    newTagsDialog(globalChipsLimit),
 		chipsFilter:   newChipsFilter(globalChipsLimit),
 		commentDialog: newCommentDialog(props.Th),
@@ -82,9 +78,9 @@ const (
 	deleteAll
 )
 
+// TODO: Remove embedding dialogs
 type MarkersView struct {
-	p             *p.Player
-	timeMarkers   *tm.TimeMarkers
+	*state.AppState
 	draftMarker   tm.TimeMarker
 	markerInPlay  *tm.TimeMarker
 	th            *theme.RepeatTheme
@@ -105,7 +101,6 @@ type MarkersView struct {
 	commentDialog commentDialog
 	chipsFilter
 	hotKeyBuf []rune
-	audio     audio.AudioMeta
 }
 
 func (m *MarkersView) togglePlayer(curMarker *tm.TimeMarker) {
@@ -126,13 +121,13 @@ func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 
 func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
 	m.markerInPlay = curMarker
-	m.p.Set(curMarker.Samples)
-	m.p.Play()
+	m.Player.Set(curMarker.Samples)
+	m.Player.Play()
 }
 
 func (m *MarkersView) pausePlaying() {
 	m.markerInPlay = nil
-	m.p.Pause()
+	m.Player.Pause()
 }
 
 func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
@@ -140,16 +135,16 @@ func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
 }
 
 func (m *MarkersView) updateDefferedState() {
-	if m.timeMarkers.DeleteDead() {
-		m.chipsFilter.reconcileEnabled(*m.timeMarkers)
+	if m.TimeMarkers.DeleteDead() {
+		m.chipsFilter.reconcileEnabled(m.TimeMarkers)
 	}
-	if len(*m.timeMarkers) == 0 && m.searchbar.GetInput() != "" {
+	if len(m.TimeMarkers) == 0 && m.searchbar.GetInput() != "" {
 		m.searchbar.SetText("")
 	}
 }
 
 func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {
-	return m.timeMarkers.Get(rowIdx, true)
+	return m.AppState.TimeMarkers.Get(rowIdx, true)
 }
 
 func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
@@ -168,24 +163,24 @@ func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 }
 
 func (m *MarkersView) replayMarkers() {
-	if m.p.IsPlaying() {
-		m.p.Pause()
+	if m.Player.IsPlaying() {
+		m.Player.Pause()
 	} else {
-		m.p.Set(0)
-		m.p.Play()
+		m.Player.Set(0)
+		m.Player.Play()
 	}
 }
 
 func (m *MarkersView) deleteMarkers() {
-	m.timeMarkers.MarkAllDead()
+	m.TimeMarkers.MarkAllDead()
 }
 
 func (m *MarkersView) listenToPlayerUpdates() {
-	playerSamples := m.p.GetReadAmount()
+	playerSamples := m.Player.GetReadAmount()
 	if m.markerInPlay != nil && playerSamples < m.markerInPlay.Samples {
 		// time markers were dragged in EditorView, so MarkersView should be updated as well
 		var prev *tm.TimeMarker
-		for _, it := range *m.timeMarkers {
+		for _, it := range m.TimeMarkers {
 			if it.Samples > playerSamples {
 				m.markerInPlay = prev
 				return
@@ -194,7 +189,7 @@ func (m *MarkersView) listenToPlayerUpdates() {
 		}
 	}
 
-	nextMarker := m.timeMarkers.Get(m.timeMarkers.GetIndex(m.markerInPlay, true)+1, true)
+	nextMarker := m.TimeMarkers.Get(m.TimeMarkers.GetIndex(m.markerInPlay, true)+1, true)
 	// Next marker can be nil when there are no markers, or current is the last one
 	if nextMarker == nil {
 		return
@@ -245,4 +240,8 @@ func (m *MarkersView) handleAddMarkerButton(gtx layout.Context) {
 	if m.createCl.Hovered() {
 		common.SetCursor(gtx, pointer.CursorPointer)
 	}
+}
+
+func (m *MarkersView) isDisabled() bool {
+	return !m.HasAudioLoaded() || m.AppState.IsLoading()
 }

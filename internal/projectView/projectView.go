@@ -1,17 +1,23 @@
 package projectview
 
-import "github.com/spyhere/re-peat/internal/ui/theme"
+import (
+	"github.com/spyhere/re-peat/internal/state"
+	"github.com/spyhere/re-peat/internal/ui/theme"
+)
 
 type Props struct {
-	Th *theme.RepeatTheme
+	Th    *theme.RepeatTheme
+	State *state.AppState
 }
 
 func NewProjectView(props Props) ProjectView {
 	return ProjectView{
-		th: props.Th,
+		th:       props.Th,
+		AppState: props.State,
 	}
 }
 
 type ProjectView struct {
-	th *theme.RepeatTheme
+	*state.AppState
+	th              *theme.RepeatTheme
 }

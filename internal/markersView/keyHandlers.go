@@ -28,7 +28,7 @@ func (m *MarkersView) handleKeyEvents(e key.Event) {
 		if err != nil {
 			log.Fatal("Unreachable", err)
 		}
-		marker := m.timeMarkers.Get(idx-1, true)
+		marker := m.TimeMarkers.Get(idx-1, true)
 		if marker == nil {
 			log.Fatal("Unreachable", err)
 		}
@@ -49,12 +49,12 @@ func (m *MarkersView) handleKeyEvents(e key.Event) {
 			if err != nil {
 				log.Fatal("Unreachable", err)
 			}
-			if num > len(*m.timeMarkers) {
+			if num > len(m.TimeMarkers) {
 				m.clearHotKeyBuf()
 				return
 			}
-			if len(*m.timeMarkers) < 10 {
-				mLenStr := fmt.Sprintf("%02d", len(*m.timeMarkers))
+			if len(m.TimeMarkers) < 10 {
+				mLenStr := fmt.Sprintf("%02d", len(m.TimeMarkers))
 				if len(buf) < len(mLenStr) && !strings.HasPrefix(mLenStr, buf) {
 					m.clearHotKeyBuf()
 				}

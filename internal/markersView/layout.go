@@ -24,9 +24,12 @@ var (
 )
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
+	if m.isDisabled() {
+		gtx = gtx.Disabled()
+	}
 	m.dispatch(gtx)
 	m.dialogUpdate()
-	isPlaying := m.p.IsPlaying()
+	isPlaying := m.HasAudioLoaded() && m.Player.IsPlaying()
 	if isPlaying {
 		m.listenToPlayerUpdates()
 		gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(redrawInterval)})
@@ -41,7 +44,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
 				Inputable:   m.searchbar,
-				Disabled:    len(*m.timeMarkers) == 0,
+				Disabled:    len(m.TimeMarkers) == 0,
 			})
 			return searchDims
 		})
@@ -169,7 +172,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					Icon:  micons.Delete,
 					Th:    m.th,
 					Cl:    &m.deleteCl,
-					IsOff: len(*m.timeMarkers) == 0,
+					IsOff: len(m.TimeMarkers) == 0,
 				})
 			},
 		)
@@ -216,13 +219,13 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				txt := material.Body2(m.th.Theme, (*m.timeMarkers).Get(rowIdx, true).Name)
+				txt := material.Body2(m.th.Theme, m.TimeMarkers.Get(rowIdx, true).Name)
 				txt.Font = fonts.GoMedium(font.Medium, font.Regular)
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
-				currSamples := (*m.timeMarkers).Get(rowIdx, true).Samples
-				formattedSeconds := common.FormatSeconds(m.audio.GetSecondsFromSamples(currSamples))
+				currSamples := m.TimeMarkers.Get(rowIdx, true).Samples
+				formattedSeconds := common.FormatSeconds(m.AudioMeta.GetSecondsFromSamples(currSamples))
 				txt := material.Body2(m.th.Theme, formattedSeconds)
 				return txt.Layout(gtx)
 			},
@@ -287,11 +290,11 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				})
 			},
 		)
-		m.table.Layout(gtx, m.th, len(*m.timeMarkers), []int{4, 4, 30, 6, 44, 4, 4, 4})
+		m.table.Layout(gtx, m.th, len(m.TimeMarkers), []int{4, 4, 30, 6, 44, 4, 4, 4})
 	})
 
 	if isPlaying {
-		drawPlayerState(gtx, m.th, m.p.GetCurrentSecond(), m.audio.Seconds)
+		drawPlayerState(gtx, m.th, m.Player.GetCurrentSecond(), m.AudioMeta.Seconds)
 	}
 
 	m.fm.PlaceScrim(gtx)

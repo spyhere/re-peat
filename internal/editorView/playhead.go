@@ -10,6 +10,7 @@ func newPlayhead(updateTime time.Duration) *playhead {
 	}
 }
 
+// NOTE: Should it be inside AppState? reset playhead on new file?
 type playhead struct {
 	samples     int
 	prevSamples int

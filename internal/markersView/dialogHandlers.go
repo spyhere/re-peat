@@ -21,13 +21,13 @@ func (m *MarkersView) dialogUpdate() {
 
 func (m *MarkersView) confirmCreate() {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
-	m.markerDialog.executeConfirm(m.audio)
-	m.timeMarkers.AttachNewMarker(m.draftMarker)
+	m.markerDialog.executeConfirm(m.AudioMeta)
+	m.TimeMarkers.AttachNewMarker(m.draftMarker)
 	m.draftMarker = tm.TimeMarker{}
 }
 func (m *MarkersView) confirmEdit() {
 	m.chipsFilter.updateAll(m.markerDialog.tags)
-	m.markerDialog.executeConfirm(m.audio)
+	m.markerDialog.executeConfirm(m.AudioMeta)
 }
 func (m *MarkersView) confirmTagFilter() {
 	m.chipsFilter.updateEnabled(m.tagsDialog.filterChips)
@@ -45,10 +45,10 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 	if owner == create {
 		m.markerDialog.focuser.RequestFocus(m.nameField)
 	}
-	m.markerDialog.prepareForOpening(curMarker, m.chipsFilter.all)
+	m.markerDialog.prepareForOpening(m.AudioMeta, curMarker, m.chipsFilter.all)
 
 	m.dialog.Basic(m.th, title, func(gtx layout.Context) layout.Dimensions {
-		return m.markerDialog.Layout(gtx, m.audio.Seconds)
+		return m.markerDialog.Layout(gtx, m.AudioMeta.Seconds)
 	})
 	m.dialog.Show()
 }
@@ -70,7 +70,7 @@ const maxFilterW unit.Dp = 350
 
 func (m *MarkersView) openTagsFilterDialog() {
 	m.dialogOwner = tagFilter
-	m.chipsFilter.recreate(*m.timeMarkers)
+	m.chipsFilter.recreate(m.TimeMarkers)
 	filterChips := m.tagsDialog.createFreshChips(m.chipsFilter.all, m.chipsFilter.enabledMap)
 	m.dialog.Basic(m.th, "Tags Filter", func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X = gtx.Dp(maxFilterW)

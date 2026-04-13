@@ -9,10 +9,13 @@ import (
 )
 
 func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
+	if ed.isDisabled() {
+		gtx = gtx.Disabled()
+	}
 	ed.dispatch(gtx)
 	ed.updateDifferedState()
-	if ed.p.IsPlaying() {
-		if !ed.p.IsEOF() {
+	if ed.HasAudioLoaded() && ed.Player.IsPlaying() {
+		if !ed.Player.IsEOF() {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playhead.update)})
 		}
 		ed.listenToPlayerUpdates()
@@ -31,7 +34,7 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 
 	pDim := playheadComp(gtx, ed.th, ed.playhead.samples, ed.scroll)
 	markersComp(gtx, ed.th, ed.mEditor, ed.mode, ed.waveM, ed.scroll, ed.markers, ed.getMI9n)
-	secondsGridComp(gtx, ed.th, ed.audio, ed.scroll, ed.waveM)
+	secondsGridComp(gtx, ed.th, ed.AudioMeta, ed.scroll, ed.waveM)
 	if ed.markers.isEditing() {
 		editingMarkerComp(gtx, ed.th, &ed.tags.backdrop, ed.markers.overlayParams)
 	}

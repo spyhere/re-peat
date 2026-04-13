@@ -43,7 +43,9 @@ type markerDialog struct {
 	th         *theme.RepeatTheme
 }
 
-func (m *markerDialog) prepareForOpening(curMarker *tm.TimeMarker, allChips map[string]struct{}) {
+// NOTE: Do we need to pass audioMeta here?
+func (m *markerDialog) prepareForOpening(a audio.AudioMeta, curMarker *tm.TimeMarker, allChips map[string]struct{}) {
+	m.a = a
 	m.allTags = m.allTags[:0]
 	for chipName := range allChips {
 		m.allTags = append(m.allTags, chipName)
@@ -65,7 +67,7 @@ func (m *markerDialog) executeConfirm(a audio.AudioMeta) {
 	if err != nil {
 		seconds = 0
 	}
-	seconds = min(a.Seconds, seconds)
+	seconds = min(m.a.Seconds, seconds)
 	m.TimeMarker.Name = m.nameField.Text()
 	m.TimeMarker.Samples = a.GetSamplesFromSeconds(seconds)
 	if m.tagsField.GetInput() != "" {

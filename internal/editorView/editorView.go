@@ -8,9 +8,8 @@ import (
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/widget"
-	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
-	"github.com/spyhere/re-peat/internal/player"
+	"github.com/spyhere/re-peat/internal/state"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -22,29 +21,27 @@ const (
 )
 
 type EditorProps struct {
-	Player        *player.Player
 	Th            *theme.RepeatTheme
 	OnStartEditCb func()
 	OnStopEditCb  func()
-	Audio         audio.AudioMeta
 	MonoSamples   []float32
 	*tm.TimeMarkers
+	State *state.AppState
 }
 
 func NewEditor(props EditorProps) (*Editor, error) {
 	return &Editor{
-		p:             props.Player,
 		monoSamples:   props.MonoSamples,
-		audio:         props.Audio,
 		playhead:      newPlayhead(playheadInitDur),
 		cache:         newCache(),
-		markers:       newMarkers(props.TimeMarkers),
+		markers:       newMarkers(&props.State.TimeMarkers),
 		mEditor:       newMEditor(),
 		scroll:        newScroll(),
 		th:            props.Th,
 		tags:          newTags(),
 		onStartEditCb: props.OnStartEditCb,
 		onStopEditCb:  props.OnStopEditCb,
+		AppState:      props.State,
 	}, nil
 }
 
@@ -63,15 +60,14 @@ const (
 )
 
 type Editor struct {
+	cachedFile    string
 	mode          interactionMode
 	cursor        pointer.Cursor
 	playhead      *playhead
-	audio         audio.AudioMeta
 	monoSamples   []float32
 	cache         cache
 	markers       *markers
 	mEditor       *widget.Editor
-	p             *player.Player
 	waveM         int // wave margin
 	tags          *tags
 	size          image.Point
@@ -79,12 +75,13 @@ type Editor struct {
 	th            *theme.RepeatTheme
 	onStartEditCb func()
 	onStopEditCb  func()
+	*state.AppState
 }
 
 func (ed *Editor) getRenderableWaves() [][2]float32 {
 	samplesPerPx := ed.scroll.samplesPerPx
 	visibleSamples := int(samplesPerPx * float32(ed.size.X))
-	leftB := common.Clamp(0, ed.scroll.leftB, ed.audio.MonoSamplesLen-visibleSamples)
+	leftB := common.Clamp(0, ed.scroll.leftB, ed.AudioMeta.MonoSamplesLen-visibleSamples)
 	rightB := leftB + visibleSamples
 	if leftB == ed.scroll.leftB && rightB == ed.scroll.rightB {
 		return ed.cache.curSlice
@@ -114,10 +111,12 @@ func (ed *Editor) SetSize(size image.Point) {
 
 // TODO: optimization - parallelise samples scan (~60 ms on resize for now)
 func (ed *Editor) MakePeakMap() {
-	if ed.cache.isPopulated {
+	isNewFile := ed.cachedFile != ed.LoadedFile
+	if !ed.HasAudioLoaded() || (!isNewFile && ed.cache.isPopulated) {
 		return
 	}
-	ed.scroll.maxSamplesPerPx = float32(ed.audio.SampleRate) / (float32(ed.size.X) / float32(ed.audio.Seconds))
+	ed.cachedFile = ed.LoadedFile
+	ed.scroll.maxSamplesPerPx = float32(ed.AudioMeta.SampleRate) / (float32(ed.size.X) / float32(ed.AudioMeta.Seconds))
 	ed.scroll.minSamplesPerPx = ed.scroll.maxSamplesPerPx / float32(math.Exp2(float64(ed.scroll.maxLvl)))
 	ed.scroll.samplesPerPx = float32(ed.scroll.maxSamplesPerPx)
 
@@ -132,27 +131,27 @@ func (ed *Editor) MakePeakMap() {
 			count:        i,
 		}
 		if cap(ed.cache.peakMap[i]) == 0 {
-			ed.cache.peakMap[i] = make([][2]float32, len(ed.monoSamples)/i)
+			ed.cache.peakMap[i] = make([][2]float32, len(ed.MonoSamples)/i)
 		}
 		ed.cache.peakMap[i] = ed.cache.peakMap[i][:0]
 		ed.cache.levels[idx] = i
 		idx++
 	}
-	populateCache(ed.cache.peakMap, ed.monoSamples, ed.cache.workers)
+	populateCache(ed.cache.peakMap, ed.MonoSamples, ed.cache.workers)
 	ed.cache.isPopulated = true
 }
 
 func (ed *Editor) playheadPosFromX(posX float32) {
-	pxPerSec := float32(ed.audio.SampleRate) / float32(ed.scroll.samplesPerPx)
-	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.audio.SampleRate))
+	pxPerSec := float32(ed.AudioMeta.SampleRate) / float32(ed.scroll.samplesPerPx)
+	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.AudioMeta.SampleRate))
 	// TODO: handle error here
-	seekSamples, _ := ed.p.Search(seconds)
+	seekSamples, _ := ed.Player.Search(seconds)
 	ed.playhead.set(seekSamples)
 }
 
 func (ed *Editor) setPlayhead(samples int) {
 	// TODO: handle error here
-	seekSamples, _ := ed.p.Set(samples)
+	seekSamples, _ := ed.Player.Set(samples)
 	ed.playhead.set(seekSamples)
 }
 
@@ -229,17 +228,17 @@ func (ed *Editor) handleMEditor(we widget.EditorEvent) {
 }
 
 func (ed *Editor) startPlay() {
-	ed.p.Play()
+	ed.Player.Play()
 }
 
 func (ed *Editor) pausePlay() {
-	ed.p.Pause()
+	ed.Player.Pause()
 	ed.playhead.reset()
-	ed.p.Set(ed.playhead.samples)
+	ed.Player.Set(ed.playhead.samples)
 }
 
 func (ed *Editor) listenToPlayerUpdates() {
-	ed.playhead.samples = ed.p.GetReadAmount()
+	ed.playhead.samples = ed.Player.GetReadAmount()
 }
 
 func (ed *Editor) isCreateButtonVisible() bool {
@@ -265,4 +264,8 @@ func (ed *Editor) setCursor(c pointer.Cursor) {
 
 func (ed *Editor) updateDifferedState() {
 	ed.markers.deleteDead()
+}
+
+func (ed *Editor) isDisabled() bool {
+	return !ed.HasAudioLoaded() || ed.AppState.IsLoading()
 }

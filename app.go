@@ -3,66 +3,45 @@ package main
 import (
 	"image"
 	"log"
-	"os"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
-	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	editorview "github.com/spyhere/re-peat/internal/editorView"
 	markersview "github.com/spyhere/re-peat/internal/markersView"
-	p "github.com/spyhere/re-peat/internal/player"
 	projectview "github.com/spyhere/re-peat/internal/projectView"
+	"github.com/spyhere/re-peat/internal/state"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func newApp() *App {
+func newApp(appState *state.AppState) *App {
 	th, err := theme.New()
 	if err != nil {
 		log.Fatal(err)
 	}
-	monoSamples, a, err := audio.LoadMonoSamples(audioFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	player := p.NewPlayer()
-	file, err := os.Open(audioFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = player.SetAudio(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-	player.SetVolume(0.4)
-	// TODO: Create app state and put it there
-	timeMarkers := tm.NewTimeMarkers()
 	d := common.Dialog{}
 	d.CancelProps.Text = "Отмена"
+
 	appInstance := &App{
-		th:      th,
-		dialog:  &d,
-		buttons: newButtons(),
+		AppState: appState,
+		th:       th,
+		dialog:   &d,
+		buttons:  newButtons(),
 		projectView: projectview.NewProjectView(projectview.Props{
-			Th: th,
+			Th:    th,
+			State: appState,
 		}),
 		markersView: markersview.NewMarkersView(markersview.Props{
-			Audio:       a,
-			Th:          th,
-			TimeMarkers: &timeMarkers,
-			Player:      player,
-			Dialog:      &d,
+			Th:     th,
+			State:  appState,
+			Dialog: &d,
 		}),
-		timeMarkers: timeMarkers,
 	}
 	ed, err := editorview.NewEditor(editorview.EditorProps{
-		Audio:         a,
-		Player:        player,
 		Th:            th,
-		MonoSamples:   monoSamples,
-		TimeMarkers:   &timeMarkers,
+		State:         appState,
 		OnStartEditCb: appInstance.onStartMarkerEdit,
 		OnStopEditCb:  appInstance.onStopMarkerEdit,
 	})
@@ -81,7 +60,9 @@ const (
 	Editor
 )
 
+// TODO: Get rid of redundant pointers
 type App struct {
+	*state.AppState
 	dialog      *common.Dialog
 	projectView projectview.ProjectView
 	markersView *markersview.MarkersView
@@ -101,6 +82,9 @@ func (a *App) onStopMarkerEdit() {
 }
 
 func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
+	if err := a.AppState.GetError(); err != nil {
+		log.Println(err)
+	}
 	a.dialog.Update(gtx)
 	gtxEnabled := gtx
 	if a.dialog.ShouldDisableGtx(gtx) {
@@ -130,6 +114,10 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	a.dialog.Layout(gtxEnabled)
 	if cursor, ok := a.dialog.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)
+	}
+
+	if a.AppState.IsLoading() {
+		common.DrawBlockingMessage(gtx, a.th, "Loading file...")
 	}
 	return layout.Dimensions{}
 }

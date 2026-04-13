@@ -7,14 +7,14 @@ import (
 	"gioui.org/app"
 	"gioui.org/op"
 	"gioui.org/unit"
+	"github.com/spyhere/re-peat/internal/state"
 )
 
-const audioFilePath = "./assets/test_song.mp3"
-
 func main() {
-	repeatApp := newApp()
+	window := new(app.Window)
+	appState := state.NewAppState(window)
+	repeatApp := newApp(&appState)
 	go func() {
-		window := new(app.Window)
 		window.Option(app.Title("re-peat"))
 		window.Option(app.Size(unit.Dp(1000), unit.Dp(700)))
 		err := run(window, repeatApp)
