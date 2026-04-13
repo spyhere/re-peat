@@ -12,7 +12,7 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 	ed.dispatch(gtx)
 	ed.updateDifferedState()
 	if ed.p.IsPlaying() {
-		if ed.playhead.bytes < ed.audio.PcmLen {
+		if !ed.p.IsEOF() {
 			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playhead.update)})
 		}
 		ed.listenToPlayerUpdates()
@@ -29,8 +29,8 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 
 	common.RegisterTag(gtx, &ed.tags.noneArea, image.Rect(0, gtx.Constraints.Max.Y-ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y))
 
-	pDim := playheadComp(gtx, ed.th, ed.playhead.bytes, ed.audio, ed.scroll)
-	markersComp(gtx, ed.th, ed.mEditor, ed.mode, ed.waveM, ed.scroll, ed.audio, ed.markers, ed.getMI9n)
+	pDim := playheadComp(gtx, ed.th, ed.playhead.samples, ed.scroll)
+	markersComp(gtx, ed.th, ed.mEditor, ed.mode, ed.waveM, ed.scroll, ed.markers, ed.getMI9n)
 	secondsGridComp(gtx, ed.th, ed.audio, ed.scroll, ed.waveM)
 	if ed.markers.isEditing() {
 		editingMarkerComp(gtx, ed.th, &ed.tags.backdrop, ed.markers.overlayParams)

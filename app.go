@@ -3,6 +3,7 @@ package main
 import (
 	"image"
 	"log"
+	"os"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
@@ -22,18 +23,22 @@ func newApp() *App {
 	if err != nil {
 		log.Fatal(err)
 	}
-	decoder, pcm, err := decodeFile(audioFilePath)
+	monoSamples, a, err := audio.LoadMonoSamples(audioFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	player, err := p.NewPlayer(decoder, pcm)
+	player := p.NewPlayer()
+	file, err := os.Open(audioFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	player.SetVolume(0.7)
+	err = player.SetAudio(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	player.SetVolume(0.4)
 	// TODO: Create app state and put it there
 	timeMarkers := tm.NewTimeMarkers()
-	a := audio.NewAudio(decoder, pcm)
 	d := common.Dialog{}
 	d.CancelProps.Text = "Отмена"
 	appInstance := &App{
@@ -54,10 +59,9 @@ func newApp() *App {
 	}
 	ed, err := editorview.NewEditor(editorview.EditorProps{
 		Audio:         a,
-		Dec:           decoder,
 		Player:        player,
 		Th:            th,
-		Pcm:           pcm,
+		MonoSamples:   monoSamples,
 		TimeMarkers:   &timeMarkers,
 		OnStartEditCb: appInstance.onStartMarkerEdit,
 		OnStopEditCb:  appInstance.onStopMarkerEdit,

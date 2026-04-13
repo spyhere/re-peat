@@ -20,7 +20,7 @@ const (
 )
 
 type Props struct {
-	Audio       audio.Audio
+	Audio       audio.AudioMeta
 	Th          *theme.RepeatTheme
 	TimeMarkers *tm.TimeMarkers
 	Player      *p.Player
@@ -105,7 +105,7 @@ type MarkersView struct {
 	commentDialog commentDialog
 	chipsFilter
 	hotKeyBuf []rune
-	audio     audio.Audio
+	audio     audio.AudioMeta
 }
 
 func (m *MarkersView) togglePlayer(curMarker *tm.TimeMarker) {
@@ -126,7 +126,7 @@ func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 
 func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
 	m.markerInPlay = curMarker
-	m.p.Set(curMarker.Pcm)
+	m.p.Set(curMarker.Samples)
 	m.p.Play()
 }
 
@@ -181,12 +181,12 @@ func (m *MarkersView) deleteMarkers() {
 }
 
 func (m *MarkersView) listenToPlayerUpdates() {
-	playerPos := m.p.GetReadAmount()
-	if m.markerInPlay != nil && playerPos < m.markerInPlay.Pcm {
+	playerSamples := m.p.GetReadAmount()
+	if m.markerInPlay != nil && playerSamples < m.markerInPlay.Samples {
 		// time markers were dragged in EditorView, so MarkersView should be updated as well
 		var prev *tm.TimeMarker
 		for _, it := range *m.timeMarkers {
-			if it.Pcm > playerPos {
+			if it.Samples > playerSamples {
 				m.markerInPlay = prev
 				return
 			}
@@ -199,7 +199,7 @@ func (m *MarkersView) listenToPlayerUpdates() {
 	if nextMarker == nil {
 		return
 	}
-	if playerPos >= nextMarker.Pcm {
+	if playerSamples >= nextMarker.Samples {
 		m.markerInPlay = nextMarker
 	}
 }

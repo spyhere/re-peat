@@ -245,16 +245,16 @@ http://www.apache.org/licenses/
    limitations under the License.
 
 ------------------------------------------------------------
-minimp3 (Go bindings)
-https://github.com/tosone/minimp3
+gopxl/beep
+https://github.com/gopxl/beep
 
-Copyright © 2018 Tosone
+Copyright © 2017 Michal Štrba
 Licensed under the MIT License
 ------------------------------------------------------------
 
 MIT License
 
-Copyright (c) 2018 Tosone
+Copyright (c) 2017 Michal Štrba
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

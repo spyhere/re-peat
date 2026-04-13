@@ -121,7 +121,7 @@ func (ed *Editor) handleMDeleteIntent(p pointerEvent) {
 func (ed *Editor) handleMHit(p pointerEvent) {
 	switch p.Event.Kind {
 	case pointer.Release:
-		ed.setPlayhead(p.Target.Marker.Pcm)
+		ed.setPlayhead(p.Target.Marker.Samples)
 	case pointer.Drag:
 		ed.mode = modeMDrag
 		ed.setCursor(pointer.CursorGrabbing)
@@ -154,8 +154,8 @@ func (ed *Editor) handleDragMarker(p pointerEvent) {
 	case pointer.Drag:
 		dSamples := int(ed.scroll.samplesPerPx * p.Event.Position.X)
 		m := p.Target.Marker
-		m.Pcm = ed.audio.GetPcmFromSamples(ed.scroll.leftB + int(dSamples))
-		m.Pcm = common.Clamp(0, m.Pcm, ed.audio.PcmLen)
+		m.Samples = ed.scroll.leftB + int(dSamples)
+		m.Samples = common.Clamp(0, m.Samples, ed.audio.GetSamplesAmount())
 		ed.markers.sort()
 	case pointer.Release:
 		ed.mode = modeHitWave

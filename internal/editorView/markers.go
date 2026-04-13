@@ -24,8 +24,8 @@ type mInteraction struct {
 	hovered bool
 }
 
-func (m *markers) newMarker(pcm int64) {
-	newM := m.arr.NewMarker(pcm)
+func (m *markers) newMarker(samples int) {
+	newM := m.arr.NewMarker(samples)
 	if newM == nil {
 		return
 	}

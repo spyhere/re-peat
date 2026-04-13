@@ -30,9 +30,9 @@ func offsetBy(gtx layout.Context, amount image.Point, w func()) {
 	w()
 }
 
-func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int64, audio audio.Audio, scroll scroll) layout.Dimensions {
+func playheadComp(gtx layout.Context, th *theme.RepeatTheme, playhead int, scroll scroll) layout.Dimensions {
 	maxX := gtx.Constraints.Max.X
-	currSamples := audio.GetSamplesFromPCM(playhead) - scroll.leftB
+	currSamples := playhead - scroll.leftB
 	x := int(float32(currSamples) * float32(maxX) / float32(scroll.rightB-scroll.leftB))
 	if x < 0 || x > maxX {
 		return layout.Dimensions{Size: image.Pt(x, 0)}
@@ -145,7 +145,7 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 
 var timeIntervals = [5]float32{1, 5, 10, 30, 60}
 
-func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio.Audio, scroll scroll, waveM int) {
+func secondsGridComp(gtx layout.Context, th *theme.RepeatTheme, audio audio.AudioMeta, scroll scroll, waveM int) {
 	pxPerSec := float32(audio.SampleRate) / scroll.samplesPerPx
 	leftBSec := audio.GetSecondsFromSamples(scroll.leftB)
 	var intervalSec int
@@ -199,7 +199,7 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
-func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, a audio.Audio, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
+func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
 	soundWaveH := gtx.Constraints.Max.Y - wavePadding*2
@@ -226,7 +226,7 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 			gtx.Constraints.Min = image.Point{}
 			return layout.UniformInset(inset).Layout(gtx, renderable.Layout)
 		})
-		curSamples := a.GetSamplesFromPCM(marker.Pcm)
+		curSamples := marker.Samples
 		x := int(float32(curSamples-s.leftB) / s.samplesPerPx)
 		if x+nameDim.Size.X+mrkSz.Lbl.InvisPad >= prevLblX && prevLblX != maxX {
 			yOffset += mrkSz.Lbl.H + mrkSz.Lbl.InvisPad

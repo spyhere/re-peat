@@ -19,7 +19,7 @@ func NewTimeMarkers() TimeMarkers {
 }
 
 type TimeMarker struct {
-	Pcm          int64
+	Samples      int
 	Name         string
 	isDead       bool
 	Notes        string
@@ -55,13 +55,13 @@ func (tm *TimeMarkers) MarkAllDead() {
 	}
 }
 
-func (t *TimeMarkers) NewMarker(pcm int64) *TimeMarker {
+func (t *TimeMarkers) NewMarker(samples int) *TimeMarker {
 	if len(*t)+1 > Limit {
 		// TODO: display error
 		return nil
 	}
 	newT := &TimeMarker{
-		Pcm:          pcm,
+		Samples:      samples,
 		CategoryTags: make([]string, 0, TagsLimit),
 		EditorTags: EditorTags{
 			Flag:  &struct{}{},
@@ -126,7 +126,7 @@ func (t *TimeMarkers) GetIndex(m *TimeMarker, asc bool) int {
 }
 
 func (t *TimeMarkers) sortCb(a, b *TimeMarker) int {
-	return int(a.Pcm - b.Pcm)
+	return int(a.Samples - b.Samples)
 }
 
 func (t *TimeMarkers) Sort() {

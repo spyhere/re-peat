@@ -11,16 +11,16 @@ func newPlayhead(updateTime time.Duration) *playhead {
 }
 
 type playhead struct {
-	bytes     int64 // pcm bytes
-	prevBytes int64
-	update    time.Duration
+	samples     int
+	prevSamples int
+	update      time.Duration
 }
 
-func (p *playhead) set(pcm int64) {
-	p.prevBytes = pcm
-	p.bytes = pcm
+func (p *playhead) set(samples int) {
+	p.prevSamples = samples
+	p.samples = samples
 }
 
 func (p *playhead) reset() {
-	p.bytes = p.prevBytes
+	p.samples = p.prevSamples
 }
