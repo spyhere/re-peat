@@ -3,6 +3,7 @@ package state
 import (
 	"errors"
 	"os"
+	"path/filepath"
 
 	"gioui.org/app"
 	"gioui.org/x/explorer"
@@ -27,6 +28,7 @@ type AppState struct {
 	Player      *p.Player
 	MonoSamples []float32
 	AudioMeta   audio.AudioMeta
+	FileMeta    filemanager.FileMeta
 	TimeMarkers tm.TimeMarkers
 	isChoosing  bool
 	isLoading   bool
@@ -74,8 +76,13 @@ func (a *AppState) AudioLoad() {
 		if a.LoadedFile == filePath {
 			return
 		}
+
 		a.isLoading = true
 		a.Reset()
+		defer func() {
+			a.isLoading = false
+		}()
+
 		monoSamples, audioMeta, err := audio.LoadMonoSamples(filePath)
 		if err != nil {
 			a.err = err
@@ -86,18 +93,24 @@ func (a *AppState) AudioLoad() {
 			a.err = err
 			return
 		}
+		fileInfo, err := os.Stat(filePath)
+		if err != nil {
+			a.err = err
+			return
+		}
 		if a.Player == nil {
 			a.Player = p.NewPlayer()
+			a.Player.SetAudio(file)
 			a.Player.SetVolume(defaultPlayerVol)
+		} else {
+			a.Player.SetAudio(file)
 		}
 		// NOTE: Is it safe to decode audio once?
-		a.Player.SetAudio(file)
-
+		// Set everything at once only if it's happy path
 		a.MonoSamples = monoSamples
 		a.AudioMeta = audioMeta
+		a.FileMeta = filemanager.NewFileMeta(filepath.Base(filePath), fileInfo.Size(), fileInfo.ModTime())
 		a.LoadedFile = filePath
-
-		a.isLoading = false
 	}, ".mp3", ".wav", ".flac")
 }
 func (a *AppState) MarkersLoad()   {}
