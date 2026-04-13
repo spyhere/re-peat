@@ -70,6 +70,9 @@ func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag,
 }
 
 func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
+	if len(waves) == 0 {
+		return
+	}
 	yCenter = common.Snap(yCenter)
 	width := gtx.Constraints.Max.X + waveEdgePadding
 
