@@ -74,13 +74,14 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							gtx.Constraints.Min.X = tableW
 							gtx.Constraints.Min.Y = tableH
 							gtx.Constraints.Max.Y = tableH
-							return infoList(pv.th, "Test_audio.mp3").layout(gtx,
-								drawInfoRow(pv.th, "Length:", "3:42"),
-								drawInfoRow(pv.th, "Size:", "3.4Mb"),
-								drawInfoRow(pv.th, "Audio Channels:", "Stereo"),
-								drawInfoRow(pv.th, "Sample rate:", "44.1 Khz"),
-								drawInfoRow(pv.th, "Created:", "Wednesday, 5 April 2017 at 18:39"),
-								drawInfoRow(pv.th, "Edited:", "Wednesday, 3 March 2018 at 11:09"),
+							fMeta := pv.FileMeta
+							aMeta := pv.AudioMeta
+							return infoList(pv.th, fMeta.Name).layout(gtx,
+								drawInfoRow(pv.th, "Length:", aMeta.SecondsString()),
+								drawInfoRow(pv.th, "Size:", fMeta.SizeString()),
+								drawInfoRow(pv.th, "Audio Channels:", aMeta.ChannelsString()),
+								drawInfoRow(pv.th, "Sample rate:", aMeta.SampleRateString()),
+								drawInfoRow(pv.th, "Edited:", fMeta.UpdatedAtString()),
 							)
 						}),
 					)
