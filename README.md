@@ -23,14 +23,13 @@ https://github.com/user-attachments/assets/de938d8c-4bb0-42dc-b3c9-d479ff98eb7b
 2. Make sure you have `Go` toolchain installed, if you don't have it then check out [this](https://go.dev/doc/install)
 3. Inside the cloned repo run `go mod tidy` to install all needed dependencies
 4. `go run .` to run the application
-5. **WIP:** Right now there is no way of opening an MP3 file from the application, so you have to put it in `./assets/test_song.mp3` (exactly this name of the file) before starting the application
-
 
 ## Usage
 
 ### Project
 
-WIP
+- load mp3/wav/flac audio file
+- view the audio file stats
 
 ### Markers
 
@@ -45,6 +44,7 @@ WIP
 - edit a time marker (change name, time, add or remove category tags)
 - use Tab and Enter key to interact with input fields and buttons without mouse
 - create a new time marker
+- add comment to the marker
 
 ### Editor
 
