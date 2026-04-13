@@ -58,19 +58,17 @@ func (i infoListStyle) layout(gtx layout.Context, rows ...layout.FlexChild) layo
 		Color: i.th.Bg,
 		R:     theme.CornerR(15, 15, 15, 15),
 	})
+	gtx.Constraints.Max.X = maxW
 	i.Inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				titleStyle := material.Label(i.th.Theme, 16, i.Title)
 				titleStyle.Alignment = text.Middle
-				gtx.Constraints.Min.X = maxW
+				titleStyle.WrapPolicy = text.WrapWords
 				return titleStyle.Layout(gtx)
 			}),
 			layout.Rigid(layout.Spacer{Height: i.HRowGap}.Layout),
 			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-				xInset := i.Inset.Left + i.Inset.Right
-				gtx.Constraints.Min.X -= gtx.Dp(xInset)
-				gtx.Constraints.Max.X = gtx.Constraints.Min.X
 				return layout.Flex{Axis: layout.Vertical, Spacing: layout.SpaceBetween}.Layout(gtx, rows...)
 			}),
 		)
