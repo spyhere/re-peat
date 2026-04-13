@@ -1076,11 +1076,21 @@ func (b ButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
 
 func DrawBlockingMessage(gtx layout.Context, th *theme.RepeatTheme, msg string) {
 	DrawBackground(gtx, th.Palette.Backdrop)
-	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+	txtM, txtDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Min = image.Point{}
-		hStyles := material.H4(th.Theme, msg)
+		hStyles := material.H5(th.Theme, msg)
 		hStyles.Font = fonts.Roboto(font.Medium, font.Regular)
 		hStyles.Color = th.Palette.CardBg
 		return hStyles.Layout(gtx)
+	})
+	pad := gtx.Dp(10)
+	y := gtx.Constraints.Max.Y/2 - txtDims.Size.Y/2 - pad
+	DrawBox(gtx, Box{
+		Size:  image.Rect(0, y, gtx.Constraints.Max.X, y+txtDims.Size.Y+pad*2),
+		Color: th.Fg,
+	})
+	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		txtM.Add(gtx.Ops)
+		return txtDims
 	})
 }
