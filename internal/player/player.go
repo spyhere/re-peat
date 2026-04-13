@@ -42,6 +42,11 @@ func (p *Player) attachStreamer(str beep.Streamer, f beep.Format) {
 	})))
 }
 
+func (p *Player) Reset() {
+	p.Pause()
+	p.streamer.Close()
+}
+
 func (p *Player) SetAudio(f *os.File) error {
 	if p.streamer != nil {
 		p.streamer.Close()
