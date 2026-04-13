@@ -7,8 +7,8 @@ import (
 
 	"github.com/gopxl/beep"
 	"github.com/gopxl/beep/effects"
-	"github.com/gopxl/beep/mp3"
 	"github.com/gopxl/beep/speaker"
+	"github.com/spyhere/re-peat/internal/audio"
 )
 
 const defaultSampleRate = 44100
@@ -46,14 +46,13 @@ func (p *Player) SetAudio(f *os.File) error {
 	if p.streamer != nil {
 		p.streamer.Close()
 	}
-	// f.Name -> mp3, wav, flac
-	streamer, format, err := mp3.Decode(f)
+
+	streamer, format, err := audio.Decode(f)
 	if err != nil {
 		return err
 	}
 
 	p.streamer = streamer
-	// NOTE: Use this to create audio struct?
 	p.ctrl = &beep.Ctrl{Streamer: streamer, Paused: true}
 	p.volume = &effects.Volume{
 		Streamer: p.ctrl,

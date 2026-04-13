@@ -8,6 +8,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	editorview "github.com/spyhere/re-peat/internal/editorView"
 	markersview "github.com/spyhere/re-peat/internal/markersView"
@@ -22,7 +23,7 @@ func newApp() *App {
 	if err != nil {
 		log.Fatal(err)
 	}
-	monoSamples, a, err := loadMonoSamples(audioFilePath)
+	monoSamples, a, err := audio.LoadMonoSamples(audioFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
