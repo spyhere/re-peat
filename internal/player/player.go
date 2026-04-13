@@ -24,11 +24,12 @@ func NewPlayer() *Player {
 }
 
 type Player struct {
-	streamer beep.StreamSeekCloser
-	format   beep.Format
-	ctrl     *beep.Ctrl
-	volume   *effects.Volume
-	eof      bool
+	streamer  beep.StreamSeekCloser
+	format    beep.Format
+	ctrl      *beep.Ctrl
+	volume    *effects.Volume
+	isPlaying bool
+	eof       bool
 }
 
 func (p *Player) attachStreamer(str beep.Streamer, f beep.Format) {
@@ -39,6 +40,7 @@ func (p *Player) attachStreamer(str beep.Streamer, f beep.Format) {
 	p.format = f
 	speaker.Play(beep.Seq(str, beep.Callback(func() {
 		p.eof = true
+		p.isPlaying = false
 	})))
 }
 
@@ -88,7 +90,9 @@ func (p *Player) Play() {
 	speaker.Lock()
 	defer speaker.Unlock()
 	p.ctrl.Paused = false
+	p.isPlaying = true
 }
+
 func (p *Player) Pause() {
 	if p.eof {
 		return
@@ -96,12 +100,11 @@ func (p *Player) Pause() {
 	speaker.Lock()
 	defer speaker.Unlock()
 	p.ctrl.Paused = true
+	p.isPlaying = false
 }
+
 func (p *Player) IsPlaying() bool {
-	if p.eof {
-		return false
-	}
-	return !p.ctrl.Paused
+	return p.isPlaying
 }
 func (p *Player) IsEOF() bool {
 	return p.eof
@@ -123,6 +126,7 @@ func (p *Player) Set(samples int) (int, error) {
 	}
 	return p.streamer.Position(), nil
 }
+
 func (p *Player) Search(seconds float32) (int, error) {
 	if p.eof == true {
 		speaker.Lock()
