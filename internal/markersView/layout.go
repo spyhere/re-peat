@@ -33,7 +33,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	if isPlaying {
 		m.listenToPlayerUpdates()
 		gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(redrawInterval)})
-	} else {
+	} else if m.HasAudioLoaded() {
 		m.pausePlaying()
 	}
 	common.DrawBackground(gtx, m.th.Palette.MarkersViewBg)
