@@ -26,3 +26,7 @@ type ProjectView struct {
 	MarkersSaveCl   widget.Clickable
 	MarkersSaveAsCl widget.Clickable
 }
+
+func (p *ProjectView) isDisabled() bool {
+	return p.AppState.IsLoading() || p.AppState.IsChoosing()
+}

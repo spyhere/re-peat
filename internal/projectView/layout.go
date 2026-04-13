@@ -25,8 +25,10 @@ const (
 	CtaGap      unit.Dp = 20
 )
 
-// TODO: Pass theme to layout only
 func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
+	if pv.isDisabled() {
+		gtx = gtx.Disabled()
+	}
 	if pv.AudioLoadCl.Clicked(gtx) {
 		pv.AudioLoad()
 	}
