@@ -3,10 +3,10 @@ package projectview
 import (
 	"image"
 
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/text"
 	"gioui.org/unit"
-	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
@@ -25,10 +25,14 @@ const (
 	CtaGap      unit.Dp = 20
 )
 
-var cl = widget.Clickable{}
-
 // TODO: Pass theme to layout only
 func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
+	if pv.AudioLoadCl.Clicked(gtx) {
+		pv.AudioLoad()
+	}
+	if pv.MarkersLoadCl.Clicked(gtx) {
+		pv.MarkersLoad()
+	}
 	common.DrawBackground(gtx, pv.th.Palette.Project.Bg)
 	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		return layout.Stack{}.Layout(gtx,
@@ -58,7 +62,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 							gtx.Constraints.Min.X = tableW
 							return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-								btn := material.IconButton(pv.th.Theme, &cl, micons.Folder, "Load")
+								btn := material.IconButton(pv.th.Theme, &pv.AudioLoadCl, micons.Folder, "Load")
 								btn.Background = pv.th.Palette.Project.LoadButtonBg
 								return btn.Layout(gtx)
 							})
@@ -103,7 +107,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 								gtx.Constraints.Min.X = tableW
 								return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-									btn := material.IconButton(pv.th.Theme, &cl, micons.Folder, "Load")
+									btn := material.IconButton(pv.th.Theme, &pv.MarkersLoadCl, micons.Folder, "Load")
 									btn.Background = pv.th.Palette.Project.LoadButtonBg
 									return btn.Layout(gtx)
 								})
@@ -125,7 +129,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 								btnFg := pv.th.Palette.Project.SaveButtonFg
 								return layout.Flex{}.Layout(gtx,
 									layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-										btnStyle := common.Button(pv.th, &cl, micons.Save, "Save")
+										btnStyle := common.Button(pv.th, &pv.MarkersSaveCl, micons.Save, "Save")
 										btnStyle.WExpanded = true
 										btnStyle.Bg = btnBg
 										btnStyle.Fg = btnFg
@@ -133,7 +137,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 									}),
 									layout.Rigid(layout.Spacer{Width: CtaGap}.Layout),
 									layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-										btnStyle := common.Button(pv.th, &cl, micons.Save, "Save as")
+										btnStyle := common.Button(pv.th, &pv.MarkersSaveAsCl, micons.Save, "Save as")
 										btnStyle.WExpanded = true
 										btnStyle.Bg = btnBg
 										btnStyle.Fg = btnFg
@@ -148,5 +152,9 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 			}),
 		)
 	})
+
+	if pv.AudioLoadCl.Hovered() || pv.MarkersLoadCl.Hovered() || pv.MarkersSaveCl.Hovered() || pv.MarkersSaveAsCl.Hovered() {
+		common.SetCursor(gtx, pointer.CursorPointer)
+	}
 	return layout.Dimensions{}
 }

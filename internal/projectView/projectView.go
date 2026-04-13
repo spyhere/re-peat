@@ -1,6 +1,7 @@
 package projectview
 
 import (
+	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/state"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -20,4 +21,8 @@ func NewProjectView(props Props) ProjectView {
 type ProjectView struct {
 	*state.AppState
 	th              *theme.RepeatTheme
+	AudioLoadCl     widget.Clickable
+	MarkersLoadCl   widget.Clickable
+	MarkersSaveCl   widget.Clickable
+	MarkersSaveAsCl widget.Clickable
 }
