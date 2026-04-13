@@ -1073,3 +1073,14 @@ func (b ButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
 	})
 	return btnDims
 }
+
+func DrawBlockingMessage(gtx layout.Context, th *theme.RepeatTheme, msg string) {
+	DrawBackground(gtx, th.Palette.Backdrop)
+	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		gtx.Constraints.Min = image.Point{}
+		hStyles := material.H4(th.Theme, msg)
+		hStyles.Font = fonts.Roboto(font.Medium, font.Regular)
+		hStyles.Color = th.Palette.CardBg
+		return hStyles.Layout(gtx)
+	})
+}
