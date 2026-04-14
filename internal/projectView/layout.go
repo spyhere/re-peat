@@ -7,7 +7,6 @@ import (
 	"gioui.org/layout"
 	"gioui.org/text"
 	"gioui.org/unit"
-	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
@@ -30,14 +29,8 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 	if pv.isDisabled() {
 		gtx = gtx.Disabled()
 	}
-	if pv.AudioLoadCl.Clicked(gtx) {
-		pv.AudioLoadCl = widget.Clickable{}
-		pv.AudioLoad()
-	}
-	if pv.MarkersLoadCl.Clicked(gtx) {
-		pv.MarkersLoadCl = widget.Clickable{}
-		pv.MarkersLoad()
-	}
+	pv.dispatch(gtx)
+
 	common.DrawBackground(gtx, pv.th.Palette.Project.Bg)
 	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		return layout.Stack{}.Layout(gtx,
