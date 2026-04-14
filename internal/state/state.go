@@ -57,7 +57,7 @@ func (a *AppState) GetError() error {
 	return err
 }
 
-func (a *AppState) Reset() {
+func (a *AppState) resetAudio() {
 	a.LoadedAFile = ""
 	a.err = nil
 	if a.Player != nil {
@@ -83,7 +83,7 @@ func (a *AppState) AudioLoad() {
 		}
 
 		a.isLoading = true
-		a.Reset()
+		a.resetAudio()
 		defer func() {
 			a.isLoading = false
 		}()
