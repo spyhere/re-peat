@@ -138,7 +138,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 										btnStyle.WExpanded = true
 										btnStyle.Bg = btnBg
 										btnStyle.Fg = btnFg
-										btnStyle.Disabled = pv.LoadedMFile == "" || pv.TimeMarkers.IsEmpty()
+										btnStyle.Disabled = !pv.HasMarkersLoaded() || pv.TimeMarkers.IsEmpty()
 										return btnStyle.Layout(gtx)
 									}),
 									layout.Rigid(layout.Spacer{Width: CtaGap}.Layout),
