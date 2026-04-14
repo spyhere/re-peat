@@ -117,12 +117,7 @@ func (a *AppState) AudioLoad() {
 	}, ".mp3", ".wav", ".flac")
 }
 func (a *AppState) MarkersLoad() {}
-func (a *AppState) MarkersSave() {}
 
-func (a *AppState) MarkersSaveAs() {
-	if a.TimeMarkers.IsEmpty() {
-		return
-	}
 func (a *AppState) encodeMarkers() ([]byte, error) {
 	var data bytes.Buffer
 	encoder := json.NewEncoder(&data)
@@ -139,6 +134,22 @@ func (a *AppState) encodeMarkers() ([]byte, error) {
 		return []byte{}, err
 	}
 	return data.Bytes(), nil
+}
+
+func (a *AppState) MarkersSave() {
+	if a.TimeMarkers.IsEmpty() || a.LoadedMFile == "" {
+		return
+	}
+	data, err := a.encodeMarkers()
+	if err != nil {
+		a.err = err
+		return
+	}
+	a.fileManager.Save(a.LoadedMFile, data, func(err error) {
+		if err != nil {
+			a.err = err
+		}
+	})
 }
 
 func (a *AppState) MarkersSaveAs() {
