@@ -29,8 +29,8 @@ type EditorProps struct {
 	State *state.AppState
 }
 
-func NewEditor(props EditorProps) (*Editor, error) {
-	return &Editor{
+func NewEditor(props EditorProps) (Editor, error) {
+	return Editor{
 		monoSamples:   props.MonoSamples,
 		playhead:      newPlayhead(playheadInitDur),
 		cache:         newCache(),

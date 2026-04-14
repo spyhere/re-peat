@@ -45,7 +45,7 @@ type buttonText struct {
 
 var buttTextOps [3]buttonText = [3]buttonText{}
 
-func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, buttons *buttons) layout.Dimensions {
+func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, buttons buttons) layout.Dimensions {
 	var maxDim layout.Dimensions
 	segButtonP := th.Palette.SegButtons.Enabled
 	if buttons.isDisabled {

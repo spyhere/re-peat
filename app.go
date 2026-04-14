@@ -12,7 +12,6 @@ import (
 	markersview "github.com/spyhere/re-peat/internal/markersView"
 	projectview "github.com/spyhere/re-peat/internal/projectView"
 	"github.com/spyhere/re-peat/internal/state"
-	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -60,17 +59,15 @@ const (
 	Editor
 )
 
-// TODO: Get rid of redundant pointers
 type App struct {
 	*state.AppState
 	dialog      *common.Dialog
 	projectView projectview.ProjectView
-	markersView *markersview.MarkersView
-	editorView  *editorview.Editor
+	markersView markersview.MarkersView
+	editorView  editorview.Editor
 	selectedTab tab
 	th          *theme.RepeatTheme
-	timeMarkers tm.TimeMarkers
-	*buttons
+	buttons
 }
 
 func (a *App) onStartMarkerEdit() {

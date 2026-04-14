@@ -25,9 +25,9 @@ type Props struct {
 	State       *state.AppState
 }
 
-func NewMarkersView(props Props) *MarkersView {
+func NewMarkersView(props Props) MarkersView {
 	fm := &common.FocusManager{}
-	mView := &MarkersView{
+	mView := MarkersView{
 		th:            props.Th,
 		AppState:      props.State,
 		hotKeyBuf:     make([]rune, 0, selectionRuneLimit),

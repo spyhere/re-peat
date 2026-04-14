@@ -2,8 +2,8 @@ package main
 
 import "gioui.org/widget"
 
-func newButtons() *buttons {
-	return &buttons{
+func newButtons() buttons {
+	return buttons{
 		arr: [3]*button{
 			{
 				name:      "Project",
