@@ -60,6 +60,7 @@ func (f *FileManager) Save(filePath string, data []byte, cb func(error)) {
 			if file != nil {
 				file.Close()
 			}
+			cb(nil)
 			f.window.Invalidate()
 		}()
 		file, err = os.Create(filePath)
