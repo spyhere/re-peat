@@ -121,7 +121,44 @@ func (a *AppState) AudioLoad() {
 		a.LoadedAFile = filePath
 	}, ".mp3", ".wav", ".flac")
 }
-func (a *AppState) MarkersLoad() {}
+func (a *AppState) MarkersLoad() {
+	a.isChoosing = true
+	a.fileManager.Load(func(filePath string, err error) {
+		a.isChoosing = false
+		if err != nil {
+			if !errors.Is(err, explorer.ErrUserDecline) {
+				a.err = err
+			}
+			return
+		}
+		if a.LoadedMFile == filePath && !a.TimeMarkers.IsEmpty() {
+			return
+		}
+
+		a.LoadedMFile = ""
+		file, err := os.Open(filePath)
+		if err != nil {
+			a.err = err
+			return
+		}
+		var saveStruct filemanager.MarkersSaveScheme
+		decoder := json.NewDecoder(file)
+		if err = decoder.Decode(&saveStruct); err != nil {
+			a.err = err
+			return
+		}
+		fileInfo, err := os.Stat(filePath)
+		if err != nil {
+			a.err = err
+			return
+		}
+		a.TimeMarkers = saveStruct.Markers
+		a.MarkersMeta = tm.NewMarkersMeta(a.TimeMarkers)
+		a.MFileMeta = filemanager.NewFileMeta(fileInfo.Name(), fileInfo.Size(), fileInfo.ModTime())
+		a.LoadedMFile = filePath
+	}, ".rpt")
+
+}
 
 func (a *AppState) encodeMarkers() ([]byte, error) {
 	var data bytes.Buffer
