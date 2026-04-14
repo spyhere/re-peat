@@ -50,6 +50,9 @@ func (a *AppState) IsLoading() bool {
 func (a *AppState) HasAudioLoaded() bool {
 	return a.LoadedAFile != ""
 }
+func (a *AppState) HasMarkersLoaded() bool {
+	return a.LoadedMFile != ""
+}
 
 func (a *AppState) GetError() error {
 	err := a.err
