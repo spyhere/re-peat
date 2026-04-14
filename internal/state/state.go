@@ -26,7 +26,8 @@ func NewAppState(window *app.Window) AppState {
 
 type AppState struct {
 	fileManager *filemanager.FileManager
-	LoadedFile  string
+	LoadedAFile string
+	LoadedMFile string
 	Player      *p.Player
 	MonoSamples []float32
 	AudioMeta   audio.AudioMeta
@@ -45,7 +46,7 @@ func (a *AppState) IsLoading() bool {
 }
 
 func (a *AppState) HasAudioLoaded() bool {
-	return a.LoadedFile != ""
+	return a.LoadedAFile != ""
 }
 
 func (a *AppState) GetError() error {
@@ -55,7 +56,7 @@ func (a *AppState) GetError() error {
 }
 
 func (a *AppState) Reset() {
-	a.LoadedFile = ""
+	a.LoadedAFile = ""
 	a.err = nil
 	if a.Player != nil {
 		a.Player.Reset()
@@ -75,7 +76,7 @@ func (a *AppState) AudioLoad() {
 			}
 			return
 		}
-		if a.LoadedFile == filePath {
+		if a.LoadedAFile == filePath {
 			return
 		}
 
@@ -112,7 +113,7 @@ func (a *AppState) AudioLoad() {
 		a.MonoSamples = monoSamples
 		a.AudioMeta = audioMeta
 		a.FileMeta = filemanager.NewFileMeta(filepath.Base(filePath), fileInfo.Size(), fileInfo.ModTime())
-		a.LoadedFile = filePath
+		a.LoadedAFile = filePath
 	}, ".mp3", ".wav", ".flac")
 }
 func (a *AppState) MarkersLoad() {}
@@ -122,6 +123,7 @@ func (a *AppState) MarkersSaveAs() {
 	if a.TimeMarkers.IsEmpty() {
 		return
 	}
+func (a *AppState) encodeMarkers() ([]byte, error) {
 	var data bytes.Buffer
 	encoder := json.NewEncoder(&data)
 	saveStruct := filemanager.MarkersSaveScheme{
@@ -134,10 +136,22 @@ func (a *AppState) MarkersSaveAs() {
 	}
 	if err := encoder.Encode(saveStruct); err != nil {
 		a.err = err
+		return []byte{}, err
+	}
+	return data.Bytes(), nil
+}
+
+func (a *AppState) MarkersSaveAs() {
+	if a.TimeMarkers.IsEmpty() {
+		return
+	}
+	data, err := a.encodeMarkers()
+	if err != nil {
+		a.err = err
 		return
 	}
 	a.isChoosing = true
-	a.fileManager.SaveAs("markers.rpt", data.Bytes(), func(err error) {
+	a.fileManager.SaveAs("markers.rpt", data, func(filePath string, err error) {
 		a.isChoosing = false
 		if err != nil {
 			if !errors.Is(err, explorer.ErrUserDecline) {
@@ -145,5 +159,6 @@ func (a *AppState) MarkersSaveAs() {
 			}
 			return
 		}
+		a.LoadedMFile = filePath
 	})
 }

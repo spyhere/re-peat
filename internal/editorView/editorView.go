@@ -112,11 +112,11 @@ func (ed *Editor) SetSize(size image.Point) {
 
 // TODO: optimization - parallelise samples scan (~60 ms on resize for now)
 func (ed *Editor) MakePeakMap() {
-	isNewFile := ed.cachedFile != ed.LoadedFile
+	isNewFile := ed.cachedFile != ed.LoadedAFile
 	if !ed.HasAudioLoaded() || (!isNewFile && ed.cache.isPopulated) {
 		return
 	}
-	ed.cachedFile = ed.LoadedFile
+	ed.cachedFile = ed.LoadedAFile
 	ed.scroll.maxSamplesPerPx = float32(ed.AudioMeta.SampleRate) / (float32(ed.size.X) / float32(ed.AudioMeta.Seconds))
 	ed.scroll.minSamplesPerPx = ed.scroll.maxSamplesPerPx / float32(math.Exp2(float64(ed.scroll.maxLvl)))
 	ed.scroll.samplesPerPx = float32(ed.scroll.maxSamplesPerPx)

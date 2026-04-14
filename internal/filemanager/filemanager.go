@@ -52,17 +52,25 @@ func (f *FileManager) Save() {
 	log.Fatal("Save is not implemented")
 }
 
-func (f *FileManager) SaveAs(defaultName string, data []byte, cb func(error)) {
-	go func(cb func(error)) {
+type namer interface {
+	Name() string
+}
+
+func (f *FileManager) SaveAs(defaultName string, data []byte, cb func(string, error)) {
+	go func(cb func(string, error)) {
 		wc, err := f.e.CreateFile(defaultName)
 		defer func() {
 			if wc != nil {
 				wc.Close()
 			}
+			filePath := ""
+			if n, ok := wc.(namer); ok {
+				filePath = n.Name()
+			}
 			if err != nil {
-				cb(err)
+				cb("", err)
 			} else {
-				cb(nil)
+				cb(filePath, nil)
 			}
 			f.window.Invalidate()
 		}()
