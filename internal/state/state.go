@@ -1,6 +1,8 @@
 package state
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -113,6 +115,35 @@ func (a *AppState) AudioLoad() {
 		a.LoadedFile = filePath
 	}, ".mp3", ".wav", ".flac")
 }
-func (a *AppState) MarkersLoad()   {}
-func (a *AppState) MarkersSave()   {}
-func (a *AppState) MarkersSaveAs() {}
+func (a *AppState) MarkersLoad() {}
+func (a *AppState) MarkersSave() {}
+
+func (a *AppState) MarkersSaveAs() {
+	if len(a.TimeMarkers) == 0 {
+		return
+	}
+	var data bytes.Buffer
+	encoder := json.NewEncoder(&data)
+	saveStruct := filemanager.MarkersSaveScheme{
+		Version: 1,
+		FName:   a.FileMeta.Name,
+		FSize:   a.FileMeta.Size,
+		FLen:    a.AudioMeta.Seconds,
+		FSRate:  a.AudioMeta.SampleRate,
+		Markers: a.TimeMarkers,
+	}
+	if err := encoder.Encode(saveStruct); err != nil {
+		a.err = err
+		return
+	}
+	a.isChoosing = true
+	a.fileManager.SaveAs("markers.rpt", data.Bytes(), func(err error) {
+		a.isChoosing = false
+		if err != nil {
+			if !errors.Is(err, explorer.ErrUserDecline) {
+				a.err = err
+			}
+			return
+		}
+	})
+}
