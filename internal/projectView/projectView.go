@@ -25,6 +25,7 @@ type ProjectView struct {
 	markersLoadCl   widget.Clickable
 	markersSaveCl   widget.Clickable
 	markersSaveAsCl widget.Clickable
+	disabledCl      widget.Clickable
 }
 
 func (p *ProjectView) isDisabled() bool {

@@ -106,10 +106,12 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 								gtx.Constraints.Min.X = tableW
 								return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+									cl := &pv.markersLoadCl
 									if !pv.HasAudioLoaded() {
+										cl = &pv.disabledCl
 										gtx = gtx.Disabled()
 									}
-									btn := material.IconButton(pv.th.Theme, &pv.markersLoadCl, micons.Folder, "Load")
+									btn := material.IconButton(pv.th.Theme, cl, micons.Folder, "Load")
 									btn.Background = pv.th.Palette.Project.LoadButtonBg
 									return btn.Layout(gtx)
 								})
