@@ -31,7 +31,9 @@ type AppState struct {
 	Player      *p.Player
 	MonoSamples []float32
 	AudioMeta   audio.AudioMeta
-	FileMeta    filemanager.FileMeta
+	MarkersMeta tm.MarkersMeta
+	AFileMeta   filemanager.FileMeta
+	MFileMeta   filemanager.FileMeta
 	TimeMarkers tm.TimeMarkers
 	isChoosing  bool
 	isLoading   bool
@@ -112,7 +114,7 @@ func (a *AppState) AudioLoad() {
 		// Set everything at once only if it's happy path
 		a.MonoSamples = monoSamples
 		a.AudioMeta = audioMeta
-		a.FileMeta = filemanager.NewFileMeta(filepath.Base(filePath), fileInfo.Size(), fileInfo.ModTime())
+		a.AFileMeta = filemanager.NewFileMeta(filepath.Base(filePath), fileInfo.Size(), fileInfo.ModTime())
 		a.LoadedAFile = filePath
 	}, ".mp3", ".wav", ".flac")
 }
@@ -123,8 +125,8 @@ func (a *AppState) encodeMarkers() ([]byte, error) {
 	encoder := json.NewEncoder(&data)
 	saveStruct := filemanager.MarkersSaveScheme{
 		Version: 1,
-		FName:   a.FileMeta.Name,
-		FSize:   a.FileMeta.Size,
+		FName:   a.AFileMeta.Name,
+		FSize:   a.AFileMeta.Size,
 		FLen:    a.AudioMeta.Seconds,
 		FSRate:  a.AudioMeta.SampleRate,
 		Markers: a.TimeMarkers,
@@ -134,6 +136,19 @@ func (a *AppState) encodeMarkers() ([]byte, error) {
 		return []byte{}, err
 	}
 	return data.Bytes(), nil
+}
+
+func (a *AppState) updateMarkersMeta(filePath string) {
+	if filePath == "" {
+		return
+	}
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		a.err = err
+		return
+	}
+	a.MFileMeta = filemanager.NewFileMeta(fileInfo.Name(), fileInfo.Size(), fileInfo.ModTime())
+	a.MarkersMeta = tm.NewMarkersMeta(a.TimeMarkers)
 }
 
 func (a *AppState) MarkersSave() {
@@ -148,7 +163,9 @@ func (a *AppState) MarkersSave() {
 	a.fileManager.Save(a.LoadedMFile, data, func(err error) {
 		if err != nil {
 			a.err = err
+			return
 		}
+		a.updateMarkersMeta(a.LoadedMFile)
 	})
 }
 
@@ -171,5 +188,6 @@ func (a *AppState) MarkersSaveAs() {
 			return
 		}
 		a.LoadedMFile = filePath
+		a.updateMarkersMeta(filePath)
 	})
 }
