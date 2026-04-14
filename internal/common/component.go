@@ -1001,6 +1001,7 @@ type buttonMaterialSpecs struct {
 }
 
 type ButtonStyle struct {
+	disabled  bool
 	th        *theme.RepeatTheme
 	Bg        color.NRGBA
 	Fg        color.NRGBA
@@ -1030,6 +1031,12 @@ func Button(th *theme.RepeatTheme, cl *widget.Clickable, icon *widget.Icon, text
 }
 
 func (b ButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
+	if b.disabled || !gtx.Enabled() {
+		b.Bg = b.th.Palette.IconButton.Disabled.Bg
+		b.Fg = b.th.Palette.IconButton.Disabled.Icon
+		b.disabled = true
+		gtx = gtx.Disabled()
+	}
 	textM, dims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		txtStyle := material.Label(b.th.Theme, 14, b.Text)
 		txtStyle.LineHeight = 20
