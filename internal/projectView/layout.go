@@ -60,7 +60,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 							gtx.Constraints.Min.X = tableW
 							return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-								btn := material.IconButton(pv.th.Theme, &pv.AudioLoadCl, micons.Folder, "Load")
+								btn := material.IconButton(pv.th.Theme, &pv.audioLoadCl, micons.Folder, "Load")
 								btn.Background = pv.th.Palette.Project.LoadButtonBg
 								return btn.Layout(gtx)
 							})
@@ -106,7 +106,10 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 								gtx.Constraints.Min.X = tableW
 								return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-									btn := material.IconButton(pv.th.Theme, &pv.MarkersLoadCl, micons.Folder, "Load")
+									if !pv.HasAudioLoaded() {
+										gtx = gtx.Disabled()
+									}
+									btn := material.IconButton(pv.th.Theme, &pv.markersLoadCl, micons.Folder, "Load")
 									btn.Background = pv.th.Palette.Project.LoadButtonBg
 									return btn.Layout(gtx)
 								})
@@ -128,7 +131,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 								btnFg := pv.th.Palette.Project.SaveButtonFg
 								return layout.Flex{}.Layout(gtx,
 									layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-										btnStyle := common.Button(pv.th, &pv.MarkersSaveCl, micons.Save, "Save")
+										btnStyle := common.Button(pv.th, &pv.markersSaveCl, micons.Save, "Save")
 										btnStyle.WExpanded = true
 										btnStyle.Bg = btnBg
 										btnStyle.Fg = btnFg
@@ -137,7 +140,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 									}),
 									layout.Rigid(layout.Spacer{Width: CtaGap}.Layout),
 									layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-										btnStyle := common.Button(pv.th, &pv.MarkersSaveAsCl, micons.Save, "Save as")
+										btnStyle := common.Button(pv.th, &pv.markersSaveAsCl, micons.Save, "Save as")
 										btnStyle.WExpanded = true
 										btnStyle.Bg = btnBg
 										btnStyle.Fg = btnFg
@@ -154,7 +157,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 		)
 	})
 
-	if pv.AudioLoadCl.Hovered() || pv.MarkersLoadCl.Hovered() || pv.MarkersSaveCl.Hovered() || pv.MarkersSaveAsCl.Hovered() {
+	if pv.audioLoadCl.Hovered() || pv.markersLoadCl.Hovered() || pv.markersSaveCl.Hovered() || pv.markersSaveAsCl.Hovered() {
 		common.SetCursor(gtx, pointer.CursorPointer)
 	}
 	return layout.Dimensions{}

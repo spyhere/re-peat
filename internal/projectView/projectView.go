@@ -21,10 +21,10 @@ func NewProjectView(props Props) ProjectView {
 type ProjectView struct {
 	*state.AppState
 	th              *theme.RepeatTheme
-	AudioLoadCl     widget.Clickable
-	MarkersLoadCl   widget.Clickable
-	MarkersSaveCl   widget.Clickable
-	MarkersSaveAsCl widget.Clickable
+	audioLoadCl     widget.Clickable
+	markersLoadCl   widget.Clickable
+	markersSaveCl   widget.Clickable
+	markersSaveAsCl widget.Clickable
 }
 
 func (p *ProjectView) isDisabled() bool {

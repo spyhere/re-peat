@@ -6,20 +6,20 @@ import (
 )
 
 func (pv *ProjectView) dispatch(gtx layout.Context) {
-	if pv.AudioLoadCl.Clicked(gtx) {
-		pv.AudioLoadCl = widget.Clickable{}
+	if pv.audioLoadCl.Clicked(gtx) {
+		pv.audioLoadCl = widget.Clickable{}
 		pv.AudioLoad()
 	}
-	if pv.MarkersLoadCl.Clicked(gtx) {
-		pv.MarkersLoadCl = widget.Clickable{}
+	if pv.markersLoadCl.Clicked(gtx) {
+		pv.markersLoadCl = widget.Clickable{}
 		pv.MarkersLoad()
 	}
-	if pv.MarkersSaveCl.Clicked(gtx) {
-		pv.MarkersSaveCl = widget.Clickable{}
+	if pv.markersSaveCl.Clicked(gtx) {
+		pv.markersSaveCl = widget.Clickable{}
 		pv.MarkersSave()
 	}
-	if pv.MarkersSaveAsCl.Clicked(gtx) {
-		pv.MarkersSaveAsCl = widget.Clickable{}
+	if pv.markersSaveAsCl.Clicked(gtx) {
+		pv.markersSaveAsCl = widget.Clickable{}
 		pv.MarkersSaveAs()
 	}
 }
