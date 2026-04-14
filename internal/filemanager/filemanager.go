@@ -2,7 +2,6 @@ package filemanager
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"gioui.org/app"
@@ -48,8 +47,30 @@ func (f *FileManager) Load(cb func(string, error), extensions ...string) {
 	}(cb)
 }
 
-func (f *FileManager) Save() {
-	log.Fatal("Save is not implemented")
+func (f *FileManager) Save(filePath string, data []byte, cb func(error)) {
+	go func(cb func(error)) {
+		var (
+			file *os.File
+			err  error
+		)
+		defer func() {
+			if err != nil {
+				cb(err)
+			}
+			if file != nil {
+				file.Close()
+			}
+			f.window.Invalidate()
+		}()
+		file, err = os.Create(filePath)
+		if err != nil {
+			return
+		}
+		_, err = file.Write(data)
+		if err != nil {
+			return
+		}
+	}(cb)
 }
 
 type namer interface {
