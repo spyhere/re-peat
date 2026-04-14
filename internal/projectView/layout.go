@@ -70,14 +70,14 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							gtx.Constraints.Min.X = tableW
 							gtx.Constraints.Min.Y = tableH
 							gtx.Constraints.Max.Y = tableH
-							fMeta := pv.FileMeta
+							fMeta := pv.AFileMeta
 							aMeta := pv.AudioMeta
 							return infoList(pv.th, fMeta.Name).layout(gtx,
 								drawInfoRow(pv.th, "Length:", aMeta.SecondsString()),
 								drawInfoRow(pv.th, "Size:", fMeta.SizeString()),
 								drawInfoRow(pv.th, "Audio Channels:", aMeta.ChannelsString()),
 								drawInfoRow(pv.th, "Sample rate:", aMeta.SampleRateString()),
-								drawInfoRow(pv.th, "Edited:", fMeta.UpdatedAtString()),
+								drawInfoRow(pv.th, "Modified:", fMeta.UpdatedAtString()),
 							)
 						}),
 					)
@@ -120,10 +120,11 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 								gtx.Constraints.Min.X = tableW
 								gtx.Constraints.Max.Y = gtx.Constraints.Min.Y
-								return infoList(pv.th, "my_markers").layout(gtx,
-									drawInfoRow(pv.th, "Amount:", "13"),
-									drawInfoRow(pv.th, "Created:", "Wednesday, 5 April 2017 at 18:39"),
-									drawInfoRow(pv.th, "Modified:", "Wednesday, 3 March 2018 at 11:09"),
+								return infoList(pv.th, pv.MFileMeta.Name).layout(gtx,
+									drawInfoRow(pv.th, "Amount:", pv.MarkersMeta.AmountString()),
+									drawInfoRow(pv.th, "With comments:", pv.MarkersMeta.WithCommentsString()),
+									drawInfoRow(pv.th, "Size:", pv.MFileMeta.SizeString()),
+									drawInfoRow(pv.th, "Modified:", pv.MFileMeta.UpdatedAtString()),
 								)
 							}),
 							layout.Rigid(layout.Spacer{Height: ListCtaGap}.Layout),
