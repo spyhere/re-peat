@@ -24,6 +24,9 @@ type clickableIconProps struct {
 
 // TODO: Looks like this should be a part of common DrawIconButton
 func drawClickableIcon(gtx layout.Context, th *theme.RepeatTheme, props clickableIconProps) layout.Dimensions {
+	if !gtx.Enabled() {
+		props.disabled = true
+	}
 	iconS := gtx.Dp(props.iconSize)
 	gtx.Constraints.Min.X = iconS
 	iconSizeHalf := iconS / 2
