@@ -52,8 +52,29 @@ func (f *FileManager) Save() {
 	log.Fatal("Save is not implemented")
 }
 
-func (f *FileManager) SaveAs() {
-	log.Fatal("Save is not implemented")
+func (f *FileManager) SaveAs(defaultName string, data []byte, cb func(error)) {
+	go func(cb func(error)) {
+		wc, err := f.e.CreateFile(defaultName)
+		defer func() {
+			if wc != nil {
+				wc.Close()
+			}
+			if err != nil {
+				cb(err)
+			} else {
+				cb(nil)
+			}
+			f.window.Invalidate()
+		}()
+
+		if err != nil {
+			return
+		}
+		_, err = wc.Write(data)
+		if err != nil {
+			return
+		}
+	}(cb)
 }
 
 func (f *FileManager) IsChoosing() bool {
