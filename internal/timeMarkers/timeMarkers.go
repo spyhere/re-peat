@@ -141,3 +141,7 @@ func (t *TimeMarkers) Sorted() TimeMarkers {
 	t.Sort()
 	return *t
 }
+
+func (t *TimeMarkers) IsEmpty() bool {
+	return len(*t) == 0
+}

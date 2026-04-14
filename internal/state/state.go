@@ -119,7 +119,7 @@ func (a *AppState) MarkersLoad() {}
 func (a *AppState) MarkersSave() {}
 
 func (a *AppState) MarkersSaveAs() {
-	if len(a.TimeMarkers) == 0 {
+	if a.TimeMarkers.IsEmpty() {
 		return
 	}
 	var data bytes.Buffer

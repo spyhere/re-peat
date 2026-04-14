@@ -138,7 +138,7 @@ func (m *MarkersView) updateDefferedState() {
 	if m.TimeMarkers.DeleteDead() {
 		m.chipsFilter.reconcileEnabled(m.TimeMarkers)
 	}
-	if len(m.TimeMarkers) == 0 && m.searchbar.GetInput() != "" {
+	if m.TimeMarkers.IsEmpty() && m.searchbar.GetInput() != "" {
 		m.searchbar.SetText("")
 	}
 }

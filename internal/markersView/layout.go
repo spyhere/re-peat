@@ -44,7 +44,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
 				DefaultText: "Название маркера...",
 				Inputable:   m.searchbar,
-				Disabled:    len(m.TimeMarkers) == 0,
+				Disabled:    m.TimeMarkers.IsEmpty(),
 			})
 			return searchDims
 		})
@@ -172,7 +172,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					Icon:  micons.Delete,
 					Th:    m.th,
 					Cl:    &m.deleteCl,
-					IsOff: len(m.TimeMarkers) == 0,
+					IsOff: m.TimeMarkers.IsEmpty(),
 				})
 			},
 		)
