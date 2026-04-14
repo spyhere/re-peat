@@ -1035,6 +1035,7 @@ func (b ButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
 		b.Bg = b.th.Palette.IconButton.Disabled.Bg
 		b.Fg = b.th.Palette.IconButton.Disabled.Icon
 		b.Disabled = true
+		b.Cl = nil
 		gtx = gtx.Disabled()
 	}
 	textM, dims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
