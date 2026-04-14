@@ -19,14 +19,14 @@ func NewTimeMarkers() TimeMarkers {
 }
 
 type TimeMarker struct {
-	Samples      int
-	Name         string
+	Samples      int    `json:"samples,omitempty"`
+	Name         string `json:"name,omitempty"`
 	isDead       bool
-	Notes        string
-	CategoryTags []string
-	List         widget.List
-	ListTags
-	EditorTags
+	Notes        string      `json:"notes,omitempty"`
+	CategoryTags []string    `json:"category_tags,omitempty"`
+	List         widget.List `json:"-"`
+	ListTags     `json:"-"`
+	EditorTags   `json:"-"`
 }
 
 type ListTags struct {
