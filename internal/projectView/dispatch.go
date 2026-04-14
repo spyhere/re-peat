@@ -15,7 +15,6 @@ func (pv *ProjectView) dispatch(gtx layout.Context) {
 		pv.MarkersLoad()
 	}
 	if pv.markersSaveCl.Clicked(gtx) {
-		pv.markersSaveCl = widget.Clickable{}
 		pv.MarkersSave()
 	}
 	if pv.markersSaveAsCl.Clicked(gtx) {
