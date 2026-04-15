@@ -20,14 +20,15 @@ func (m *MarkersView) dialogUpdate() {
 }
 
 func (m *MarkersView) confirmCreate() {
-	m.ChipsFilter.UpdateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.AudioMeta)
+	m.ChipsFilter.UpdateAll(m.draftMarker.CategoryTags)
 	m.TimeMarkers.AttachNewMarker(m.draftMarker)
 	m.draftMarker = tm.TimeMarker{}
 }
 func (m *MarkersView) confirmEdit() {
-	m.ChipsFilter.UpdateAll(m.markerDialog.tags)
+	curMarker := m.markerDialog.TimeMarker
 	m.markerDialog.executeConfirm(m.AudioMeta)
+	m.ChipsFilter.UpdateAll(curMarker.CategoryTags)
 }
 func (m *MarkersView) confirmTagFilter() {
 	m.ChipsFilter.UpdateEnabled(m.tagsDialog.filterChips)
