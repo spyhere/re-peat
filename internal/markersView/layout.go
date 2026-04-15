@@ -36,12 +36,12 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	} else if m.HasAudioLoaded() {
 		m.pausePlaying()
 	}
-	common.DrawBackground(gtx, m.th.Palette.MarkersViewBg)
+	common.DrawBackground(gtx, m.Th.Palette.MarkersViewBg)
 
 	var searchDims layout.Dimensions
 	common.OffsetBy(gtx, image.Pt(0, topM), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
-			searchDims = common.DrawSearch(gtx, m.th, common.SProps{
+			searchDims = common.DrawSearch(gtx, m.Th, common.SProps{
 				DefaultText: "Название маркера...",
 				Inputable:   m.searchbar,
 				Disabled:    m.TimeMarkers.IsEmpty(),
@@ -54,10 +54,10 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	if !gtx.Enabled() {
 		cl = &m.disabledCl
 	}
-	drawAddMarkerButton(gtx, m.th, cl, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
+	drawAddMarkerButton(gtx, m.Th, cl, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
 
 	common.OffsetBy(gtx, image.Pt(0, topM+searchDims.Size.Y+20), func(gtx layout.Context) {
-		common.DrawDivider(gtx, m.th, common.DividerProps{
+		common.DrawDivider(gtx, m.Th, common.DividerProps{
 			Inset: common.DividerMiddleInset,
 		})
 	})
@@ -69,7 +69,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 
 		m.table.HeadCells(
 			func(gtx layout.Context) layout.Dimensions {
-				txt := material.Body2(m.th.Theme, "№")
+				txt := material.Body2(m.Th.Theme, "№")
 				txt.Font.Weight = font.Bold
 				return txt.Layout(gtx)
 			},
@@ -84,7 +84,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if isPlaying {
 					icon = micons.Pause
 				}
-				return drawClickableIcon(gtx, m.th, clickableIconProps{
+				return drawClickableIcon(gtx, m.Th, clickableIconProps{
 					icon:     icon,
 					iconSize: 24,
 					cl:       &m.replayCl,
@@ -92,12 +92,12 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				txt := material.Body2(m.th.Theme, "Name")
+				txt := material.Body2(m.Th.Theme, "Name")
 				txt.Font.Weight = font.Bold
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				txt := material.Body2(m.th.Theme, "Time")
+				txt := material.Body2(m.Th.Theme, "Time")
 				txt.Font.Weight = font.Bold
 				return txt.Layout(gtx)
 			},
@@ -115,7 +115,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
 				return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						return drawClickableIcon(gtx, m.th, clickableIconProps{
+						return drawClickableIcon(gtx, m.Th, clickableIconProps{
 							icon:     micons.Filter,
 							iconSize: 24,
 							cl:       &m.tagCl,
@@ -125,7 +125,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					layout.Rigid(layout.Spacer{Width: gap}.Layout),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						gtx.Constraints.Min = image.Point{}
-						txt := material.Body2(m.th.Theme, "Tags")
+						txt := material.Body2(m.Th.Theme, "Tags")
 						txt.Font.Weight = font.Bold
 						return txt.Layout(gtx)
 					}),
@@ -134,7 +134,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 						if len(m.ChipsFilter.Enabled) == 0 {
 							return layout.Dimensions{}
 						}
-						return drawClickableIcon(gtx, m.th, clickableIconProps{
+						return drawClickableIcon(gtx, m.Th, clickableIconProps{
 							icon:     micons.Cancel,
 							iconSize: 24,
 							cl:       &m.tagClearCl,
@@ -145,7 +145,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 						inset := layout.Inset{Left: 2, Right: 2}
 						return m.enabledTagsLs.Layout(gtx, len(enabledChips), func(gtx layout.Context, index int) layout.Dimensions {
 							return inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-								return common.DrawChip(gtx, m.th, common.ChipProps{
+								return common.DrawChip(gtx, m.Th, common.ChipProps{
 									Text:     enabledChips[index],
 									Selected: true,
 									HideIcon: true,
@@ -170,7 +170,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				}
 				return common.DrawIconButton(gtx, common.IconButtonProps{
 					Icon:  micons.Delete,
-					Th:    m.th,
+					Th:    m.Th,
 					Cl:    &m.deleteCl,
 					IsOff: m.TimeMarkers.IsEmpty(),
 				})
@@ -181,20 +181,20 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				rowNum := fmt.Sprintf("%02d", rowIdx+1)
 				curInput := string(m.hotKeyBuf)
-				txt := material.Body2(m.th.Theme, rowNum)
+				txt := material.Body2(m.Th.Theme, rowNum)
 				txt.Font = fonts.GoMedium(font.Medium, font.Regular)
 				dims := txt.Layout(gtx)
 				if strings.HasPrefix(rowNum, curInput) {
 					var highlightTDim layout.Dimensions
 					macro, highlightTDim := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
-						highlightT := material.Body2(m.th.Theme, curInput)
-						highlightT.Color = m.th.Palette.Selection.Fg
+						highlightT := material.Body2(m.Th.Theme, curInput)
+						highlightT.Color = m.Th.Palette.Selection.Fg
 						highlightT.TextSize += 2
 						return highlightT.Layout(gtx)
 					})
 					common.DrawBox(gtx, common.Box{
 						Size:  image.Rect(0, 0, highlightTDim.Size.X, highlightTDim.Size.Y),
-						Color: m.th.Palette.Selection.Bg,
+						Color: m.Th.Palette.Selection.Bg,
 					})
 					macro.Add(gtx.Ops)
 				}
@@ -211,7 +211,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if m.isThisMarkerPlaying(curMarker) {
 					icon = micons.Pause
 				}
-				return drawClickableIcon(gtx, m.th, clickableIconProps{
+				return drawClickableIcon(gtx, m.Th, clickableIconProps{
 					icon:     icon,
 					iconSize: 26,
 					cl:       &curMarker.Play,
@@ -219,14 +219,14 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				txt := material.Body2(m.th.Theme, m.TimeMarkers.Get(rowIdx, true).Name)
+				txt := material.Body2(m.Th.Theme, m.TimeMarkers.Get(rowIdx, true).Name)
 				txt.Font = fonts.GoMedium(font.Medium, font.Regular)
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				currSamples := m.TimeMarkers.Get(rowIdx, true).Samples
 				formattedSeconds := common.FormatSeconds(m.AudioMeta.GetSecondsFromSamples(currSamples))
-				txt := material.Body2(m.th.Theme, formattedSeconds)
+				txt := material.Body2(m.Th.Theme, formattedSeconds)
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
@@ -239,7 +239,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					if index%2 != 0 {
 						return layout.Dimensions{Size: image.Pt(gtx.Dp(5), 0)}
 					}
-					dim := common.DrawChip(gtx, m.th, common.ChipProps{
+					dim := common.DrawChip(gtx, m.Th, common.ChipProps{
 						Text: tagsArr[index/2],
 					})
 					return dim
@@ -257,7 +257,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if hasNotes {
 					icon = micons.CommentInsert
 				}
-				return drawClickableIcon(gtx, m.th, clickableIconProps{
+				return drawClickableIcon(gtx, m.Th, clickableIconProps{
 					icon:     icon,
 					iconSize: 24,
 					cl:       &curMarker.Comment,
@@ -270,7 +270,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if curMarker.Edit.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				return drawClickableIcon(gtx, m.th, clickableIconProps{
+				return drawClickableIcon(gtx, m.Th, clickableIconProps{
 					icon:     micons.Edit,
 					iconSize: 24,
 					cl:       &curMarker.Edit,
@@ -283,18 +283,18 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 				if curMarker.Delete.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
 				}
-				return drawClickableIcon(gtx, m.th, clickableIconProps{
+				return drawClickableIcon(gtx, m.Th, clickableIconProps{
 					icon:     micons.Delete,
 					iconSize: 24,
 					cl:       &curMarker.Delete,
 				})
 			},
 		)
-		m.table.Layout(gtx, m.th, len(m.TimeMarkers), []int{4, 4, 30, 6, 44, 4, 4, 4})
+		m.table.Layout(gtx, m.Th, len(m.TimeMarkers), []int{4, 4, 30, 6, 44, 4, 4, 4})
 	})
 
 	if isPlaying {
-		drawPlayerState(gtx, m.th, m.Player.GetCurrentSecond(), m.AudioMeta.Seconds)
+		drawPlayerState(gtx, m.Th, m.Player.GetCurrentSecond(), m.AudioMeta.Seconds)
 	}
 
 	m.fm.PlaceScrim(gtx)

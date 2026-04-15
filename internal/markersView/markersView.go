@@ -72,7 +72,6 @@ const (
 	deleteAll
 )
 
-// TODO: Remove embedding dialogs
 type MarkersView struct {
 	*state.AppState
 	draftMarker   tm.TimeMarker
@@ -87,9 +86,9 @@ type MarkersView struct {
 	createCl      widget.Clickable
 	disabledCl    widget.Clickable
 	deleteCl      widget.Clickable
-	dialogOwner
-	markerDialog
-	tagsDialog
+	dialogOwner   dialogOwner
+	markerDialog  markerDialog
+	tagsDialog    tagsDialog
 	commentDialog commentDialog
 	hotKeyBuf     []rune
 }
