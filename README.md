@@ -30,6 +30,8 @@ https://github.com/user-attachments/assets/de938d8c-4bb0-42dc-b3c9-d479ff98eb7b
 
 - load mp3/wav/flac audio file
 - view the audio file stats
+- load and save markers
+- view markers file stats
 
 ### Markers
 
