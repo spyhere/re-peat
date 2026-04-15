@@ -94,6 +94,8 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 		common.SetCursor(gtx, cursor)
 	}
 
+	a.Prompter.Layout(gtx)
+
 	if a.AppState.IsLoading() {
 		common.DrawBlockingMessage(gtx, a.Th, "Loading file...")
 	}

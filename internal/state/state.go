@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,11 +15,16 @@ import (
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/filemanager"
 	p "github.com/spyhere/re-peat/internal/player"
+	"github.com/spyhere/re-peat/internal/prompt"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-const defaultPlayerVol = 0.5
+const (
+	defaultPlayerVol   = 0.5
+	mLoadConflictTitle = "Markers loading conflict"
+	mLoadConflictBody  = "These markers were initially saved for \"%s\", but currently loaded \"%s\".\nStill want to load them for this audio file?"
+)
 
 func NewAppState(window *app.Window) AppState {
 	th, err := theme.New()
@@ -28,6 +34,7 @@ func NewAppState(window *app.Window) AppState {
 	return AppState{
 		Th:          th,
 		Dialog:      common.Dialog{},
+		Prompter:    prompt.NewPrompter(th),
 		fileManager: filemanager.NewFileManager(window),
 		TimeMarkers: tm.NewTimeMarkers(),
 	}
@@ -36,6 +43,7 @@ func NewAppState(window *app.Window) AppState {
 type AppState struct {
 	Th          *theme.RepeatTheme
 	Dialog      common.Dialog
+	Prompter    prompt.Prompter
 	fileManager *filemanager.FileManager
 	LoadedAFile string
 	LoadedMFile string
@@ -158,6 +166,14 @@ func (a *AppState) MarkersLoad() {
 			a.err = err
 			return
 		}
+
+		if a.AFileMeta.Name != saveStruct.FName {
+			answer := a.Prompter.Ask(mLoadConflictTitle, fmt.Sprintf(mLoadConflictBody, saveStruct.FName, a.AFileMeta.Name))
+			if answer == false {
+				return
+			}
+		}
+
 		fileInfo, err := os.Stat(filePath)
 		if err != nil {
 			a.err = err
