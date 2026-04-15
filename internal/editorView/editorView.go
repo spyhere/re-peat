@@ -30,7 +30,7 @@ type EditorProps struct {
 func NewEditor(props EditorProps) Editor {
 	return Editor{
 		monoSamples:   props.MonoSamples,
-		playhead:      newPlayhead(playheadInitDur),
+		playheadUpd:   playheadInitDur,
 		cache:         newCache(),
 		markers:       newMarkers(&props.State.TimeMarkers),
 		mEditor:       newMEditor(),
@@ -60,7 +60,8 @@ type Editor struct {
 	cachedFile    string
 	mode          interactionMode
 	cursor        pointer.Cursor
-	playhead      *playhead
+	playhead      playhead
+	playheadUpd   time.Duration
 	monoSamples   []float32
 	cache         cache
 	markers       *markers
@@ -175,7 +176,7 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 	ed.scroll.leftB += int(pos.X * (oldSPP - ed.scroll.samplesPerPx))
 	zoomFactor := ed.scroll.maxSamplesPerPx / ed.scroll.samplesPerPx
 	playheadUpdate := time.Duration(float32(playheadInitDur) / zoomFactor)
-	ed.playhead.update = common.Clamp(playheadMinDur, playheadUpdate, playheadInitDur)
+	ed.playheadUpd = common.Clamp(playheadMinDur, playheadUpdate, playheadInitDur)
 	// Pan
 	curSamplesPerPx := ed.scroll.samplesPerPx
 	panSamples := int(scroll.X * panRate * float32(curSamplesPerPx))

@@ -16,7 +16,7 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 	ed.updateDifferedState()
 	if ed.HasAudioLoaded() && ed.Player.IsPlaying() {
 		if !ed.Player.IsEOF() {
-			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playhead.update)})
+			gtx.Source.Execute(op.InvalidateCmd{At: gtx.Now.Add(ed.playheadUpd)})
 		}
 		ed.listenToPlayerUpdates()
 	}

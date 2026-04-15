@@ -1,27 +1,15 @@
 package editorview
 
-import (
-	"time"
-)
-
-func newPlayhead(updateTime time.Duration) *playhead {
-	return &playhead{
-		update: updateTime,
-	}
-}
-
-// NOTE: Should it be inside AppState? reset playhead on new file?
 type playhead struct {
-	samples     int
-	prevSamples int
-	update      time.Duration
+	samples       int
+	playbackStart int
 }
 
 func (p *playhead) set(samples int) {
-	p.prevSamples = samples
+	p.playbackStart = samples
 	p.samples = samples
 }
 
 func (p *playhead) reset() {
-	p.samples = p.prevSamples
+	p.samples = p.playbackStart
 }
