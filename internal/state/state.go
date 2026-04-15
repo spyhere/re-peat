@@ -102,7 +102,14 @@ func (a *AppState) reset() {
 	a.MarkersMeta = tm.MarkersMeta{}
 }
 
+func (a *AppState) pausePlayer() {
+	if a.Player != nil {
+		a.Player.Pause()
+	}
+}
+
 func (a *AppState) AudioLoad() {
+	a.pausePlayer()
 	a.isChoosing = true
 	a.fileManager.Load(func(filePath string, err error) {
 		a.isChoosing = false
@@ -154,6 +161,7 @@ func (a *AppState) AudioLoad() {
 }
 
 func (a *AppState) MarkersLoad() {
+	a.pausePlayer()
 	a.isChoosing = true
 	a.fileManager.Load(func(filePath string, err error) {
 		a.isChoosing = false
