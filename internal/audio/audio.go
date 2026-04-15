@@ -34,8 +34,8 @@ func (a AudioMeta) GetNextSecond(second float64) (nextSecond float64, samplesIdx
 func (a AudioMeta) GetSamplesFromSeconds(seconds float64) int {
 	return int(seconds * float64(a.SampleRate))
 }
-func (a AudioMeta) GetSamplesAmount() int {
-	return a.MonoSamplesLen * a.Channels
+func (a AudioMeta) MaxMonoSamples() int {
+	return a.MonoSamplesLen
 }
 
 func (a AudioMeta) SecondsString() string {
