@@ -84,16 +84,8 @@ func (a *AppState) GetError() error {
 	return err
 }
 
-func (a *AppState) reset() {
-	a.LoadedAFile = ""
-	a.AFileMeta = filemanager.FileMeta{}
-	a.AudioMeta = audio.AudioMeta{}
-	a.err = nil
-	if a.Player != nil {
-		a.Player.Reset()
-	}
-
-	a.MonoSamples = a.MonoSamples[:0]
+func (a *AppState) resetAudioDependantState() {
+	a.Playhead.Set(0)
 	a.TimeMarkers.MarkAllDead()
 	a.TimeMarkers.DeleteDead()
 
@@ -124,7 +116,6 @@ func (a *AppState) AudioLoad() {
 		}
 
 		a.isLoading = true
-		a.reset()
 		defer func() {
 			a.isLoading = false
 		}()
@@ -157,6 +148,7 @@ func (a *AppState) AudioLoad() {
 		a.AudioMeta = audioMeta
 		a.AFileMeta = filemanager.NewFileMeta(filepath.Base(filePath), fileInfo.Size(), fileInfo.ModTime())
 		a.LoadedAFile = filePath
+		a.resetAudioDependantState()
 	}, ".mp3", ".wav", ".flac")
 }
 

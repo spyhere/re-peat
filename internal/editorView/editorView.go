@@ -89,7 +89,6 @@ func (ed *Editor) getRenderableWaves() [][2]float32 {
 	cacheLeftB := leftB / cacheSPP
 	cacheRightB := rightB / cacheSPP
 
-	// FIX: accidentally caught "out of range [-477:]" error
 	ed.cache.curSlice = ed.cache.peakMap[cacheSPP][cacheLeftB:cacheRightB]
 	ed.cache.curLvl = cacheSPP
 	ed.cache.leftB = cacheLeftB
