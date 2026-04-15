@@ -113,6 +113,7 @@ func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
 	m.markerInPlay = curMarker
 	m.Player.Set(curMarker.Samples)
+	m.Playhead.Set(curMarker.Samples)
 	m.Player.Play()
 }
 
@@ -159,6 +160,7 @@ func (m *MarkersView) replayMarkers() {
 	} else {
 		m.Player.Set(0)
 		m.Player.Play()
+		m.Playhead.Set(0)
 	}
 }
 
