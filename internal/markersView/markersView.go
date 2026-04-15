@@ -21,7 +21,6 @@ const (
 type Props struct {
 	Th          *theme.RepeatTheme
 	TimeMarkers *tm.TimeMarkers
-	Dialog      *common.Dialog
 	State       *state.AppState
 }
 
@@ -31,7 +30,6 @@ func NewMarkersView(props Props) MarkersView {
 		th:            props.Th,
 		AppState:      props.State,
 		hotKeyBuf:     make([]rune, 0, selectionRuneLimit),
-		dialog:        props.Dialog,
 		searchbar:     &common.Inputable{Focuser: fm},
 		fm:            fm,
 		enabledTagsLs: &widget.List{},
@@ -94,7 +92,6 @@ type MarkersView struct {
 	createCl      widget.Clickable
 	disabledCl    widget.Clickable
 	deleteCl      widget.Clickable
-	dialog        *common.Dialog
 	dialogOwner
 	markerDialog
 	tagsDialog
@@ -212,7 +209,7 @@ func (m *MarkersView) cancelDialog() {
 	case edit:
 		m.markerDialog.cancelEdit()
 	}
-	m.dialog.Hide()
+	m.Dialog.Hide()
 	m.dialogOwner = none
 }
 
@@ -229,7 +226,7 @@ func (m *MarkersView) confirmDialog() {
 	case deleteAll:
 		m.confirmDeleteAll()
 	}
-	m.dialog.Hide()
+	m.Dialog.Hide()
 	m.dialogOwner = none
 }
 

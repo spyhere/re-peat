@@ -11,10 +11,10 @@ import (
 )
 
 func (m *MarkersView) dialogUpdate() {
-	if m.dialog.IsCanceled() {
+	if m.Dialog.IsCanceled() {
 		m.cancelDialog()
 	}
-	if m.dialog.IsConfirmed() {
+	if m.Dialog.IsConfirmed() {
 		m.confirmDialog()
 	}
 }
@@ -47,19 +47,19 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 	}
 	m.markerDialog.prepareForOpening(m.AudioMeta, curMarker, m.chipsFilter.all)
 
-	m.dialog.Basic(m.th, title, func(gtx layout.Context) layout.Dimensions {
+	m.Dialog.Basic(m.th, title, func(gtx layout.Context) layout.Dimensions {
 		return m.markerDialog.Layout(gtx, m.AudioMeta.Seconds)
 	})
-	m.dialog.Show()
+	m.Dialog.Show()
 }
 
 func (m *MarkersView) openCommentDialog(curMarker *tm.TimeMarker) {
 	m.dialogOwner = comment
 	m.commentDialog.prepareForOpening(curMarker)
-	m.dialog.Basic(m.th, curMarker.Name, func(gtx layout.Context) layout.Dimensions {
+	m.Dialog.Basic(m.th, curMarker.Name, func(gtx layout.Context) layout.Dimensions {
 		return m.commentDialog.Layout(gtx)
 	})
-	m.dialog.Show()
+	m.Dialog.Show()
 }
 
 func (m *MarkersView) confirmComment() {
@@ -72,14 +72,14 @@ func (m *MarkersView) openTagsFilterDialog() {
 	m.dialogOwner = tagFilter
 	m.chipsFilter.recreate(m.TimeMarkers)
 	filterChips := m.tagsDialog.createFreshChips(m.chipsFilter.all, m.chipsFilter.enabledMap)
-	m.dialog.Basic(m.th, "Tags Filter", func(gtx layout.Context) layout.Dimensions {
+	m.Dialog.Basic(m.th, "Tags Filter", func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X = gtx.Dp(maxFilterW)
 		if cursor, ok := m.tagsDialog.getCursorAndHandleEvents(gtx); ok {
 			common.SetCursor(gtx, cursor)
 		}
 		return common.DrawChipsFilter(gtx, m.th, filterChips)
 	})
-	m.dialog.Show()
+	m.Dialog.Show()
 }
 
 func (m *MarkersView) clearTagFilter() {
@@ -88,12 +88,12 @@ func (m *MarkersView) clearTagFilter() {
 
 func (m *MarkersView) openDeleteAllDialog() {
 	m.dialogOwner = deleteAll
-	m.dialog.SetIcon(micons.Warning)
-	m.dialog.Basic(m.th, "Удалить все маркеры?", func(gtx layout.Context) layout.Dimensions {
+	m.Dialog.SetIcon(micons.Warning)
+	m.Dialog.Basic(m.th, "Удалить все маркеры?", func(gtx layout.Context) layout.Dimensions {
 		txt := material.Body2(m.th.Theme, "Это действие удалит все существующие маркеры для этой звуковой дорожки!")
 		txt.WrapPolicy = text.WrapWords
 		txt.Alignment = text.Middle
 		return txt.Layout(gtx)
 	})
-	m.dialog.Show()
+	m.Dialog.Show()
 }

@@ -10,6 +10,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/x/explorer"
 	"github.com/spyhere/re-peat/internal/audio"
+	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/filemanager"
 	p "github.com/spyhere/re-peat/internal/player"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
@@ -19,12 +20,14 @@ const defaultPlayerVol = 0.5
 
 func NewAppState(window *app.Window) AppState {
 	return AppState{
+		Dialog:      common.Dialog{},
 		fileManager: filemanager.NewFileManager(window),
 		TimeMarkers: tm.NewTimeMarkers(),
 	}
 }
 
 type AppState struct {
+	Dialog      common.Dialog
 	fileManager *filemanager.FileManager
 	LoadedAFile string
 	LoadedMFile string

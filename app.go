@@ -20,22 +20,18 @@ func newApp(appState *state.AppState) *App {
 	if err != nil {
 		log.Fatal(err)
 	}
-	d := common.Dialog{}
-	d.CancelProps.Text = "Отмена"
 
 	appInstance := &App{
 		AppState: appState,
 		th:       th,
-		dialog:   &d,
 		buttons:  newButtons(),
 		projectView: projectview.NewProjectView(projectview.Props{
 			Th:    th,
 			State: appState,
 		}),
 		markersView: markersview.NewMarkersView(markersview.Props{
-			Th:     th,
-			State:  appState,
-			Dialog: &d,
+			Th:    th,
+			State: appState,
 		}),
 	}
 	ed, err := editorview.NewEditor(editorview.EditorProps{
@@ -61,7 +57,6 @@ const (
 
 type App struct {
 	*state.AppState
-	dialog      *common.Dialog
 	projectView projectview.ProjectView
 	markersView markersview.MarkersView
 	editorView  editorview.Editor
@@ -82,9 +77,9 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	if err := a.AppState.GetError(); err != nil {
 		log.Println(err)
 	}
-	a.dialog.Update(gtx)
+	a.Dialog.Update(gtx)
 	gtxEnabled := gtx
-	if a.dialog.ShouldDisableGtx(gtx) {
+	if a.Dialog.ShouldDisableGtx(gtx) {
 		gtx = gtx.Disabled()
 	}
 
@@ -108,8 +103,8 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	if a.buttons.isPointerHitting {
 		common.SetCursor(gtx, pointer.CursorPointer)
 	}
-	a.dialog.Layout(gtxEnabled)
-	if cursor, ok := a.dialog.GetCursorType(); ok {
+	a.Dialog.Layout(gtxEnabled)
+	if cursor, ok := a.Dialog.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}
 
