@@ -79,15 +79,22 @@ func (a *AppState) GetError() error {
 	return err
 }
 
-func (a *AppState) resetAudio() {
+func (a *AppState) reset() {
 	a.LoadedAFile = ""
+	a.AFileMeta = filemanager.FileMeta{}
+	a.AudioMeta = audio.AudioMeta{}
 	a.err = nil
 	if a.Player != nil {
 		a.Player.Reset()
 	}
+
 	a.MonoSamples = a.MonoSamples[:0]
 	a.TimeMarkers.MarkAllDead()
 	a.TimeMarkers.DeleteDead()
+
+	a.LoadedMFile = ""
+	a.MFileMeta = filemanager.FileMeta{}
+	a.MarkersMeta = tm.MarkersMeta{}
 }
 
 func (a *AppState) AudioLoad() {
@@ -105,7 +112,7 @@ func (a *AppState) AudioLoad() {
 		}
 
 		a.isLoading = true
-		a.resetAudio()
+		a.reset()
 		defer func() {
 			a.isLoading = false
 		}()
