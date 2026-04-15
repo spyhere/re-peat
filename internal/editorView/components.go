@@ -69,6 +69,7 @@ func mCreateButtonComp(gtx layout.Context, th *theme.RepeatTheme, tag event.Tag,
 	common.RegisterTag(gtx, tag, labelArea)
 }
 
+// TODO: Improve visuals (make less bulky)
 func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, waves [][2]float32, s scroll, c cache) {
 	if len(waves) == 0 {
 		return
@@ -89,7 +90,8 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
 		i0 := (sample0 / c.curLvl) - c.leftB
 		i1 := (sample1 / c.curLvl) - c.leftB
-		i1 = common.Clamp(i0+1, i1, len(waves))
+		minV := min(i0+1, len(waves))
+		i1 = common.Clamp(minV, i1, len(waves))
 		if i0 == lastI0 && i1 == lastI1 {
 			continue
 		}
@@ -119,7 +121,8 @@ func soundWavesComp(gtx layout.Context, th *theme.RepeatTheme, yCenter float32, 
 		sample1 := s.leftB + int(float32(px+1)*s.samplesPerPx)
 		i0 := (sample0 / c.curLvl) - c.leftB
 		i1 := (sample1 / c.curLvl) - c.leftB
-		i1 = common.Clamp(i0+1, i1, len(waves))
+		minV := min(i0+1, len(waves))
+		i1 = common.Clamp(minV, i1, len(waves))
 		if i0 == lastI0 && i1 == lastI1 {
 			continue
 		}
