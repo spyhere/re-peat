@@ -32,7 +32,6 @@ func NewMarkersView(props Props) MarkersView {
 		enabledTagsLs: &widget.List{},
 		markerDialog:  newMarkerDialog(globalChipsLimit, props.State.Th, props.State.AudioMeta),
 		tagsDialog:    newTagsDialog(globalChipsLimit),
-		chipsFilter:   newChipsFilter(globalChipsLimit),
 		commentDialog: newCommentDialog(props.State.Th),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
@@ -92,8 +91,7 @@ type MarkersView struct {
 	markerDialog
 	tagsDialog
 	commentDialog commentDialog
-	chipsFilter
-	hotKeyBuf []rune
+	hotKeyBuf     []rune
 }
 
 func (m *MarkersView) togglePlayer(curMarker *tm.TimeMarker) {
@@ -129,7 +127,7 @@ func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
 
 func (m *MarkersView) updateDefferedState() {
 	if m.TimeMarkers.DeleteDead() {
-		m.chipsFilter.reconcileEnabled(m.TimeMarkers)
+		m.ChipsFilter.ReconcileEnabled(m.TimeMarkers)
 	}
 	if m.TimeMarkers.IsEmpty() && m.searchbar.GetInput() != "" {
 		m.searchbar.SetText("")
@@ -142,7 +140,7 @@ func (m *MarkersView) getTableRowValue(rowIdx int) *tm.TimeMarker {
 
 func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 	hasChipsMatch := true
-	for _, chip := range m.chipsFilter.getEnabledChips() {
+	for _, chip := range m.ChipsFilter.GetEnabledChips() {
 		hasChipsMatch = false
 		if slices.Contains(curMarker.CategoryTags, chip) {
 			hasChipsMatch = true

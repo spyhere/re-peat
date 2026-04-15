@@ -14,6 +14,7 @@ import (
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/filemanager"
+	"github.com/spyhere/re-peat/internal/filters"
 	p "github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/prompt"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
@@ -33,6 +34,7 @@ func NewAppState(window *app.Window) AppState {
 	}
 	return AppState{
 		Th:          th,
+		ChipsFilter: filters.NewChipsFilter(100), // TODO: think about centralized way of capacity constant
 		Dialog:      common.Dialog{},
 		Prompter:    prompt.NewPrompter(th),
 		fileManager: filemanager.NewFileManager(window),
@@ -42,6 +44,7 @@ func NewAppState(window *app.Window) AppState {
 
 type AppState struct {
 	Th          *theme.RepeatTheme
+	ChipsFilter filters.ChipsFilter
 	Dialog      common.Dialog
 	Prompter    prompt.Prompter
 	fileManager *filemanager.FileManager
@@ -190,6 +193,7 @@ func (a *AppState) MarkersLoad() {
 		}
 		a.TimeMarkers = saveStruct.Markers
 		a.MarkersMeta = tm.NewMarkersMeta(a.TimeMarkers)
+		a.ChipsFilter.Recreate(a.TimeMarkers)
 		a.MFileMeta = filemanager.NewFileMeta(fileInfo.Name(), fileInfo.Size(), fileInfo.ModTime())
 		a.LoadedMFile = filePath
 	}, ".rpt")

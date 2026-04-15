@@ -119,7 +119,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 							icon:     micons.Filter,
 							iconSize: 24,
 							cl:       &m.tagCl,
-							disabled: len(m.chipsFilter.all) == 0,
+							disabled: len(m.ChipsFilter.All) == 0,
 						})
 					}),
 					layout.Rigid(layout.Spacer{Width: gap}.Layout),
@@ -131,7 +131,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					}),
 					layout.Rigid(layout.Spacer{Width: gap}.Layout),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						if len(m.chipsFilter.enabled) == 0 {
+						if len(m.ChipsFilter.Enabled) == 0 {
 							return layout.Dimensions{}
 						}
 						return drawClickableIcon(gtx, m.th, clickableIconProps{
@@ -141,7 +141,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 						})
 					}),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						enabledChips := m.chipsFilter.getEnabledChips()
+						enabledChips := m.ChipsFilter.GetEnabledChips()
 						inset := layout.Inset{Left: 2, Right: 2}
 						return m.enabledTagsLs.Layout(gtx, len(enabledChips), func(gtx layout.Context, index int) layout.Dimensions {
 							return inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {

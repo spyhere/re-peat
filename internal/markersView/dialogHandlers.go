@@ -20,21 +20,21 @@ func (m *MarkersView) dialogUpdate() {
 }
 
 func (m *MarkersView) confirmCreate() {
-	m.chipsFilter.updateAll(m.markerDialog.tags)
+	m.ChipsFilter.UpdateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.AudioMeta)
 	m.TimeMarkers.AttachNewMarker(m.draftMarker)
 	m.draftMarker = tm.TimeMarker{}
 }
 func (m *MarkersView) confirmEdit() {
-	m.chipsFilter.updateAll(m.markerDialog.tags)
+	m.ChipsFilter.UpdateAll(m.markerDialog.tags)
 	m.markerDialog.executeConfirm(m.AudioMeta)
 }
 func (m *MarkersView) confirmTagFilter() {
-	m.chipsFilter.updateEnabled(m.tagsDialog.filterChips)
+	m.ChipsFilter.UpdateEnabled(m.tagsDialog.filterChips)
 }
 func (m *MarkersView) confirmDeleteAll() {
 	m.deleteMarkers()
-	m.chipsFilter.purge()
+	m.ChipsFilter.Purge()
 }
 
 func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwner, title string) {
@@ -45,7 +45,7 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 	if owner == create {
 		m.markerDialog.focuser.RequestFocus(m.nameField)
 	}
-	m.markerDialog.prepareForOpening(m.AudioMeta, curMarker, m.chipsFilter.all)
+	m.markerDialog.prepareForOpening(m.AudioMeta, curMarker, m.ChipsFilter.All)
 
 	m.Dialog.Basic(m.th, title, func(gtx layout.Context) layout.Dimensions {
 		return m.markerDialog.Layout(gtx, m.AudioMeta.Seconds)
@@ -70,8 +70,8 @@ const maxFilterW unit.Dp = 350
 
 func (m *MarkersView) openTagsFilterDialog() {
 	m.dialogOwner = tagFilter
-	m.chipsFilter.recreate(m.TimeMarkers)
-	filterChips := m.tagsDialog.createFreshChips(m.chipsFilter.all, m.chipsFilter.enabledMap)
+	m.ChipsFilter.Recreate(m.TimeMarkers)
+	filterChips := m.tagsDialog.createFreshChips(m.ChipsFilter.All, m.ChipsFilter.EnabledMap)
 	m.Dialog.Basic(m.th, "Tags Filter", func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X = gtx.Dp(maxFilterW)
 		if cursor, ok := m.tagsDialog.getCursorAndHandleEvents(gtx); ok {
@@ -83,7 +83,7 @@ func (m *MarkersView) openTagsFilterDialog() {
 }
 
 func (m *MarkersView) clearTagFilter() {
-	m.chipsFilter.updateEnabled(nil)
+	m.ChipsFilter.UpdateEnabled(nil)
 }
 
 func (m *MarkersView) openDeleteAllDialog() {
