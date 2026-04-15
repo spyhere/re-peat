@@ -23,7 +23,7 @@ import (
 const (
 	defaultPlayerVol   = 0.5
 	mLoadConflictTitle = "Markers loading conflict"
-	mLoadConflictBody  = "These markers were initially saved for \"%s\", but currently loaded \"%s\".\nStill want to load them for this audio file?"
+	mLoadConflictBody  = "These markers were initially saved for \"%s\", but currently loaded \"%s\".\nStill want to load them for this audio file?\n\nMarkers exceeding audio length will be set to 0 and have \"Redacted\" tag added."
 )
 
 func NewAppState(window *app.Window) AppState {
@@ -147,6 +147,7 @@ func (a *AppState) AudioLoad() {
 		a.LoadedAFile = filePath
 	}, ".mp3", ".wav", ".flac")
 }
+
 func (a *AppState) MarkersLoad() {
 	a.isChoosing = true
 	a.fileManager.Load(func(filePath string, err error) {
@@ -179,6 +180,7 @@ func (a *AppState) MarkersLoad() {
 			if answer == false {
 				return
 			}
+			saveStruct.Markers.SanitizeSamples(a.AudioMeta.MaxMonoSamples())
 		}
 
 		fileInfo, err := os.Stat(filePath)
