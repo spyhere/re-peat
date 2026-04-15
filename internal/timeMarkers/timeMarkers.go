@@ -145,3 +145,12 @@ func (t *TimeMarkers) Sorted() TimeMarkers {
 func (t *TimeMarkers) IsEmpty() bool {
 	return len(*t) == 0
 }
+
+func (t *TimeMarkers) SanitizeSamples(maxSamples int) {
+	for _, it := range *t {
+		if it.Samples > maxSamples {
+			it.Samples = 0
+			it.CategoryTags = append(it.CategoryTags, "Redacted")
+		}
+	}
+}
