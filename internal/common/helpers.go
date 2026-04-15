@@ -85,6 +85,9 @@ func MakeMacro(gtx layout.Context, cb func(gtx layout.Context) layout.Dimensions
 
 // Lock "this" between "from" and "to"
 func Clamp[T cmp.Ordered](from T, this T, to T) T {
+	if to < from {
+		log.Panicf("Clamp has received TO: %v smaller than FROM: %v", to, from)
+	}
 	return min(max(from, this), to)
 }
 
