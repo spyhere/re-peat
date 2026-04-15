@@ -11,7 +11,6 @@ import (
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/state"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
-	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
 const (
@@ -21,7 +20,6 @@ const (
 )
 
 type EditorProps struct {
-	Th            *theme.RepeatTheme
 	OnStartEditCb func()
 	OnStopEditCb  func()
 	MonoSamples   []float32
@@ -29,7 +27,7 @@ type EditorProps struct {
 	State *state.AppState
 }
 
-func NewEditor(props EditorProps) (Editor, error) {
+func NewEditor(props EditorProps) Editor {
 	return Editor{
 		monoSamples:   props.MonoSamples,
 		playhead:      newPlayhead(playheadInitDur),
@@ -37,12 +35,11 @@ func NewEditor(props EditorProps) (Editor, error) {
 		markers:       newMarkers(&props.State.TimeMarkers),
 		mEditor:       newMEditor(),
 		scroll:        newScroll(),
-		th:            props.Th,
 		tags:          newTags(),
 		onStartEditCb: props.OnStartEditCb,
 		onStopEditCb:  props.OnStopEditCb,
 		AppState:      props.State,
-	}, nil
+	}
 }
 
 type interactionMode int
@@ -72,7 +69,6 @@ type Editor struct {
 	tags          *tags
 	size          image.Point
 	scroll        scroll
-	th            *theme.RepeatTheme
 	onStartEditCb func()
 	onStopEditCb  func()
 	*state.AppState
@@ -105,7 +101,7 @@ func (ed *Editor) SetSize(size image.Point) {
 	size.X += waveEdgePadding
 	ed.size = size
 	if !prev.Eq(ed.size) {
-		ed.waveM = common.PrcToPx(size.Y, ed.th.Sizing.Editor.WaveM)
+		ed.waveM = common.PrcToPx(size.Y, ed.Th.Sizing.Editor.WaveM)
 		ed.cache.isPopulated = false
 	}
 }

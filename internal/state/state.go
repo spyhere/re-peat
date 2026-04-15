@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -14,12 +15,18 @@ import (
 	"github.com/spyhere/re-peat/internal/filemanager"
 	p "github.com/spyhere/re-peat/internal/player"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
+	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
 const defaultPlayerVol = 0.5
 
 func NewAppState(window *app.Window) AppState {
+	th, err := theme.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return AppState{
+		Th:          th,
 		Dialog:      common.Dialog{},
 		fileManager: filemanager.NewFileManager(window),
 		TimeMarkers: tm.NewTimeMarkers(),
@@ -27,6 +34,7 @@ func NewAppState(window *app.Window) AppState {
 }
 
 type AppState struct {
+	Th          *theme.RepeatTheme
 	Dialog      common.Dialog
 	fileManager *filemanager.FileManager
 	LoadedAFile string

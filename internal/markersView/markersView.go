@@ -10,7 +10,6 @@ import (
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/state"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
-	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
 const (
@@ -19,7 +18,6 @@ const (
 )
 
 type Props struct {
-	Th          *theme.RepeatTheme
 	TimeMarkers *tm.TimeMarkers
 	State       *state.AppState
 }
@@ -27,16 +25,15 @@ type Props struct {
 func NewMarkersView(props Props) MarkersView {
 	fm := &common.FocusManager{}
 	mView := MarkersView{
-		th:            props.Th,
 		AppState:      props.State,
 		hotKeyBuf:     make([]rune, 0, selectionRuneLimit),
 		searchbar:     &common.Inputable{Focuser: fm},
 		fm:            fm,
 		enabledTagsLs: &widget.List{},
-		markerDialog:  newMarkerDialog(globalChipsLimit, props.Th, props.State.AudioMeta),
+		markerDialog:  newMarkerDialog(globalChipsLimit, props.State.Th, props.State.AudioMeta),
 		tagsDialog:    newTagsDialog(globalChipsLimit),
 		chipsFilter:   newChipsFilter(globalChipsLimit),
-		commentDialog: newCommentDialog(props.Th),
+		commentDialog: newCommentDialog(props.State.Th),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
 		Axis: layout.Vertical,
@@ -81,7 +78,6 @@ type MarkersView struct {
 	*state.AppState
 	draftMarker   tm.TimeMarker
 	markerInPlay  *tm.TimeMarker
-	th            *theme.RepeatTheme
 	table         *common.Table[*tm.TimeMarker]
 	searchbar     *common.Inputable
 	fm            *common.FocusManager

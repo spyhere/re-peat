@@ -12,37 +12,24 @@ import (
 	markersview "github.com/spyhere/re-peat/internal/markersView"
 	projectview "github.com/spyhere/re-peat/internal/projectView"
 	"github.com/spyhere/re-peat/internal/state"
-	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
 func newApp(appState *state.AppState) *App {
-	th, err := theme.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	appInstance := &App{
 		AppState: appState,
-		th:       th,
 		buttons:  newButtons(),
 		projectView: projectview.NewProjectView(projectview.Props{
-			Th:    th,
 			State: appState,
 		}),
 		markersView: markersview.NewMarkersView(markersview.Props{
-			Th:    th,
 			State: appState,
 		}),
 	}
-	ed, err := editorview.NewEditor(editorview.EditorProps{
-		Th:            th,
+	ed := editorview.NewEditor(editorview.EditorProps{
 		State:         appState,
 		OnStartEditCb: appInstance.onStartMarkerEdit,
 		OnStopEditCb:  appInstance.onStopMarkerEdit,
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 	appInstance.editorView = ed
 	return appInstance
 }
@@ -61,7 +48,6 @@ type App struct {
 	markersView markersview.MarkersView
 	editorView  editorview.Editor
 	selectedTab tab
-	th          *theme.RepeatTheme
 	buttons
 }
 
@@ -95,9 +81,9 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	}
 	a.dispatch(gtx)
 
-	common.OffsetBy(gtx, image.Pt(0, a.th.Sizing.SegButtonsTopM), func(gtx layout.Context) {
+	common.OffsetBy(gtx, image.Pt(0, a.Th.Sizing.SegButtonsTopM), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
-			return groupedButtons(gtx, a.th, a.selectedTab, a.buttons)
+			return groupedButtons(gtx, a.Th, a.selectedTab, a.buttons)
 		})
 	})
 	if a.buttons.isPointerHitting {
@@ -109,7 +95,7 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	}
 
 	if a.AppState.IsLoading() {
-		common.DrawBlockingMessage(gtx, a.th, "Loading file...")
+		common.DrawBlockingMessage(gtx, a.Th, "Loading file...")
 	}
 	return layout.Dimensions{}
 }
