@@ -32,7 +32,7 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 
 	common.RegisterTag(gtx, &ed.tags.noneArea, image.Rect(0, gtx.Constraints.Max.Y-ed.waveM, gtx.Constraints.Max.X, gtx.Constraints.Max.Y))
 
-	pDim := playheadComp(gtx, ed.Th, ed.playhead.samples, ed.scroll)
+	pDim := playheadComp(gtx, ed.Th, ed.Playhead.Samples, ed.scroll)
 	markersComp(gtx, ed.Th, ed.mEditor, ed.mode, ed.waveM, ed.scroll, ed.markers, ed.getMI9n)
 	secondsGridComp(gtx, ed.Th, ed.AudioMeta, ed.scroll, ed.waveM)
 	if ed.markers.isEditing() {

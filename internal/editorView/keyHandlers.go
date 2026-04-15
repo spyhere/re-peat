@@ -7,7 +7,7 @@ func (ed *Editor) switchPlayerState() {
 		return
 	}
 	if !ed.Player.IsPlaying() {
-		if ed.playhead.samples >= ed.AudioMeta.MaxMonoSamples() {
+		if ed.Playhead.Samples >= ed.AudioMeta.MaxMonoSamples() {
 			return
 		}
 		ed.startPlay()
@@ -26,7 +26,7 @@ func (ed *Editor) nudgePlayhead(forward bool) {
 	if !forward {
 		dSamples = -dSamples
 	}
-	ed.setPlayhead(ed.playhead.samples + int(dSamples*nudgeMultiplier))
+	ed.setPlayhead(ed.Playhead.Samples + int(dSamples*nudgeMultiplier))
 }
 
 func (ed *Editor) collapseRenamerSelection() {

@@ -16,6 +16,7 @@ import (
 	"github.com/spyhere/re-peat/internal/filemanager"
 	"github.com/spyhere/re-peat/internal/filters"
 	p "github.com/spyhere/re-peat/internal/player"
+	"github.com/spyhere/re-peat/internal/playhead"
 	"github.com/spyhere/re-peat/internal/prompt"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
@@ -47,6 +48,7 @@ type AppState struct {
 	ChipsFilter filters.ChipsFilter
 	Dialog      common.Dialog
 	Prompter    prompt.Prompter
+	Playhead    playhead.Transport
 	fileManager *filemanager.FileManager
 	LoadedAFile string
 	LoadedMFile string

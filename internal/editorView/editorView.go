@@ -60,7 +60,6 @@ type Editor struct {
 	cachedFile    string
 	mode          interactionMode
 	cursor        pointer.Cursor
-	playhead      playhead
 	playheadUpd   time.Duration
 	monoSamples   []float32
 	cache         cache
@@ -144,13 +143,13 @@ func (ed *Editor) playheadPosFromX(posX float32) {
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.AudioMeta.SampleRate))
 	// TODO: handle error here
 	seekSamples, _ := ed.Player.Search(seconds)
-	ed.playhead.set(seekSamples)
+	ed.Playhead.Set(seekSamples)
 }
 
 func (ed *Editor) setPlayhead(samples int) {
 	// TODO: handle error here
 	seekSamples, _ := ed.Player.Set(samples)
-	ed.playhead.set(seekSamples)
+	ed.Playhead.Set(seekSamples)
 }
 
 func (ed *Editor) handleWaveClick(pCoords f32.Point, buttons pointer.Buttons) {
@@ -186,7 +185,7 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 func (ed *Editor) startEdit(m *tm.TimeMarker) {
 	ed.mode = modeMEdit
 	if m == nil {
-		ed.markers.newMarker(ed.playhead.samples)
+		ed.markers.newMarker(ed.Playhead.Samples)
 	} else {
 		ed.mEditor.SetText(m.Name)
 		ed.mEditor.SetCaret(len(m.Name), 0)
@@ -231,12 +230,12 @@ func (ed *Editor) startPlay() {
 
 func (ed *Editor) pausePlay() {
 	ed.Player.Pause()
-	ed.playhead.reset()
-	ed.Player.Set(ed.playhead.samples)
+	ed.Playhead.Reset()
+	ed.Player.Set(ed.Playhead.Samples)
 }
 
 func (ed *Editor) listenToPlayerUpdates() {
-	ed.playhead.samples = ed.Player.GetReadAmount()
+	ed.Playhead.Samples = ed.Player.GetReadAmount()
 }
 
 func (ed *Editor) isCreateButtonVisible() bool {
