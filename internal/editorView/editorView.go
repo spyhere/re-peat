@@ -3,6 +3,7 @@ package editorview
 import (
 	"image"
 	"math"
+	"strings"
 	"time"
 
 	"gioui.org/f32"
@@ -242,7 +243,11 @@ func (ed *Editor) isCreateButtonVisible() bool {
 }
 
 func (ed *Editor) getMI9n(m *tm.TimeMarker) mInteraction {
-	if !ed.ChipsFilter.HasMarkerEnabled(m) {
+	matchSearchbar := strings.Contains(
+		strings.ToLower(m.Name),
+		strings.ToLower(ed.SearchbarV),
+	)
+	if !(matchSearchbar && ed.ChipsFilter.HasMarkerEnabled(m)) {
 		return mInteraction{}
 	}
 	isHovering := ed.markers.isHovering()
