@@ -131,6 +131,7 @@ func (m *MarkersView) updateDefferedState() {
 	}
 	if m.TimeMarkers.IsEmpty() && m.searchbar.GetInput() != "" {
 		m.searchbar.SetText("")
+		m.SearchbarV = ""
 	}
 }
 
@@ -147,9 +148,11 @@ func (m *MarkersView) tableRowFilter(curMarker *tm.TimeMarker) bool {
 			break
 		}
 	}
+	searchbarV := m.searchbar.GetInput()
+	m.SearchbarV = searchbarV
 	return hasChipsMatch && strings.Contains(
 		strings.ToLower(curMarker.Name),
-		strings.ToLower(m.searchbar.GetInput()),
+		strings.ToLower(searchbarV),
 	)
 }
 

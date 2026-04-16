@@ -46,6 +46,7 @@ func NewAppState(window *app.Window) AppState {
 type AppState struct {
 	Th          *theme.RepeatTheme
 	ChipsFilter filters.ChipsFilter
+	SearchbarV  string
 	Dialog      common.Dialog
 	Prompter    prompt.Prompter
 	Playhead    playhead.Transport
