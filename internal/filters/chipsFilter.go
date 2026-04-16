@@ -81,3 +81,15 @@ func (c *ChipsFilter) UpdateEnabled(chips []common.FilterChip) {
 		}
 	}
 }
+
+func (c *ChipsFilter) HasMarkerEnabled(marker *tm.TimeMarker) bool {
+	if len(c.Enabled) == 0 {
+		return true
+	}
+	for _, it := range marker.CategoryTags {
+		if _, ok := c.EnabledMap[it]; ok {
+			return true
+		}
+	}
+	return false
+}
