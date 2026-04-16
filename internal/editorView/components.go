@@ -205,8 +205,6 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
-const disabledMarkerOpacity = 0.2
-
 func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
@@ -217,9 +215,6 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 		// TODO: Implement proper culling
 		isEditing := m.editing == marker && mode == modeMEdit
 		i9n := getMI9n(marker)
-		if !i9n.flag && !i9n.pole && !i9n.label && !i9n.hovered {
-			defer paint.PushOpacity(gtx.Ops, disabledMarkerOpacity).Pop()
-		}
 		nameOp, nameDim := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			// NOTE: Do we need this?
 			var renderable renderable
@@ -283,7 +278,12 @@ type markerProps struct {
 	colDeviation uint8
 }
 
+const disabledMarkerOpacity = 0.2
+
 func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) layout.Dimensions {
+	if !mProps.i9n.flag && !mProps.i9n.pole && !mProps.i9n.label && !mProps.i9n.hovered {
+		defer paint.PushOpacity(gtx.Ops, disabledMarkerOpacity).Pop()
+	}
 	var col color.NRGBA
 	col = th.Palette.Editor.Playhead
 	col.R -= mProps.colDeviation
