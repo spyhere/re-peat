@@ -205,6 +205,8 @@ type renderable interface {
 	Layout(gtx layout.Context) layout.Dimensions
 }
 
+const disabledMarkerOpacity = 0.2
+
 func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, mode interactionMode, wavePadding int, s scroll, m *markers, getMI9n func(*tm.TimeMarker) mInteraction) {
 	mrkSz := th.Sizing.Editor.Markers
 	maxX := gtx.Constraints.Max.X
@@ -215,7 +217,11 @@ func markersComp(gtx layout.Context, th *theme.RepeatTheme, mE *widget.Editor, m
 		// TODO: Implement proper culling
 		isEditing := m.editing == marker && mode == modeMEdit
 		i9n := getMI9n(marker)
+		if !i9n.flag && !i9n.pole && !i9n.label && !i9n.hovered {
+			defer paint.PushOpacity(gtx.Ops, disabledMarkerOpacity).Pop()
+		}
 		nameOp, nameDim := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+			// NOTE: Do we need this?
 			var renderable renderable
 			if isEditing {
 				renderable = material.Editor(th.Theme, mE, "")
