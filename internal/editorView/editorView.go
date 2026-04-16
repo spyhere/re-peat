@@ -242,6 +242,9 @@ func (ed *Editor) isCreateButtonVisible() bool {
 }
 
 func (ed *Editor) getMI9n(m *tm.TimeMarker) mInteraction {
+	if !ed.ChipsFilter.HasMarkerEnabled(m) {
+		return mInteraction{}
+	}
 	isHovering := ed.markers.isHovering()
 	hoveringOverThis := isHovering && ed.markers.hovering == m
 	isDragging := ed.mode == modeMDrag
