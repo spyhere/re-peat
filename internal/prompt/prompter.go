@@ -4,6 +4,7 @@ import (
 	"gioui.org/layout"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
+	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -26,6 +27,7 @@ func (p *Prompter) Ask(title, question string) bool {
 	p.Dialog.Basic(p.th, title, func(gtx layout.Context) layout.Dimensions {
 		return material.Body2(p.th.Theme, question).Layout(gtx)
 	})
+	p.Dialog.SetIcon(micons.Warning)
 	p.Dialog.Show()
 	return <-p.ch
 }
