@@ -421,6 +421,7 @@ type Table[T any] struct {
 	headCellFuncs    []HeadCellComp
 	rowCellFuncs     []CellComp[T]
 	BottomMargin     bool
+	RefineFilterTxt  func() string
 }
 
 func (t *Table[T]) HeadCells(hFuncs ...HeadCellComp) {
@@ -572,7 +573,11 @@ func (t *Table[T]) layout(gtx layout.Context, th *theme.RepeatTheme, bottomMargi
 			rowValue := t.rowValueCb(rowIdx)
 			if !t.rowsVisibility[rowIdx] {
 				if t.rowsSkipped == t.rowsAmount {
-					return t.drawEmptyRowInfo(gtx, th, s, "нет совпадений, уточните фильтры")
+					noMatches := "no matches, refine filters"
+					if t.RefineFilterTxt != nil {
+						noMatches = t.RefineFilterTxt()
+					}
+					return t.drawEmptyRowInfo(gtx, th, s, noMatches)
 				}
 				if rowIdx == t.rowsAmount-1 {
 					return t.drawEmptyRowInfo(gtx, th, s, "...")
