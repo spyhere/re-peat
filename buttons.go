@@ -1,24 +1,27 @@
 package main
 
-import "gioui.org/widget"
+import (
+	"gioui.org/widget"
+	"github.com/spyhere/re-peat/internal/i18n"
+)
 
-func newButtons() buttons {
+func newButtons(i18n *i18n.State) buttons {
 	return buttons{
 		arr: [3]*button{
 			{
-				name:      "Project",
+				name:      &i18n.Generic.Project,
 				tab:       Project,
 				tag:       &struct{}{},
 				clickable: &widget.Clickable{},
 			},
 			{
-				name:      "Markers",
+				name:      &i18n.Generic.Markers,
 				tab:       Markers,
 				tag:       &struct{}{},
 				clickable: &widget.Clickable{},
 			},
 			{
-				name:      "Editor",
+				name:      &i18n.Generic.Editor,
 				tab:       Editor,
 				tag:       &struct{}{},
 				clickable: &widget.Clickable{},
@@ -28,7 +31,7 @@ func newButtons() buttons {
 }
 
 type button struct {
-	name string
+	name *string
 	tab
 	tag       *struct{}
 	isHovered bool

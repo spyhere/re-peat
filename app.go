@@ -17,7 +17,7 @@ import (
 func newApp(appState *state.AppState) *App {
 	appInstance := &App{
 		AppState: appState,
-		buttons:  newButtons(),
+		buttons:  newButtons(&appState.I18n),
 		projectView: projectview.NewProjectView(projectview.Props{
 			State: appState,
 		}),

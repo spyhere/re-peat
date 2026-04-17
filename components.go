@@ -54,7 +54,7 @@ func groupedButtons(gtx layout.Context, th *theme.RepeatTheme, selectedT tab, bu
 	for idx, it := range buttons.arr {
 		textOp, textDim := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 			gtx.Constraints.Min = image.Point{}
-			textBody2 := material.Body2(th.Theme, it.name)
+			textBody2 := material.Body2(th.Theme, *it.name)
 			if buttons.arr[idx].tab == selectedT {
 				textBody2.Color = segButtonP.SelText
 			} else {
