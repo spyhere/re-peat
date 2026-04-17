@@ -35,6 +35,7 @@ var enStr = Strings{
 		MNamePlaceholder:   "marker's name...",
 		MNotePlaceholder:   "This was fabulous!",
 		MNote:              "Notes",
+		NoMatches:          "no matches, refine filters",
 		SearchBPlaceholder: "Search by name...",
 		TagsFilter:         "Tags filter",
 	},

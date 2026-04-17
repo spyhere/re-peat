@@ -48,6 +48,7 @@ type MarkersView struct {
 	MNamePlaceholder   string
 	MNote              string
 	MNotePlaceholder   string
+	NoMatches          string
 	SearchBPlaceholder string
 	TagsFilter         string
 }

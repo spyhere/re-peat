@@ -35,6 +35,7 @@ var ruStr = Strings{
 		MNamePlaceholder:   "имя маркера...",
 		MNote:              "Заметки",
 		MNotePlaceholder:   "Это было прекрасно!",
+		NoMatches:          "нет совпадений, уточните фильтры",
 		SearchBPlaceholder: "Название маркера...",
 		TagsFilter:         "Фильтр категорий",
 	},
