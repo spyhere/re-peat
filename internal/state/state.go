@@ -15,6 +15,7 @@ import (
 	"github.com/spyhere/re-peat/internal/common"
 	"github.com/spyhere/re-peat/internal/filemanager"
 	"github.com/spyhere/re-peat/internal/filters"
+	"github.com/spyhere/re-peat/internal/i18n"
 	p "github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/playhead"
 	"github.com/spyhere/re-peat/internal/prompt"
@@ -34,6 +35,7 @@ func NewAppState(window *app.Window) AppState {
 		log.Fatal(err)
 	}
 	return AppState{
+		I18n:        i18n.NewI18n(),
 		Th:          th,
 		ChipsFilter: filters.NewChipsFilter(100), // TODO: think about centralized way of capacity constant
 		Dialog:      common.Dialog{},
@@ -44,6 +46,7 @@ func NewAppState(window *app.Window) AppState {
 }
 
 type AppState struct {
+	I18n        i18n.State
 	Th          *theme.RepeatTheme
 	ChipsFilter filters.ChipsFilter
 	SearchbarV  string
