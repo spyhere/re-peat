@@ -185,7 +185,9 @@ func (a *AppState) MarkersLoad() {
 		}
 
 		if a.AFileMeta.Name != saveStruct.FName {
-			answer := a.Prompter.Ask(mLoadConflictTitle, fmt.Sprintf(mLoadConflictBody, saveStruct.FName, a.AFileMeta.Name))
+			title := a.I18n.Project.MConflictLoadTitle
+			body := a.I18n.Project.MConflictLoadBody
+			answer := a.Prompter.Ask(title, fmt.Sprintf(body, saveStruct.FName, a.AFileMeta.Name))
 			if answer == false {
 				return
 			}

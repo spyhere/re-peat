@@ -51,7 +51,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 				audioDims = layout.UniformInset(columnMar).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-							titleSt := material.H4(pv.Th.Theme, "Audio")
+							titleSt := material.H4(pv.Th.Theme, pv.I18n.Generic.Audio)
 							titleSt.Alignment = text.Middle
 							gtx.Constraints.Min.X = tableW
 							return titleSt.Layout(gtx)
@@ -73,11 +73,11 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							fMeta := pv.AFileMeta
 							aMeta := pv.AudioMeta
 							return infoList(pv.Th, fMeta.Name).layout(gtx,
-								drawInfoRow(pv.Th, "Length:", aMeta.SecondsString()),
-								drawInfoRow(pv.Th, "Size:", fMeta.SizeString()),
-								drawInfoRow(pv.Th, "Audio Channels:", aMeta.ChannelsString()),
-								drawInfoRow(pv.Th, "Sample rate:", aMeta.SampleRateString()),
-								drawInfoRow(pv.Th, "Modified:", fMeta.UpdatedAtString()),
+								drawInfoRow(pv.Th, pv.I18n.Generic.Length, aMeta.SecondsString()),
+								drawInfoRow(pv.Th, pv.I18n.Generic.Size, fMeta.SizeString()),
+								drawInfoRow(pv.Th, pv.I18n.Generic.AudioChannels, aMeta.ChannelsString()),
+								drawInfoRow(pv.Th, pv.I18n.Generic.SampleRate, aMeta.SampleRateString()),
+								drawInfoRow(pv.Th, pv.I18n.Generic.Modified, fMeta.UpdatedAtString()),
 							)
 						}),
 					)
@@ -96,7 +96,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 					layout.UniformInset(columnMar).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-								titleSt := material.H4(pv.Th.Theme, "Markers")
+								titleSt := material.H4(pv.Th.Theme, pv.I18n.Generic.Markers)
 								titleSt.Alignment = text.Middle
 								titleSt.Alignment = text.Middle
 								gtx.Constraints.Min.X = tableW
@@ -121,10 +121,10 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 								gtx.Constraints.Min.X = tableW
 								gtx.Constraints.Max.Y = gtx.Constraints.Min.Y
 								return infoList(pv.Th, pv.MFileMeta.Name).layout(gtx,
-									drawInfoRow(pv.Th, "Amount:", pv.MarkersMeta.AmountString()),
-									drawInfoRow(pv.Th, "With comments:", pv.MarkersMeta.WithCommentsString()),
-									drawInfoRow(pv.Th, "Size:", pv.MFileMeta.SizeString()),
-									drawInfoRow(pv.Th, "Modified:", pv.MFileMeta.UpdatedAtString()),
+									drawInfoRow(pv.Th, pv.I18n.Generic.Amount, pv.MarkersMeta.AmountString()),
+									drawInfoRow(pv.Th, pv.I18n.Generic.WithComments, pv.MarkersMeta.WithCommentsString()),
+									drawInfoRow(pv.Th, pv.I18n.Generic.Size, pv.MFileMeta.SizeString()),
+									drawInfoRow(pv.Th, pv.I18n.Generic.Modified, pv.MFileMeta.UpdatedAtString()),
 								)
 							}),
 							layout.Rigid(layout.Spacer{Height: ListCtaGap}.Layout),
@@ -134,7 +134,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 								btnFg := pv.Th.Palette.Project.SaveButtonFg
 								return layout.Flex{}.Layout(gtx,
 									layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-										btnStyle := common.Button(pv.Th, &pv.markersSaveCl, micons.Save, "Save")
+										btnStyle := common.Button(pv.Th, &pv.markersSaveCl, micons.Save, pv.I18n.Generic.Save)
 										btnStyle.WExpanded = true
 										btnStyle.Bg = btnBg
 										btnStyle.Fg = btnFg
@@ -143,7 +143,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 									}),
 									layout.Rigid(layout.Spacer{Width: CtaGap}.Layout),
 									layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-										btnStyle := common.Button(pv.Th, &pv.markersSaveAsCl, micons.Save, "Save as")
+										btnStyle := common.Button(pv.Th, &pv.markersSaveAsCl, micons.Save, pv.I18n.Generic.SaveAs)
 										btnStyle.WExpanded = true
 										btnStyle.Bg = btnBg
 										btnStyle.Fg = btnFg
