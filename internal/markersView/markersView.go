@@ -57,6 +57,9 @@ func NewMarkersView(props Props) MarkersView {
 		RowValueCb:  mView.getTableRowValue,
 		RowFilterCb: mView.tableRowFilter,
 	})
+	table.RefineFilterTxt = func() string {
+		return props.State.I18n.Markers.NoMatches
+	}
 	mView.table = table
 	return mView
 }
