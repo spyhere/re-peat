@@ -24,9 +24,7 @@ import (
 )
 
 const (
-	defaultPlayerVol   = 0.5
-	mLoadConflictTitle = "Markers loading conflict"
-	mLoadConflictBody  = "These markers were initially saved for \"%s\", but currently loaded \"%s\".\nStill want to load them for this audio file?\n\nMarkers exceeding audio length will be set to 0 and have \"Redacted\" tag added."
+	defaultPlayerVol = 0.5
 )
 
 func NewAppState(window *app.Window) AppState {
