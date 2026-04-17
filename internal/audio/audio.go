@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/spyhere/re-peat/internal/common"
+	"github.com/spyhere/re-peat/internal/i18n"
 )
 
 func NewAudioMeta(sampleRate, channels int, maxSamples int) AudioMeta {
@@ -45,15 +46,15 @@ func (a AudioMeta) SecondsString() string {
 	return common.FormatSeconds(a.Seconds)
 }
 
-func (a AudioMeta) ChannelsString() string {
+func (a AudioMeta) ChannelsString(i18n i18n.State) string {
 	if a.Channels == 0 {
 		return ""
 	}
 	switch a.Channels {
 	case 1:
-		return "Mono"
+		return i18n.Generic.Mono
 	case 2:
-		return "Stereo"
+		return i18n.Generic.Stereo
 	default:
 		panic("unreachable")
 	}

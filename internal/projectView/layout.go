@@ -75,7 +75,7 @@ func (pv *ProjectView) Layout(gtx layout.Context) layout.Dimensions {
 							return infoList(pv.Th, fMeta.Name).layout(gtx,
 								drawInfoRow(pv.Th, pv.I18n.Generic.Length, aMeta.SecondsString()),
 								drawInfoRow(pv.Th, pv.I18n.Generic.Size, fMeta.SizeString()),
-								drawInfoRow(pv.Th, pv.I18n.Generic.AudioChannels, aMeta.ChannelsString()),
+								drawInfoRow(pv.Th, pv.I18n.Generic.AudioChannels, aMeta.ChannelsString(pv.I18n)),
 								drawInfoRow(pv.Th, pv.I18n.Generic.SampleRate, aMeta.SampleRateString()),
 								drawInfoRow(pv.Th, pv.I18n.Generic.Modified, fMeta.UpdatedAtString()),
 							)
