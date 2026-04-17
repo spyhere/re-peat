@@ -27,11 +27,14 @@ var enStr = Strings{
 	},
 	Markers: MarkersView{
 		MCreate:            "Create marker",
-		MDeleteALl:         "Delete all markers",
+		MDeleteALlBody:     "This action will remove all markers for current audio track!",
+		MDeleteALlTitle:    "Delete all markers",
 		MEdit:              "Edit marker",
 		MNamePlaceholder:   "marker's name...",
+		MNotePlaceholder:   "This was fabulous!",
 		MNote:              "Notes",
-		SearchBPlaceholder: "search by name...",
+		SearchBPlaceholder: "Search by name...",
+		TagsFilter:         "Tags filter",
 	},
 	Project: ProjectView{
 		MConflictLoadBody:  "These markers were initially saved for \"%s\", but currently loaded \"%s\".\nStill want to load them for this audio file?\n\nMarkers exceeding audio length will be set to 0 and have \"Redacted\" tag added.",

@@ -40,9 +40,12 @@ type ProjectView struct {
 
 type MarkersView struct {
 	MCreate            string
-	MDeleteALl         string
+	MDeleteALlBody     string
+	MDeleteALlTitle    string
 	MEdit              string
 	MNamePlaceholder   string
 	MNote              string
+	MNotePlaceholder   string
 	SearchBPlaceholder string
+	TagsFilter         string
 }
