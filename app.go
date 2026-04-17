@@ -24,6 +24,7 @@ func newApp(appState *state.AppState) *App {
 		markersView: markersview.NewMarkersView(markersview.Props{
 			State: appState,
 		}),
+		i18nSwitcher: common.NewI18nSwitcher(),
 	}
 	ed := editorview.NewEditor(editorview.EditorProps{
 		State:         appState,
@@ -49,6 +50,7 @@ type App struct {
 	editorView  editorview.Editor
 	selectedTab tab
 	buttons
+	i18nSwitcher common.I18nSwitcher
 }
 
 func (a *App) onStartMarkerEdit() {
@@ -81,14 +83,24 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	}
 	a.dispatch(gtx)
 
+	var groupedBtnsDims layout.Dimensions
 	common.OffsetBy(gtx, image.Pt(0, a.Th.Sizing.SegButtonsTopM), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
-			return groupedButtons(gtx, a.Th, a.selectedTab, a.buttons)
+			groupedBtnsDims = groupedButtons(gtx, a.Th, a.selectedTab, a.buttons)
+			return groupedBtnsDims
 		})
+	})
+	common.OffsetBy(gtx, image.Pt(gtx.Constraints.Max.X-400, a.Th.Sizing.SegButtonsTopM), func(gtx layout.Context) {
+		gtx.Constraints.Min.Y = groupedBtnsDims.Size.Y
+		common.I18nMenu(a.Th, &a.i18nSwitcher).Layout(gtx)
 	})
 	if a.buttons.isPointerHitting {
 		common.SetCursor(gtx, pointer.CursorPointer)
 	}
+	if cursor, ok := a.i18nSwitcher.GetCursorType(); ok {
+		common.SetCursor(gtx, cursor)
+	}
+
 	a.Dialog.Layout(gtxEnabled)
 	if cursor, ok := a.Dialog.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)

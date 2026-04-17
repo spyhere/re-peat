@@ -8,6 +8,9 @@ import (
 
 func (a *App) dispatch(gtx layout.Context) {
 	a.dispatchButtonsEvents(gtx)
+	if lang, ok := a.i18nSwitcher.Update(gtx); ok {
+		a.I18n.SetLang(lang)
+	}
 }
 
 func (a *App) dispatchButtonsEvents(gtx layout.Context) {
