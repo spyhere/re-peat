@@ -18,6 +18,7 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/fonts"
+	"github.com/spyhere/re-peat/internal/i18n"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -1101,4 +1102,104 @@ func DrawBlockingMessage(gtx layout.Context, th *theme.RepeatTheme, msg string) 
 		txtM.Add(gtx.Ops)
 		return txtDims
 	})
+}
+
+type I18nMenuOption struct {
+	Cl   *widget.Clickable
+	Lang i18n.Lang
+}
+type I18nMenuStyle struct {
+	txtSize      unit.Sp
+	txtLHeight   unit.Sp
+	highlightPad unit.Dp
+	outterPadd   unit.Dp
+	innerPad     unit.Dp
+	th           *theme.RepeatTheme
+	switcher     *I18nSwitcher
+}
+
+func I18nMenu(th *theme.RepeatTheme, switcher *I18nSwitcher) I18nMenuStyle {
+	return I18nMenuStyle{
+		switcher:     switcher,
+		txtSize:      15,
+		txtLHeight:   18,
+		highlightPad: 2,
+		outterPadd:   4,
+		innerPad:     6,
+		th:           th,
+	}
+}
+func (i I18nMenuStyle) drawLbl(gtx layout.Context, o I18nMenuOption) layout.Dimensions {
+	gtx.Constraints.Min = image.Point{}
+	curLang := material.Body2(i.th.Theme, o.Lang.String())
+	curLang.TextSize = i.txtSize
+	curLang.LineHeight = i.txtLHeight
+	curLang.Font = fonts.Roboto(font.Medium, font.Regular)
+	dims := curLang.Layout(gtx)
+	DrawBox(gtx, Box{
+		Size:      image.Rect(0, 0, dims.Size.X, dims.Size.Y),
+		Clickable: o.Cl,
+		HideInk:   true,
+	})
+	return dims
+}
+
+func (i I18nMenuStyle) drawLang(gtx layout.Context, o I18nMenuOption) layout.Dimensions {
+	mainLbl, mainDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		return i.drawLbl(gtx, o)
+	})
+
+	highlightPad := gtx.Dp(i.highlightPad)
+	lblBgRct := image.Rect(0, 0, mainDims.Size.X+highlightPad*2, mainDims.Size.Y+highlightPad*2)
+	lblBgR := lblBgRct.Max.X / 2
+	OffsetBy(gtx, image.Pt(highlightPad, highlightPad), func(gtx layout.Context) {
+		DrawBox(gtx, Box{
+			Size:  lblBgRct,
+			Color: i.th.Bg,
+			R:     theme.CornerR(lblBgR, lblBgR, lblBgR, lblBgR),
+		})
+	})
+	outterPad := gtx.Dp(i.outterPadd)
+	OffsetBy(gtx, image.Pt(outterPad, outterPad), func(gtx layout.Context) {
+		mainLbl.Add(gtx.Ops)
+	})
+	dims := mainDims
+	dims.Size.X += outterPad * 2
+	dims.Size.Y += outterPad * 2
+	return dims
+}
+
+func (i I18nMenuStyle) Layout(gtx layout.Context) layout.Dimensions {
+	txtH := gtx.Sp(i.txtLHeight)
+	y := gtx.Constraints.Min.Y/2 - txtH/2
+	if i.switcher.Open == false {
+		var dims layout.Dimensions
+		OffsetBy(gtx, image.Pt(gtx.Dp(i.outterPadd), y), func(gtx layout.Context) {
+			dims = i.drawLbl(gtx, i.switcher.Active)
+		})
+		return dims
+	}
+	lngM, lngDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		gtx.Constraints.Min = image.Point{}
+		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				return i.drawLang(gtx, i.switcher.Active)
+			}),
+			layout.Rigid(layout.Spacer{Height: i.innerPad}.Layout),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				return i.drawLang(gtx, i.switcher.GetSecondaryOption())
+			}),
+		)
+	})
+	var dims layout.Dimensions
+	OffsetBy(gtx, image.Pt(0, y-gtx.Dp(i.outterPadd)), func(gtx layout.Context) {
+		r := lngDims.Size.X / 2
+		dims = DrawBox(gtx, Box{
+			Size:  image.Rect(0, 0, lngDims.Size.X, lngDims.Size.Y),
+			Color: i.th.Fg,
+			R:     theme.CornerR(r, r, r, r),
+		})
+		lngM.Add(gtx.Ops)
+	})
+	return dims
 }
