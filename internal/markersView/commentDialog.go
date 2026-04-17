@@ -4,6 +4,7 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"github.com/spyhere/re-peat/internal/common"
+	"github.com/spyhere/re-peat/internal/i18n"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -22,9 +23,11 @@ type commentDialog struct {
 	commentField *common.Inputable
 	focuser      *common.FocusManager
 	th           *theme.RepeatTheme
+	i18n         i18n.State
 }
 
-func (c *commentDialog) prepareForOpening(curMarker *tm.TimeMarker) {
+func (c *commentDialog) prepareForOpening(curMarker *tm.TimeMarker, i18n i18n.State) {
+	c.i18n = i18n
 	c.TimeMarker = curMarker
 	c.commentField.SetText(curMarker.Notes)
 	c.focuser.RequestFocus(c.commentField)
@@ -58,11 +61,11 @@ func (c *commentDialog) Layout(gtx layout.Context) layout.Dimensions {
 		return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 			return common.DrawTextField(gtx, c.th, common.TextFieldProps{
 				Base: common.InputFieldBase{
-					LabelText: "Notes",
+					LabelText: c.i18n.Markers.MNote,
 				},
 				Inputable:   c.commentField,
 				MaxLen:      500,
-				Placeholder: "Was more than absolutely perfect...",
+				Placeholder: c.i18n.Markers.MNotePlaceholder,
 			})
 		})
 	})

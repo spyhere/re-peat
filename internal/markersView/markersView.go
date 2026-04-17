@@ -230,7 +230,7 @@ func (m *MarkersView) confirmDialog() {
 
 func (m *MarkersView) handleAddMarkerButton(gtx layout.Context) {
 	if m.createCl.Clicked(gtx) {
-		m.openMarkerDialog(&m.draftMarker, create, "Create Marker")
+		m.openMarkerDialog(&m.draftMarker, create, m.I18n.Markers.MCreate)
 	}
 	if m.createCl.Hovered() {
 		common.SetCursor(gtx, pointer.CursorPointer)

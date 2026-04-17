@@ -46,7 +46,7 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 	if owner == create {
 		m.markerDialog.focuser.RequestFocus(m.markerDialog.nameField)
 	}
-	m.markerDialog.prepareForOpening(m.AudioMeta, curMarker, m.ChipsFilter.All)
+	m.markerDialog.prepareForOpening(m.I18n, m.AudioMeta, curMarker, m.ChipsFilter.All)
 
 	m.Dialog.Basic(m.Th, title, func(gtx layout.Context) layout.Dimensions {
 		return m.markerDialog.Layout(gtx, m.AudioMeta.Seconds)
@@ -56,7 +56,7 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 
 func (m *MarkersView) openCommentDialog(curMarker *tm.TimeMarker) {
 	m.dialogOwner = comment
-	m.commentDialog.prepareForOpening(curMarker)
+	m.commentDialog.prepareForOpening(curMarker, m.I18n)
 	m.Dialog.Basic(m.Th, curMarker.Name, func(gtx layout.Context) layout.Dimensions {
 		return m.commentDialog.Layout(gtx)
 	})
@@ -73,7 +73,7 @@ func (m *MarkersView) openTagsFilterDialog() {
 	m.dialogOwner = tagFilter
 	m.ChipsFilter.Recreate(m.TimeMarkers)
 	filterChips := m.tagsDialog.createFreshChips(m.ChipsFilter.All, m.ChipsFilter.EnabledMap)
-	m.Dialog.Basic(m.Th, "Tags Filter", func(gtx layout.Context) layout.Dimensions {
+	m.Dialog.Basic(m.Th, m.I18n.Markers.TagsFilter, func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Max.X = gtx.Dp(maxFilterW)
 		if cursor, ok := m.tagsDialog.getCursorAndHandleEvents(gtx); ok {
 			common.SetCursor(gtx, cursor)
@@ -90,8 +90,8 @@ func (m *MarkersView) clearTagFilter() {
 func (m *MarkersView) openDeleteAllDialog() {
 	m.dialogOwner = deleteAll
 	m.Dialog.SetIcon(micons.Warning)
-	m.Dialog.Basic(m.Th, "Удалить все маркеры?", func(gtx layout.Context) layout.Dimensions {
-		txt := material.Body2(m.Th.Theme, "Это действие удалит все существующие маркеры для этой звуковой дорожки!")
+	m.Dialog.Basic(m.Th, m.I18n.Markers.MDeleteALlTitle, func(gtx layout.Context) layout.Dimensions {
+		txt := material.Body2(m.Th.Theme, m.I18n.Markers.MDeleteALlBody)
 		txt.WrapPolicy = text.WrapWords
 		txt.Alignment = text.Middle
 		return txt.Layout(gtx)

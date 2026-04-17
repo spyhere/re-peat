@@ -11,6 +11,7 @@ import (
 	"gioui.org/layout"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
+	"github.com/spyhere/re-peat/internal/i18n"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
@@ -41,10 +42,12 @@ type markerDialog struct {
 	tagsField  *common.Comboboxable
 	focuser    *common.FocusManager
 	th         *theme.RepeatTheme
+	i18n       i18n.State
 }
 
 // NOTE: Do we need to pass audioMeta here?
-func (m *markerDialog) prepareForOpening(a audio.AudioMeta, curMarker *tm.TimeMarker, allChips map[string]struct{}) {
+func (m *markerDialog) prepareForOpening(i18n i18n.State, a audio.AudioMeta, curMarker *tm.TimeMarker, allChips map[string]struct{}) {
+	m.i18n = i18n
 	m.a = a
 	m.allTags = m.allTags[:0]
 	for chipName := range allChips {
@@ -236,11 +239,11 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 					gtx.Constraints.Max.X = fieldW
 					inputDims := common.DrawInputField(gtx, m.th, common.InputFieldProps{
 						Base: common.InputFieldBase{
-							LabelText: "Имя",
+							LabelText: m.i18n.Generic.Name,
 						},
 						Inputable:   m.nameField,
 						MaxLen:      20,
-						Placeholder: "Новый маркер...",
+						Placeholder: m.i18n.Markers.MNamePlaceholder,
 					})
 					inputDims.Size.Y += gapPx
 					return inputDims
@@ -249,7 +252,7 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 					gtx.Constraints.Max.X = fieldW
 					inputDims := common.DrawInputField(gtx, m.th, common.InputFieldProps{
 						Base: common.InputFieldBase{
-							LabelText: "Время",
+							LabelText: m.i18n.Generic.Time,
 						},
 						Filter:      "1234567890:",
 						Inputable:   m.timeField,
@@ -263,7 +266,7 @@ func (m *markerDialog) Layout(gtx layout.Context, totalSeconds float64) layout.D
 					gtx.Constraints.Max.X = fieldW
 					return common.DrawCombobox(gtx, m.th, common.ComboboxProps{
 						Base: common.InputFieldBase{
-							LabelText: "Категории",
+							LabelText: m.i18n.Generic.Tags,
 						},
 						Comboboxable: m.tagsField,
 						Chips:        m.tags,

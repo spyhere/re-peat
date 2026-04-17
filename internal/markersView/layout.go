@@ -42,7 +42,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	common.OffsetBy(gtx, image.Pt(0, topM), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
 			searchDims = common.DrawSearch(gtx, m.Th, common.SProps{
-				DefaultText: "Название маркера...",
+				DefaultText: m.I18n.Markers.SearchBPlaceholder,
 				Inputable:   m.searchbar,
 				Disabled:    m.TimeMarkers.IsEmpty(),
 			})
@@ -92,12 +92,12 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				txt := material.Body2(m.Th.Theme, "Name")
+				txt := material.Body2(m.Th.Theme, m.I18n.Generic.Name)
 				txt.Font.Weight = font.Bold
 				return txt.Layout(gtx)
 			},
 			func(gtx layout.Context) layout.Dimensions {
-				txt := material.Body2(m.Th.Theme, "Time")
+				txt := material.Body2(m.Th.Theme, m.I18n.Generic.Time)
 				txt.Font.Weight = font.Bold
 				return txt.Layout(gtx)
 			},
@@ -125,7 +125,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 					layout.Rigid(layout.Spacer{Width: gap}.Layout),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						gtx.Constraints.Min = image.Point{}
-						txt := material.Body2(m.Th.Theme, "Tags")
+						txt := material.Body2(m.Th.Theme, m.I18n.Generic.Tags)
 						txt.Font.Weight = font.Bold
 						return txt.Layout(gtx)
 					}),
@@ -265,7 +265,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 			},
 			func(gtx layout.Context, rowIdx int, curMarker *tm.TimeMarker) layout.Dimensions {
 				if curMarker.Edit.Clicked(gtx) {
-					m.openMarkerDialog(curMarker, edit, "Marker Edit")
+					m.openMarkerDialog(curMarker, edit, m.I18n.Markers.MEdit)
 				}
 				if curMarker.Edit.Hovered() {
 					common.SetCursor(gtx, pointer.CursorPointer)
