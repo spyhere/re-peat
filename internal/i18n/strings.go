@@ -16,6 +16,7 @@ type Generic struct {
 	Length        string
 	Markers       string
 	Modified      string
+	Mono          string
 	Name          string
 	Notes         string
 	Ok            string
@@ -24,6 +25,7 @@ type Generic struct {
 	Save          string
 	SaveAs        string
 	Size          string
+	Stereo        string
 	Tags          string
 	Time          string
 	WithComments  string
