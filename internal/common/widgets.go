@@ -659,6 +659,11 @@ func (d *Dialog) Error(th *theme.RepeatTheme, title string, w func(gtx layout.Co
 	d.content = w
 }
 
+func (d *Dialog) SetLabels(cancel, ok string) {
+	d.CancelProps.Text = cancel
+	d.OkProps.Text = ok
+}
+
 func (d *Dialog) Show() {
 	d.isOpen = true
 	d.mustRedraw = true
