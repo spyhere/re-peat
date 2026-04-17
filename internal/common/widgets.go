@@ -15,6 +15,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/spyhere/re-peat/internal/i18n"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -979,4 +980,63 @@ func (fm *FocusManager) PlaceScrim(gtx layout.Context) {
 		return layout.Dimensions{}
 	})
 	op.Defer(gtx.Ops, scrimM)
+}
+
+func NewI18nSwitcher() I18nSwitcher {
+	enOption := I18nMenuOption{
+		Cl:   &widget.Clickable{},
+		Lang: i18n.En,
+	}
+	return I18nSwitcher{
+		en: enOption,
+		ru: I18nMenuOption{
+			Cl:   &widget.Clickable{},
+			Lang: i18n.Ru,
+		},
+		Active: enOption,
+	}
+}
+
+type I18nSwitcher struct {
+	en     I18nMenuOption
+	ru     I18nMenuOption
+	Active I18nMenuOption
+	Open   bool
+}
+
+func (i *I18nSwitcher) Update(gtx layout.Context) (i18n.Lang, bool) {
+	if i.Active.Cl.Clicked(gtx) {
+		i.Open = !i.Open
+	}
+	active := i.Active.Lang
+	if i.en.Cl.Clicked(gtx) {
+		i.Active = i.en
+		i.Open = false
+	}
+	if i.ru.Cl.Clicked(gtx) {
+		i.Active = i.ru
+		i.Open = false
+	}
+	if active != i.Active.Lang {
+		return i.Active.Lang, true
+	}
+	return active, false
+}
+
+func (i *I18nSwitcher) GetSecondaryOption() I18nMenuOption {
+	if i.Active.Cl == i.en.Cl {
+		return i.ru
+	} else {
+		return i.en
+	}
+}
+
+func (i *I18nSwitcher) GetCursorType() (pointer.Cursor, bool) {
+	if i.en.Cl.Hovered() {
+		return pointer.CursorPointer, true
+	}
+	if i.ru.Cl.Hovered() {
+		return pointer.CursorPointer, true
+	}
+	return pointer.CursorDefault, false
 }
