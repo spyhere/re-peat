@@ -1122,8 +1122,8 @@ type I18nMenuStyle struct {
 func I18nMenu(th *theme.RepeatTheme, switcher *I18nSwitcher) I18nMenuStyle {
 	return I18nMenuStyle{
 		switcher:     switcher,
-		txtSize:      15,
-		txtLHeight:   18,
+		txtSize:      14,
+		txtLHeight:   16,
 		highlightPad: 2,
 		outterPadd:   4,
 		innerPad:     6,
