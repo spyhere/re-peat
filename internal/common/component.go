@@ -1124,9 +1124,9 @@ func I18nMenu(th *theme.RepeatTheme, switcher *I18nSwitcher) I18nMenuStyle {
 		switcher:     switcher,
 		txtSize:      14,
 		txtLHeight:   16,
-		highlightPad: 2,
-		outterPadd:   4,
-		innerPad:     6,
+		highlightPad: 4,
+		outterPadd:   6,
+		innerPad:     4,
 		th:           th,
 	}
 }
@@ -1141,19 +1141,23 @@ func (i I18nMenuStyle) drawLang(gtx layout.Context, o *I18nMenuOption, textOnly 
 		return curLang.Layout(gtx)
 	})
 
+	outterPad := gtx.Dp(i.outterPadd)
 	if !textOnly {
 		highlightPad := gtx.Dp(i.highlightPad)
 		lblBgRct := image.Rect(0, 0, mainDims.Size.X+highlightPad*2, mainDims.Size.Y+highlightPad*2)
 		lblBgR := lblBgRct.Max.X / 2
-		OffsetBy(gtx, image.Pt(highlightPad, highlightPad), func(gtx layout.Context) {
+		bgC := i.th.Bg
+		if !o.Hovered {
+			bgC.A = 180
+		}
+		OffsetBy(gtx, image.Pt(outterPad-highlightPad, outterPad-highlightPad), func(gtx layout.Context) {
 			DrawBox(gtx, Box{
 				Size:  lblBgRct,
-				Color: i.th.Bg,
+				Color: bgC,
 				R:     theme.CornerR(lblBgR, lblBgR, lblBgR, lblBgR),
 			})
 		})
 	}
-	outterPad := gtx.Dp(i.outterPadd)
 	OffsetBy(gtx, image.Pt(outterPad, outterPad), func(gtx layout.Context) {
 		mainLbl.Add(gtx.Ops)
 	})
@@ -1170,7 +1174,7 @@ func (i I18nMenuStyle) Layout(gtx layout.Context) layout.Dimensions {
 	if i.switcher.Open == false {
 		var dims layout.Dimensions
 		OffsetBy(gtx, image.Pt(0, y), func(gtx layout.Context) {
-			dims = i.drawLang(gtx, &i.switcher.Active, true)
+			dims = i.drawLang(gtx, &i.switcher.Active, !i.switcher.Active.Hovered)
 		})
 		return dims
 	}
