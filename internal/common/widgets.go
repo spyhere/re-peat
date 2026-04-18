@@ -995,11 +995,9 @@ func (fm *FocusManager) PlaceScrim(gtx layout.Context) {
 func NewI18nSwitcher(l i18n.Lang) I18nSwitcher {
 	switcher := I18nSwitcher{
 		en: I18nMenuOption{
-			Cl:   &widget.Clickable{},
 			Lang: i18n.En,
 		},
 		ru: I18nMenuOption{
-			Cl:   &widget.Clickable{},
 			Lang: i18n.Ru,
 		},
 	}
@@ -1018,39 +1016,65 @@ type I18nSwitcher struct {
 	Open   bool
 }
 
+func (i *I18nSwitcher) isOptionClicked(gtx layout.Context, o *I18nMenuOption) bool {
+	isClicked := false
+	HandlePointerEvents(gtx, &o.Tag, pointer.Press, func(e pointer.Event) {
+		if e.Kind == pointer.Press {
+			isClicked = true
+		}
+	})
+	return isClicked
+}
+
+func (i *I18nSwitcher) isOptionHovered(gtx layout.Context, o *I18nMenuOption) bool {
+	isHovered := o.Hovered
+	HandlePointerEvents(gtx, &o.Tag, pointer.Enter|pointer.Leave, func(e pointer.Event) {
+		switch e.Kind {
+		case pointer.Enter:
+			isHovered = true
+		case pointer.Leave:
+			isHovered = false
+		}
+	})
+	return isHovered
+}
+
+func (i *I18nSwitcher) handleHover(gtx layout.Context) {
+	i.en.Hovered = i.isOptionHovered(gtx, &i.en)
+	i.ru.Hovered = i.isOptionHovered(gtx, &i.ru)
+	i.Active.Hovered = i.isOptionHovered(gtx, &i.Active)
+}
+
 func (i *I18nSwitcher) Update(gtx layout.Context) (i18n.Lang, bool) {
-	if i.Active.Cl.Clicked(gtx) {
+	i.handleHover(gtx)
+	if i.isOptionClicked(gtx, &i.Active) {
 		i.Open = !i.Open
 	}
 	active := i.Active.Lang
-	if i.en.Cl.Clicked(gtx) {
+	if i.isOptionClicked(gtx, &i.en) {
 		i.Active = i.en
 		i.Open = false
 	}
-	if i.ru.Cl.Clicked(gtx) {
+	if i.isOptionClicked(gtx, &i.ru) {
 		i.Active = i.ru
 		i.Open = false
 	}
 	if active != i.Active.Lang {
+		// Active is a copy of clicked (and ofc hovered) option, so Hovered should be reset since Active !== Clicked
+		i.Active.Hovered = false
 		return i.Active.Lang, true
 	}
 	return active, false
 }
 
-func (i *I18nSwitcher) GetSecondaryOption() I18nMenuOption {
-	if i.Active.Cl == i.en.Cl {
-		return i.ru
+func (i *I18nSwitcher) GetSecondaryOption() *I18nMenuOption {
+	if i.Active.Lang == i.en.Lang {
+		return &i.ru
 	} else {
-		return i.en
+		return &i.en
 	}
 }
 
 func (i *I18nSwitcher) GetCursorType() (pointer.Cursor, bool) {
-	if i.en.Cl.Hovered() {
-		return pointer.CursorPointer, true
-	}
-	if i.ru.Cl.Hovered() {
-		return pointer.CursorPointer, true
-	}
-	return pointer.CursorDefault, false
+	return pointer.CursorPointer, i.Active.Hovered || i.en.Hovered || i.ru.Hovered
 }

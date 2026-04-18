@@ -1105,8 +1105,9 @@ func DrawBlockingMessage(gtx layout.Context, th *theme.RepeatTheme, msg string) 
 }
 
 type I18nMenuOption struct {
-	Cl   *widget.Clickable
-	Lang i18n.Lang
+	Tag     struct{}
+	Hovered bool
+	Lang    i18n.Lang
 }
 type I18nMenuStyle struct {
 	txtSize      unit.Sp
@@ -1130,7 +1131,7 @@ func I18nMenu(th *theme.RepeatTheme, switcher *I18nSwitcher) I18nMenuStyle {
 	}
 }
 
-func (i I18nMenuStyle) drawLang(gtx layout.Context, o I18nMenuOption, textOnly bool) layout.Dimensions {
+func (i I18nMenuStyle) drawLang(gtx layout.Context, o *I18nMenuOption, textOnly bool) layout.Dimensions {
 	mainLbl, mainDims := MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Min = image.Point{}
 		curLang := material.Body2(i.th.Theme, o.Lang.String())
@@ -1159,11 +1160,7 @@ func (i I18nMenuStyle) drawLang(gtx layout.Context, o I18nMenuOption, textOnly b
 	dims := mainDims
 	dims.Size.X += outterPad * 2
 	dims.Size.Y += outterPad * 2
-	DrawBox(gtx, Box{
-		Size:      image.Rect(0, 0, dims.Size.X, dims.Size.Y),
-		Clickable: o.Cl,
-		HideInk:   true,
-	})
+	RegisterTag(gtx, &o.Tag, image.Rect(0, 0, dims.Size.X, dims.Size.Y))
 	return dims
 }
 
@@ -1173,7 +1170,7 @@ func (i I18nMenuStyle) Layout(gtx layout.Context) layout.Dimensions {
 	if i.switcher.Open == false {
 		var dims layout.Dimensions
 		OffsetBy(gtx, image.Pt(0, y), func(gtx layout.Context) {
-			dims = i.drawLang(gtx, i.switcher.Active, true)
+			dims = i.drawLang(gtx, &i.switcher.Active, true)
 		})
 		return dims
 	}
@@ -1181,7 +1178,7 @@ func (i I18nMenuStyle) Layout(gtx layout.Context) layout.Dimensions {
 		gtx.Constraints.Min = image.Point{}
 		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-				return i.drawLang(gtx, i.switcher.Active, false)
+				return i.drawLang(gtx, &i.switcher.Active, false)
 			}),
 			layout.Rigid(layout.Spacer{Height: i.innerPad}.Layout),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
