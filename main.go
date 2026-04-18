@@ -7,12 +7,17 @@ import (
 	"gioui.org/app"
 	"gioui.org/op"
 	"gioui.org/unit"
+	"github.com/spyhere/re-peat/internal/configs"
 	"github.com/spyhere/re-peat/internal/state"
 )
 
 func main() {
+	locale, err := configs.GetLocale()
+	if err != nil {
+		log.Println(err)
+	}
 	window := new(app.Window)
-	appState := state.NewAppState(window)
+	appState := state.NewAppState(window, locale)
 	repeatApp := newApp(&appState)
 	go func() {
 		window.Option(app.Title("re-peat"))
@@ -31,6 +36,10 @@ func run(window *app.Window, repeatApp *App) error {
 	for {
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
+			err := configs.SaveLocale(repeatApp.i18nSwitcher.Active.Lang.Tag())
+			if err != nil {
+				log.Println(err)
+			}
 			return e.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)

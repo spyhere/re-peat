@@ -992,19 +992,23 @@ func (fm *FocusManager) PlaceScrim(gtx layout.Context) {
 	op.Defer(gtx.Ops, scrimM)
 }
 
-func NewI18nSwitcher() I18nSwitcher {
-	enOption := I18nMenuOption{
-		Cl:   &widget.Clickable{},
-		Lang: i18n.En,
-	}
-	return I18nSwitcher{
-		en: enOption,
+func NewI18nSwitcher(l i18n.Lang) I18nSwitcher {
+	switcher := I18nSwitcher{
+		en: I18nMenuOption{
+			Cl:   &widget.Clickable{},
+			Lang: i18n.En,
+		},
 		ru: I18nMenuOption{
 			Cl:   &widget.Clickable{},
 			Lang: i18n.Ru,
 		},
-		Active: enOption,
 	}
+	if l == i18n.En {
+		switcher.Active = switcher.en
+	} else {
+		switcher.Active = switcher.ru
+	}
+	return switcher
 }
 
 type I18nSwitcher struct {

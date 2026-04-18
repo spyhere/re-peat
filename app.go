@@ -24,7 +24,7 @@ func newApp(appState *state.AppState) *App {
 		markersView: markersview.NewMarkersView(markersview.Props{
 			State: appState,
 		}),
-		i18nSwitcher: common.NewI18nSwitcher(),
+		i18nSwitcher: common.NewI18nSwitcher(appState.I18n.Cur),
 	}
 	ed := editorview.NewEditor(editorview.EditorProps{
 		State:         appState,

@@ -27,13 +27,13 @@ const (
 	defaultPlayerVol = 0.5
 )
 
-func NewAppState(window *app.Window) AppState {
+func NewAppState(window *app.Window, locale string) AppState {
 	th, err := theme.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 	return AppState{
-		I18n:        i18n.NewI18n(),
+		I18n:        i18n.NewI18n(i18n.Parse(locale)),
 		Th:          th,
 		ChipsFilter: filters.NewChipsFilter(100), // TODO: think about centralized way of capacity constant
 		Dialog:      common.Dialog{},
