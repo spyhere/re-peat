@@ -992,8 +992,9 @@ func (fm *FocusManager) PlaceScrim(gtx layout.Context) {
 	op.Defer(gtx.Ops, scrimM)
 }
 
-func NewI18nSwitcher(l i18n.Lang) I18nSwitcher {
+func NewI18nSwitcher(l i18n.Lang, fm *FocusManager) I18nSwitcher {
 	switcher := I18nSwitcher{
+		fm: fm,
 		en: I18nMenuOption{
 			Lang: i18n.En,
 		},
@@ -1012,6 +1013,7 @@ func NewI18nSwitcher(l i18n.Lang) I18nSwitcher {
 type I18nSwitcher struct {
 	en     I18nMenuOption
 	ru     I18nMenuOption
+	fm     Focuser
 	Active I18nMenuOption
 	Open   bool
 }
@@ -1045,10 +1047,19 @@ func (i *I18nSwitcher) handleHover(gtx layout.Context) {
 	i.Active.Hovered = i.isOptionHovered(gtx, &i.Active)
 }
 
+func (i *I18nSwitcher) toggleState() {
+	i.Open = !i.Open
+	if i.Open {
+		i.fm.RequestFocus(i)
+	} else {
+		i.fm.RequestBlur(i)
+	}
+}
+
 func (i *I18nSwitcher) Update(gtx layout.Context) (i18n.Lang, bool) {
 	i.handleHover(gtx)
 	if i.isOptionClicked(gtx, &i.Active) {
-		i.Open = !i.Open
+		i.toggleState()
 	}
 	active := i.Active.Lang
 	if i.isOptionClicked(gtx, &i.en) {
@@ -1077,4 +1088,14 @@ func (i *I18nSwitcher) GetSecondaryOption() *I18nMenuOption {
 
 func (i *I18nSwitcher) GetCursorType() (pointer.Cursor, bool) {
 	return pointer.CursorPointer, i.Active.Hovered || i.en.Hovered || i.ru.Hovered
+}
+
+func (i *I18nSwitcher) Focus(gtx layout.Context) {
+	i.Open = true
+	gtx.Execute(op.InvalidateCmd{})
+}
+
+func (i *I18nSwitcher) Blur(gtx layout.Context) {
+	i.Open = false
+	gtx.Execute(op.InvalidateCmd{})
 }

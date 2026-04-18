@@ -15,6 +15,7 @@ import (
 )
 
 func newApp(appState *state.AppState) *App {
+	fm := &common.FocusManager{}
 	appInstance := &App{
 		AppState: appState,
 		buttons:  newButtons(&appState.I18n),
@@ -24,7 +25,8 @@ func newApp(appState *state.AppState) *App {
 		markersView: markersview.NewMarkersView(markersview.Props{
 			State: appState,
 		}),
-		i18nSwitcher: common.NewI18nSwitcher(appState.I18n.Cur),
+		i18nSwitcher: common.NewI18nSwitcher(appState.I18n.Cur, fm),
+		fm:           fm,
 	}
 	ed := editorview.NewEditor(editorview.EditorProps{
 		State:         appState,
@@ -51,6 +53,7 @@ type App struct {
 	selectedTab tab
 	buttons
 	i18nSwitcher common.I18nSwitcher
+	fm           *common.FocusManager
 }
 
 func (a *App) onStartMarkerEdit() {
@@ -100,6 +103,7 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	if cursor, ok := a.i18nSwitcher.GetCursorType(); ok {
 		common.SetCursor(gtx, cursor)
 	}
+	a.fm.PlaceScrim(gtx)
 
 	a.Dialog.Layout(gtxEnabled)
 	if cursor, ok := a.Dialog.GetCursorType(); ok {
