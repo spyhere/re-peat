@@ -1114,7 +1114,6 @@ type I18nMenuStyle struct {
 	txtLHeight   unit.Sp
 	highlightPad unit.Dp
 	outterPadd   unit.Dp
-	innerPad     unit.Dp
 	th           *theme.RepeatTheme
 	switcher     *I18nSwitcher
 }
@@ -1126,7 +1125,6 @@ func I18nMenu(th *theme.RepeatTheme, switcher *I18nSwitcher) I18nMenuStyle {
 		txtLHeight:   16,
 		highlightPad: 4,
 		outterPadd:   6,
-		innerPad:     4,
 		th:           th,
 	}
 }
@@ -1184,7 +1182,6 @@ func (i I18nMenuStyle) Layout(gtx layout.Context) layout.Dimensions {
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				return i.drawLang(gtx, &i.switcher.Active, false)
 			}),
-			layout.Rigid(layout.Spacer{Height: i.innerPad}.Layout),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				return i.drawLang(gtx, i.switcher.GetSecondaryOption(), false)
 			}),
