@@ -1,19 +1,13 @@
 package logging
 
 import (
-	"log/slog"
+	"bytes"
 	"sync"
-	"time"
 )
 
-type logEntry struct {
-	Time  time.Time
-	Level slog.Level
-	Msg   string
-}
-
 type ringBuffer struct {
-	entries []logEntry
+	SeenErr bool
+	logs    []byte
 	size    int
 	idx     int
 	full    bool
@@ -22,33 +16,48 @@ type ringBuffer struct {
 
 func newRingBuffer(size int) *ringBuffer {
 	return &ringBuffer{
-		entries: make([]logEntry, size),
-		size:    size,
+		logs: make([]byte, size),
+		size: size,
 	}
 }
 
-func (rb *ringBuffer) add(e logEntry) {
+func (rb *ringBuffer) Write(p []byte) (int, error) {
 	rb.mu.Lock()
 	defer rb.mu.Unlock()
 
-	e.Time = time.Now()
+	n := len(p)
+	if n > rb.size {
+		copy(rb.logs[0:], p[n-rb.size:])
+		rb.idx = 0
+		rb.full = true
+		return n, nil
+	}
 
-	rb.entries[rb.idx] = e
-	rb.idx = (rb.idx + 1) % rb.size
-
-	if rb.idx == 0 {
+	vacant := rb.size - rb.idx
+	copy(rb.logs[rb.idx:], p[:min(vacant, n)])
+	rb.idx += n
+	hasLeft := n - vacant
+	if hasLeft > 0 {
+		copy(rb.logs[0:], p[vacant:])
+		rb.idx = hasLeft
 		rb.full = true
 	}
+	return n, nil
 }
 
-func (rb *ringBuffer) snapshot() []logEntry {
+func (rb *ringBuffer) snapshot() []byte {
 	rb.mu.Lock()
 	defer rb.mu.Unlock()
 
-	var result []logEntry
+	result := make([]byte, 0, rb.size)
 	if rb.full {
-		result = append(result, rb.entries[rb.idx:]...)
+		result = append(result, rb.logs[rb.idx:]...)
 	}
-	result = append(result, rb.entries[:rb.idx]...)
+	result = append(result, rb.logs[:rb.idx]...)
+
+	crIdx := bytes.IndexByte(result, '\n')
+	if crIdx >= 0 && rb.full {
+		result = result[crIdx:]
+	}
 	return result
 }

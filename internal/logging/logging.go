@@ -6,71 +6,82 @@ import (
 	"log/slog"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"time"
 )
 
-const crashReportFileName = "repeat_crashreport"
+const (
+	timeFormat          = "15:04:05-02/01/06"
+	logReportFileName   = "repeat_logs"
+	crashReportFileName = "repeat_crashreport"
+)
 
-func NewLogger(size int) Logger {
+func NewLogger(version string, size int) Logger {
+	rb := newRingBuffer(size)
+	writer := logWriter(rb)
 	return Logger{
-		slog: slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-		ring: newRingBuffer(size),
+		appVer: version,
+		slog:   slog.New(slog.NewJSONHandler(writer, nil)),
+		ring:   rb,
 	}
 }
 
 type Logger struct {
-	slog *slog.Logger
-	ring *ringBuffer
+	appVer string
+	slog   *slog.Logger
+	ring   *ringBuffer
 }
 
 func (l Logger) Info(msg string, args ...any) {
 	l.slog.Info(msg, args...)
-	l.ring.add(logEntry{
-		Level: slog.LevelInfo,
-		Msg:   msg,
-	})
 }
 
 func (l Logger) Warn(msg string, args ...any) {
 	l.slog.Warn(msg, args...)
-	l.ring.add(logEntry{
-		Level: slog.LevelWarn,
-		Msg:   msg,
-	})
 }
 
 func (l Logger) Error(msg string, args ...any) {
 	l.slog.Error(msg, args...)
-	l.ring.add(logEntry{
-		Level: slog.LevelError,
-		Msg:   msg,
-	})
+	l.ring.SeenErr = true
 }
 
 func (l Logger) Debug(msg string, args ...any) {
 	l.slog.Debug(msg, args...)
-	l.ring.add(logEntry{
-		Level: slog.LevelDebug,
-		Msg:   msg,
-	})
 }
 
-func (l Logger) DumpReport(ver string) {
+func (l Logger) DumpLogs() {
+	if !l.ring.SeenErr {
+		return
+	}
 	now := time.Now()
-	f, _ := os.Create(fmt.Sprintf("%v:%v.json", crashReportFileName, now.Unix()))
+	f, _ := os.Create(fmt.Sprintf("%v-%v.json", logReportFileName, now.Unix()))
+	defer f.Close()
+
+	fmt.Fprintf(f, "Version: %v\nOS: %v\nTime: %v\n\n", l.appVer, runtime.GOOS, now.Format(timeFormat))
+	f.Write(l.ring.snapshot())
+}
+
+func (l Logger) dumpReport(ver string) {
+	now := time.Now()
+	f, _ := os.Create(fmt.Sprintf("%v-%v.json", crashReportFileName, now.Unix()))
 	defer f.Close()
 
 	report := struct {
 		Version string
 		OS      string
 		Time    string
-		Trace   []logEntry
+		Trace   []byte
 	}{
 		Version: ver,
 		OS:      runtime.GOOS,
-		Time:    now.Format("15:04:05-02/01/06"),
+		Time:    now.Format(timeFormat),
 		Trace:   l.ring.snapshot(),
 	}
 	encoder := json.NewEncoder(f)
 	encoder.Encode(&report)
+}
+
+func (l Logger) DumpReport() {
+	l.Error(string(debug.Stack()))
+	l.dumpReport(l.appVer)
 }
