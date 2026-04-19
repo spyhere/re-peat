@@ -42,6 +42,7 @@ func (l Logger) Warn(msg string, args ...any) {
 
 func (l Logger) Error(msg string, args ...any) {
 	l.slog.Error(msg, args...)
+	// NOTE: start goroutine to dump logs instead
 	l.ring.SeenErr = true
 }
 

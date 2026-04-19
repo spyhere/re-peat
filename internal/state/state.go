@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -27,10 +26,10 @@ const (
 	defaultPlayerVol = 0.5
 )
 
-func NewAppState(window *app.Window, locale string) AppState {
+func NewAppState(window *app.Window, locale string) (AppState, error) {
 	th, err := theme.New()
 	if err != nil {
-		log.Fatal(err)
+		return AppState{}, err
 	}
 	return AppState{
 		I18n:        i18n.NewI18n(i18n.Parse(locale)),
@@ -40,7 +39,7 @@ func NewAppState(window *app.Window, locale string) AppState {
 		Prompter:    prompt.NewPrompter(th),
 		fileManager: filemanager.NewFileManager(window),
 		TimeMarkers: tm.NewTimeMarkers(),
-	}
+	}, nil
 }
 
 type AppState struct {
