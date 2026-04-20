@@ -50,6 +50,7 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		})
 	})
 
+	// TODO: disable button if markers limit is reached
 	cl := &m.createCl
 	if !gtx.Enabled() {
 		cl = &m.disabledCl

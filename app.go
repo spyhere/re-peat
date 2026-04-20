@@ -2,28 +2,31 @@ package main
 
 import (
 	"image"
-	"log"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"github.com/spyhere/re-peat/internal/common"
 	editorview "github.com/spyhere/re-peat/internal/editorView"
+	"github.com/spyhere/re-peat/internal/logging"
 	markersview "github.com/spyhere/re-peat/internal/markersView"
 	projectview "github.com/spyhere/re-peat/internal/projectView"
 	"github.com/spyhere/re-peat/internal/state"
 )
 
-func newApp(appState *state.AppState) *App {
+func newApp(appState *state.AppState, lg logging.Logger) *App {
 	fm := &common.FocusManager{}
 	appInstance := &App{
 		AppState: appState,
+		lg:       lg,
 		buttons:  newButtons(&appState.I18n),
 		projectView: projectview.NewProjectView(projectview.Props{
 			State: appState,
+			Lg:    lg,
 		}),
 		markersView: markersview.NewMarkersView(markersview.Props{
 			State: appState,
+			Lg:    lg,
 		}),
 		i18nSwitcher: common.NewI18nSwitcher(appState.I18n.Cur, fm),
 		fm:           fm,
@@ -32,6 +35,7 @@ func newApp(appState *state.AppState) *App {
 		State:         appState,
 		OnStartEditCb: appInstance.onStartMarkerEdit,
 		OnStopEditCb:  appInstance.onStopMarkerEdit,
+		Lg:            lg,
 	})
 	appInstance.editorView = ed
 	return appInstance
@@ -47,6 +51,7 @@ const (
 
 type App struct {
 	*state.AppState
+	lg          logging.Logger
 	projectView projectview.ProjectView
 	markersView markersview.MarkersView
 	editorView  editorview.Editor
@@ -65,9 +70,6 @@ func (a *App) onStopMarkerEdit() {
 }
 
 func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
-	if err := a.AppState.GetError(); err != nil {
-		log.Println(err)
-	}
 	a.Dialog.Update(gtx)
 	gtxEnabled := gtx
 	if a.Dialog.ShouldDisableGtx(gtx) {

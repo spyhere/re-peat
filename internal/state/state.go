@@ -62,7 +62,6 @@ type AppState struct {
 	TimeMarkers tm.TimeMarkers
 	isChoosing  bool
 	isLoading   bool
-	err         error
 }
 
 func (a *AppState) IsChoosing() bool {
@@ -77,12 +76,6 @@ func (a *AppState) HasAudioLoaded() bool {
 }
 func (a *AppState) HasMarkersLoaded() bool {
 	return a.LoadedMFile != ""
-}
-
-func (a *AppState) GetError() error {
-	err := a.err
-	a.err = nil
-	return err
 }
 
 func (a *AppState) resetAudioDependantState() {
@@ -101,14 +94,15 @@ func (a *AppState) pausePlayer() {
 	}
 }
 
-func (a *AppState) AudioLoad() {
+func (a *AppState) AudioLoad() error {
 	a.pausePlayer()
 	a.isChoosing = true
+	var resultErr error
 	a.fileManager.Load(func(filePath string, err error) {
 		a.isChoosing = false
 		if err != nil {
 			if !errors.Is(err, explorer.ErrUserDecline) {
-				a.err = err
+				resultErr = err
 			}
 			return
 		}
@@ -123,17 +117,17 @@ func (a *AppState) AudioLoad() {
 
 		monoSamples, audioMeta, err := audio.LoadMonoSamples(filePath)
 		if err != nil {
-			a.err = err
+			resultErr = err
 			return
 		}
 		file, err := os.Open(filePath)
 		if err != nil {
-			a.err = err
+			resultErr = err
 			return
 		}
 		fileInfo, err := os.Stat(filePath)
 		if err != nil {
-			a.err = err
+			resultErr = err
 			return
 		}
 		if a.Player == nil {
@@ -151,16 +145,18 @@ func (a *AppState) AudioLoad() {
 		a.LoadedAFile = filePath
 		a.resetAudioDependantState()
 	}, ".mp3", ".wav", ".flac")
+	return resultErr
 }
 
-func (a *AppState) MarkersLoad() {
+func (a *AppState) MarkersLoad() error {
 	a.pausePlayer()
 	a.isChoosing = true
+	var resultErr error
 	a.fileManager.Load(func(filePath string, err error) {
 		a.isChoosing = false
 		if err != nil {
 			if !errors.Is(err, explorer.ErrUserDecline) {
-				a.err = err
+				resultErr = err
 			}
 			return
 		}
@@ -171,13 +167,13 @@ func (a *AppState) MarkersLoad() {
 		a.LoadedMFile = ""
 		file, err := os.Open(filePath)
 		if err != nil {
-			a.err = err
+			resultErr = err
 			return
 		}
 		var saveStruct filemanager.MarkersSaveScheme
 		decoder := json.NewDecoder(file)
 		if err = decoder.Decode(&saveStruct); err != nil {
-			a.err = err
+			resultErr = err
 			return
 		}
 
@@ -193,7 +189,7 @@ func (a *AppState) MarkersLoad() {
 
 		fileInfo, err := os.Stat(filePath)
 		if err != nil {
-			a.err = err
+			resultErr = err
 			return
 		}
 		a.TimeMarkers = saveStruct.Markers
@@ -202,7 +198,7 @@ func (a *AppState) MarkersLoad() {
 		a.MFileMeta = filemanager.NewFileMeta(fileInfo.Name(), fileInfo.Size(), fileInfo.ModTime())
 		a.LoadedMFile = filePath
 	}, ".rpt")
-
+	return resultErr
 }
 
 func (a *AppState) encodeMarkers() ([]byte, error) {
@@ -217,62 +213,63 @@ func (a *AppState) encodeMarkers() ([]byte, error) {
 		Markers: a.TimeMarkers,
 	}
 	if err := encoder.Encode(saveStruct); err != nil {
-		a.err = err
 		return []byte{}, err
 	}
 	return data.Bytes(), nil
 }
 
-func (a *AppState) updateMarkersMeta(filePath string) {
+func (a *AppState) updateMarkersMeta(filePath string) error {
 	if filePath == "" {
-		return
+		return fmt.Errorf("File path is not specified")
 	}
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		a.err = err
-		return
+		return err
 	}
 	a.MFileMeta = filemanager.NewFileMeta(fileInfo.Name(), fileInfo.Size(), fileInfo.ModTime())
 	a.MarkersMeta = tm.NewMarkersMeta(a.TimeMarkers)
+	return nil
 }
 
-func (a *AppState) MarkersSave() {
+func (a *AppState) MarkersSave() error {
 	if a.TimeMarkers.IsEmpty() || a.LoadedMFile == "" {
-		return
+		return fmt.Errorf("Unreachable MarkersSave! markersLen: %v, loadedMFile: %v", len(a.TimeMarkers), a.LoadedMFile)
 	}
 	data, err := a.encodeMarkers()
 	if err != nil {
-		a.err = err
-		return
+		return err
 	}
+	var resultErr error
 	a.fileManager.Save(a.LoadedMFile, data, func(err error) {
 		if err != nil {
-			a.err = err
+			resultErr = err
 			return
 		}
 		a.updateMarkersMeta(a.LoadedMFile)
 	})
+	return resultErr
 }
 
-func (a *AppState) MarkersSaveAs() {
+func (a *AppState) MarkersSaveAs() error {
 	if a.TimeMarkers.IsEmpty() {
-		return
+		return fmt.Errorf("Unreachable MarkersSaveAs! Markers are empty")
 	}
 	data, err := a.encodeMarkers()
 	if err != nil {
-		a.err = err
-		return
+		return err
 	}
 	a.isChoosing = true
+	var resultErr error
 	a.fileManager.SaveAs("markers.rpt", data, func(filePath string, err error) {
 		a.isChoosing = false
 		if err != nil {
 			if !errors.Is(err, explorer.ErrUserDecline) {
-				a.err = err
+				resultErr = err
 			}
 			return
 		}
 		a.LoadedMFile = filePath
 		a.updateMarkersMeta(filePath)
 	})
+	return resultErr
 }

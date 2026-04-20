@@ -25,16 +25,16 @@ func main() {
 	}()
 	locale, err := configs.GetLocale()
 	if err != nil {
-		lg.Error("Failed to get locale", "err", err)
+		lg.Warn("Failed to get locale", "err", err)
 	}
 	window := new(app.Window)
 	appState, err := state.NewAppState(window, locale)
 	if err != nil {
-		lg.Error("Failed to create and AppState", "err", err)
+		lg.Error("Failed to create an AppState", err)
 		lg.DumpLogs()
-		return
+		os.Exit(1)
 	}
-	repeatApp := newApp(&appState)
+	repeatApp := newApp(&appState, lg)
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -46,11 +46,11 @@ func main() {
 		window.Option(app.Size(unit.Dp(1000), unit.Dp(700)))
 		err := run(window, repeatApp)
 		if err != nil {
-			lg.Error("Window is prematurely closed", "err", err)
+			lg.Warn("Window is prematurely closed", "err", err)
 		}
 		err = configs.SaveLocale(repeatApp.i18nSwitcher.Active.Lang.Tag())
 		if err != nil {
-			lg.Error("Failed to save i18n preference", "err", err)
+			lg.Error("Failed to save i18n preference", err)
 		}
 		lg.DumpLogs()
 		os.Exit(0)

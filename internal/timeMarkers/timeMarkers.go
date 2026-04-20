@@ -76,7 +76,6 @@ func (t *TimeMarkers) NewMarker(samples int) *TimeMarker {
 
 func (t *TimeMarkers) AttachNewMarker(newT TimeMarker) bool {
 	if len(*t)+1 > Limit {
-		// TODO: display error
 		return false
 	}
 	newT.EditorTags = EditorTags{

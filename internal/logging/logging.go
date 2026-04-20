@@ -40,8 +40,8 @@ func (l Logger) Warn(msg string, args ...any) {
 	l.slog.Warn(msg, args...)
 }
 
-func (l Logger) Error(msg string, args ...any) {
-	l.slog.Error(msg, args...)
+func (l Logger) Error(msg string, err error) {
+	l.slog.Error(msg, "err", err)
 	// NOTE: start goroutine to dump logs instead
 	l.ring.SeenErr = true
 }
@@ -83,6 +83,6 @@ func (l Logger) dumpReport(ver string) {
 }
 
 func (l Logger) DumpReport() {
-	l.Error(string(debug.Stack()))
+	l.Error("CRASH STACK", fmt.Errorf("%s", string(debug.Stack())))
 	l.dumpReport(l.appVer)
 }

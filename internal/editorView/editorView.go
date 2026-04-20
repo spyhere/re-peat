@@ -10,6 +10,7 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/common"
+	"github.com/spyhere/re-peat/internal/logging"
 	"github.com/spyhere/re-peat/internal/state"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
@@ -26,10 +27,12 @@ type EditorProps struct {
 	MonoSamples   []float32
 	*tm.TimeMarkers
 	State *state.AppState
+	Lg    logging.Logger
 }
 
 func NewEditor(props EditorProps) Editor {
 	return Editor{
+		lg:            props.Lg,
 		monoSamples:   props.MonoSamples,
 		playheadUpd:   playheadInitDur,
 		cache:         newCache(),
@@ -57,7 +60,9 @@ const (
 	modeMDrag
 )
 
+// TODO: Remove redundant pointers
 type Editor struct {
+	lg            logging.Logger
 	cachedFile    string
 	mode          interactionMode
 	cursor        pointer.Cursor
@@ -141,14 +146,18 @@ func (ed *Editor) MakePeakMap() {
 func (ed *Editor) playheadPosFromX(posX float32) {
 	pxPerSec := float32(ed.AudioMeta.SampleRate) / float32(ed.scroll.samplesPerPx)
 	seconds := (posX / pxPerSec) + (float32(ed.scroll.leftB) / float32(ed.AudioMeta.SampleRate))
-	// TODO: handle error here
-	seekSamples, _ := ed.Player.Search(seconds)
+	seekSamples, err := ed.Player.Search(seconds)
+	if err != nil {
+		ed.lg.Error("Editor: player search", err)
+	}
 	ed.Playhead.Set(seekSamples)
 }
 
 func (ed *Editor) setPlayhead(samples int) {
-	// TODO: handle error here
-	seekSamples, _ := ed.Player.Set(samples)
+	seekSamples, err := ed.Player.Set(samples)
+	if err != nil {
+		ed.lg.Error("Editor: player set", err)
+	}
 	ed.Playhead.Set(seekSamples)
 }
 
@@ -238,6 +247,7 @@ func (ed *Editor) listenToPlayerUpdates() {
 	ed.Playhead.Samples = ed.Player.GetReadAmount()
 }
 
+// TODO: Hide create button when markers limit is reached
 func (ed *Editor) isCreateButtonVisible() bool {
 	return ed.mode == modeMLife || ed.mode == modeMCreateIntent || ed.mode == modeMDeleteIntent
 }
