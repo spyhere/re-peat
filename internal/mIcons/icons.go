@@ -33,4 +33,5 @@ var (
 	CommentInsert    = newIcon(icons.EditorInsertComment)
 	Folder           = newIcon(icons.FileFolder)
 	Save             = newIcon(icons.ContentSave)
+	Info             = newIcon(icons.ActionInfo)
 )
