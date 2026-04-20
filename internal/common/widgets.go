@@ -16,6 +16,7 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/i18n"
+	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
@@ -614,6 +615,7 @@ type dialogButton struct {
 	IsHidden bool
 }
 
+// NOTE: This is not needed
 type dialogType int
 
 const (
@@ -650,7 +652,20 @@ func (d *Dialog) SetIconColor(c color.NRGBA) {
 	d.iconC = c
 }
 
+func (d *Dialog) Info(th *theme.RepeatTheme, title string, w func(gtx layout.Context) layout.Dimensions) {
+	d.CancelProps = dialogButton{}
+	d.OkProps = dialogButton{}
+	d.th = th
+	d.title = title
+	d.content = w
+	d.icon = micons.Info
+	d.iconC = th.Palette.Mimosa
+	d.CancelProps.IsHidden = true
+}
+
 func (d *Dialog) Basic(th *theme.RepeatTheme, title string, w func(gtx layout.Context) layout.Dimensions) {
+	d.CancelProps = dialogButton{}
+	d.OkProps = dialogButton{}
 	d.variant = dialogBasic
 	d.th = th
 	d.title = title

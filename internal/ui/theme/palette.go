@@ -96,6 +96,7 @@ var repeatPalette = palette{
 			Tick10s: white,
 		},
 	},
+	Mimosa: mimosa,
 }
 
 var (
@@ -127,6 +128,7 @@ type palette struct {
 	Project       projectPalette
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette
+	Mimosa        color.NRGBA
 }
 type comboOptionStatesPalette struct {
 	Hovered comboOptionPalette
