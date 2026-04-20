@@ -40,9 +40,10 @@ func newApp(appState *state.AppState) *App {
 	appInstance.editorView = ed
 	commonI18n := appInstance.I18n.Common
 	go func() {
+		appState.NotifyCrashReportsOnStartup()
 		for range appState.Lg.DumpDoneCh {
 			body := fmt.Sprintf(commonI18n.LogsDumpedBody, logging.LogReportFileName)
-			appState.Prompter.Tell(commonI18n.LogsDumpedTitle, body, commonI18n.LogsDumpedOk)
+			appState.Prompter.Tell(commonI18n.LogsDumpedTitle, body, commonI18n.InfoDialogOk)
 			// Intentionally block DumpDoneCh to stop spamming with the same error logs (dump + notification blocked)
 			time.Sleep(logDumpCooldown)
 		}

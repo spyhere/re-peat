@@ -32,9 +32,11 @@ type Generic struct {
 }
 
 type Common struct {
+	CrashFoundBody  string
+	CrashFoundTitle string
+	InfoDialogOk    string
 	LoadingFile     string
 	LogsDumpedBody  string
-	LogsDumpedOk    string
 	LogsDumpedTitle string
 }
 

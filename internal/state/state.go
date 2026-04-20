@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gioui.org/app"
 	"gioui.org/x/explorer"
@@ -281,4 +282,19 @@ func (a *AppState) MarkersSaveAs() {
 		a.updateMarkersMeta(filePath)
 		a.Lg.Info("Markers saved as")
 	})
+}
+
+func (a *AppState) NotifyCrashReportsOnStartup() {
+	matches, err := filepath.Glob(logging.CrashReportFileName + "*.txt")
+	if err != nil {
+		a.Lg.Error("Unreachable", err)
+		return
+	}
+	if len(matches) == 0 {
+		return
+	}
+	commonI18n := a.I18n.Common
+	reports := strings.Join(matches, "\n")
+	body := fmt.Sprintf(commonI18n.CrashFoundBody, len(matches), reports)
+	a.Prompter.Tell(commonI18n.CrashFoundTitle, body, commonI18n.InfoDialogOk)
 }
