@@ -28,13 +28,13 @@ func main() {
 		lg.Warn("Failed to get locale", "err", err)
 	}
 	window := new(app.Window)
-	appState, err := state.NewAppState(window, locale)
+	appState, err := state.NewAppState(window, locale, lg)
 	if err != nil {
 		lg.Error("Failed to create an AppState", err)
 		lg.DumpLogs()
 		os.Exit(1)
 	}
-	repeatApp := newApp(&appState, lg)
+	repeatApp := newApp(&appState)
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {

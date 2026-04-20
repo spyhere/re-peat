@@ -15,6 +15,7 @@ import (
 	"github.com/spyhere/re-peat/internal/filemanager"
 	"github.com/spyhere/re-peat/internal/filters"
 	"github.com/spyhere/re-peat/internal/i18n"
+	"github.com/spyhere/re-peat/internal/logging"
 	p "github.com/spyhere/re-peat/internal/player"
 	"github.com/spyhere/re-peat/internal/playhead"
 	"github.com/spyhere/re-peat/internal/prompt"
@@ -26,12 +27,13 @@ const (
 	defaultPlayerVol = 0.5
 )
 
-func NewAppState(window *app.Window, locale string) (AppState, error) {
+func NewAppState(window *app.Window, locale string, lg logging.Logger) (AppState, error) {
 	th, err := theme.New()
 	if err != nil {
 		return AppState{}, err
 	}
 	return AppState{
+		Lg:          lg,
 		I18n:        i18n.NewI18n(i18n.Parse(locale)),
 		Th:          th,
 		ChipsFilter: filters.NewChipsFilter(100), // TODO: think about centralized way of capacity constant
@@ -43,6 +45,7 @@ func NewAppState(window *app.Window, locale string) (AppState, error) {
 }
 
 type AppState struct {
+	Lg          logging.Logger
 	I18n        i18n.State
 	Th          *theme.RepeatTheme
 	ChipsFilter filters.ChipsFilter

@@ -8,7 +8,6 @@ import (
 	"gioui.org/layout"
 	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/common"
-	"github.com/spyhere/re-peat/internal/logging"
 	"github.com/spyhere/re-peat/internal/state"
 	tm "github.com/spyhere/re-peat/internal/timeMarkers"
 )
@@ -21,14 +20,12 @@ const (
 type Props struct {
 	TimeMarkers *tm.TimeMarkers
 	State       *state.AppState
-	Lg          logging.Logger
 }
 
 func NewMarkersView(props Props) MarkersView {
 	fm := &common.FocusManager{}
 	mView := MarkersView{
 		AppState:      props.State,
-		lg:            props.Lg,
 		hotKeyBuf:     make([]rune, 0, selectionRuneLimit),
 		searchbar:     &common.Inputable{Focuser: fm},
 		fm:            fm,
@@ -81,7 +78,6 @@ const (
 // TODO: Remove redundant pointers
 type MarkersView struct {
 	*state.AppState
-	lg            logging.Logger
 	draftMarker   tm.TimeMarker
 	markerInPlay  *tm.TimeMarker
 	table         *common.Table[*tm.TimeMarker]
@@ -120,7 +116,7 @@ func (m *MarkersView) toggleMarker(curMarker *tm.TimeMarker) {
 func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
 	m.markerInPlay = curMarker
 	if _, err := m.Player.Set(curMarker.Samples); err != nil {
-		m.lg.Error("Markers: player set", err)
+		m.Lg.Error("Markers: player set", err)
 	}
 	m.Playhead.Set(curMarker.Samples)
 	m.Player.Play()
@@ -171,7 +167,7 @@ func (m *MarkersView) replayMarkers() {
 		m.Player.Pause()
 	} else {
 		if _, err := m.Player.Set(0); err != nil {
-			m.lg.Error("Markers: player set", err)
+			m.Lg.Error("Markers: player set", err)
 		}
 		m.Playhead.Set(0)
 		m.Player.Play()
@@ -219,7 +215,7 @@ func (m *MarkersView) cancelDialog() {
 	case edit:
 		m.markerDialog.cancelEdit()
 	}
-	m.lg.Info("Markers: cancel dialog")
+	m.Lg.Info("Markers: cancel dialog")
 	m.Dialog.Hide()
 	m.dialogOwner = none
 }
@@ -237,7 +233,7 @@ func (m *MarkersView) confirmDialog() {
 	case deleteAll:
 		m.confirmDeleteAll()
 	}
-	m.lg.Info("Markers: confirm dialog")
+	m.Lg.Info("Markers: confirm dialog")
 	m.Dialog.Hide()
 	m.dialogOwner = none
 }

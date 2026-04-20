@@ -30,7 +30,7 @@ func (a *App) dispatchButtonsEvents(gtx layout.Context) {
 				case pointer.Leave:
 					a.buttons.stopHover(it)
 				case pointer.Press:
-					a.lg.Info("Switching to new tab", "prev", a.selectedTab.String(), "cur", it.tab.String())
+					a.Lg.Info("Switching to new tab", "prev", a.selectedTab.String(), "cur", it.tab.String())
 					a.selectedTab = it.tab
 				}
 			},
