@@ -16,16 +16,16 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func newMarkerDialog(tagLimit int, th *theme.RepeatTheme, a audio.AudioMeta) markerDialog {
+func newMarkerDialog(tagsDefaultAmount int, th *theme.RepeatTheme, a audio.AudioMeta) markerDialog {
 	fm := &common.FocusManager{}
 	return markerDialog{
 		a:          a,
 		nameField:  &common.Inputable{Focuser: fm},
 		timeField:  &common.Inputable{Focuser: fm},
 		tagsField:  new(common.Comboboxable).WithFocusManager(fm),
-		allTags:    make([]string, tagLimit),
-		tags:       make([]string, tagLimit),
-		tagOptions: make([]string, 0, tagLimit),
+		allTags:    make([]string, tagsDefaultAmount),
+		tags:       make([]string, tagsDefaultAmount),
+		tagOptions: make([]string, 0, tagsDefaultAmount),
 		focuser:    fm,
 		th:         th,
 	}

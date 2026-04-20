@@ -15,7 +15,7 @@ import (
 
 const (
 	selectionRuneLimit = 3
-	globalChipsLimit   = 100
+	chipsDefaultAmount = 100
 )
 
 type Props struct {
@@ -33,8 +33,8 @@ func NewMarkersView(props Props) MarkersView {
 		searchbar:     &common.Inputable{Focuser: fm},
 		fm:            fm,
 		enabledTagsLs: &widget.List{},
-		markerDialog:  newMarkerDialog(globalChipsLimit, props.State.Th, props.State.AudioMeta),
-		tagsDialog:    newTagsDialog(globalChipsLimit),
+		markerDialog:  newMarkerDialog(chipsDefaultAmount, props.State.Th, props.State.AudioMeta),
+		tagsDialog:    newTagsDialog(chipsDefaultAmount),
 		commentDialog: newCommentDialog(props.State.Th),
 	}
 	table := common.NewTable(common.TableProps[*tm.TimeMarker]{
