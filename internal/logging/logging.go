@@ -1,7 +1,6 @@
 package logging
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -29,7 +28,7 @@ func NewLogger(version string, size int) Logger {
 	}
 	go func() {
 		for range l.dumpCh {
-			l.dumpLogs()
+			l.dumpFile(LogReportFileName)
 			dumpDone <- struct{}{}
 		}
 	}()
@@ -64,36 +63,19 @@ func (l Logger) Debug(msg string, args ...any) {
 	l.slog.Debug(msg, args...)
 }
 
-func (l Logger) dumpLogs() {
+func (l Logger) dumpFile(filePrefix string) {
 	now := time.Now()
-	f, _ := os.Create(fmt.Sprintf("%v-%v.json", LogReportFileName, now.Unix()))
+	f, _ := os.Create(fmt.Sprintf("%v-%v.txt", filePrefix, now.Unix()))
 	defer f.Close()
 
 	fmt.Fprintf(f, "Version: %v\nOS: %v\nTime: %v\n\n", l.appVer, runtime.GOOS, now.Format(timeFormat))
 	f.Write(l.ring.snapshot())
-}
-
-func (l Logger) dumpReport(ver string) {
-	now := time.Now()
-	f, _ := os.Create(fmt.Sprintf("%v-%v.json", CrashReportFileName, now.Unix()))
-	defer f.Close()
-
-	report := struct {
-		Version string
-		OS      string
-		Time    string
-		Trace   []byte
-	}{
-		Version: ver,
-		OS:      runtime.GOOS,
-		Time:    now.Format(timeFormat),
-		Trace:   l.ring.snapshot(),
+	if filePrefix == CrashReportFileName {
+		f.WriteString("\n")
+		f.Write(debug.Stack())
 	}
-	encoder := json.NewEncoder(f)
-	encoder.Encode(&report)
 }
 
 func (l Logger) DumpReport() {
-	l.Error("CRASH STACK", fmt.Errorf("%s", string(debug.Stack())))
-	l.dumpReport(l.appVer)
+	l.dumpFile(CrashReportFileName)
 }
