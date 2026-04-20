@@ -219,6 +219,7 @@ func (m *MarkersView) cancelDialog() {
 	case edit:
 		m.markerDialog.cancelEdit()
 	}
+	m.lg.Info("Markers: cancel dialog")
 	m.Dialog.Hide()
 	m.dialogOwner = none
 }
@@ -236,6 +237,7 @@ func (m *MarkersView) confirmDialog() {
 	case deleteAll:
 		m.confirmDeleteAll()
 	}
+	m.lg.Info("Markers: confirm dialog")
 	m.Dialog.Hide()
 	m.dialogOwner = none
 }

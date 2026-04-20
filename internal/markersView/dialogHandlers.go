@@ -44,6 +44,7 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 	if curMarker == nil {
 		return
 	}
+	m.lg.Info("Markers: open marker dialog")
 	m.dialogOwner = owner
 	if owner == create {
 		m.markerDialog.focuser.RequestFocus(m.markerDialog.nameField)
@@ -57,6 +58,7 @@ func (m *MarkersView) openMarkerDialog(curMarker *tm.TimeMarker, owner dialogOwn
 }
 
 func (m *MarkersView) openCommentDialog(curMarker *tm.TimeMarker) {
+	m.lg.Info("Markers: open comment dialog")
 	m.dialogOwner = comment
 	m.commentDialog.prepareForOpening(curMarker, m.I18n)
 	m.Dialog.Basic(m.Th, curMarker.Name, func(gtx layout.Context) layout.Dimensions {
@@ -72,6 +74,7 @@ func (m *MarkersView) confirmComment() {
 const maxFilterW unit.Dp = 350
 
 func (m *MarkersView) openTagsFilterDialog() {
+	m.lg.Info("Markers: open tags filter dialog")
 	m.dialogOwner = tagFilter
 	m.ChipsFilter.Recreate(m.TimeMarkers)
 	filterChips := m.tagsDialog.createFreshChips(m.ChipsFilter.All, m.ChipsFilter.EnabledMap)
@@ -90,6 +93,7 @@ func (m *MarkersView) clearTagFilter() {
 }
 
 func (m *MarkersView) openDeleteAllDialog() {
+	m.lg.Info("Markers: open delete all dialog")
 	m.dialogOwner = deleteAll
 	m.Dialog.SetIcon(micons.Warning)
 	m.Dialog.Basic(m.Th, m.I18n.Markers.MDeleteALlTitle, func(gtx layout.Context) layout.Dimensions {

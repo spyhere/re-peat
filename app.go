@@ -43,6 +43,19 @@ func newApp(appState *state.AppState, lg logging.Logger) *App {
 
 type tab int
 
+func (t tab) String() string {
+	switch t {
+	case Project:
+		return "Project"
+	case Markers:
+		return "Markers"
+	case Editor:
+		return "Editor"
+	default:
+		panic("unreachable")
+	}
+}
+
 const (
 	Project tab = iota
 	Markers
