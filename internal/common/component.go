@@ -144,8 +144,15 @@ type Box struct {
 }
 
 func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
+	inner := b.Size
+	if b.StrokeW != 0 {
+		half := gtx.Dp(b.StrokeW) / 2
+		inner.Min = inner.Min.Add(image.Pt(half, half))
+		inner.Max = inner.Max.Sub(image.Pt(half, half))
+	}
+
 	r := b.R
-	rrect := clip.RRect{Rect: b.Size, SE: r.SE, SW: r.SW, NE: r.NE, NW: r.NW}
+	rrect := clip.RRect{Rect: inner, SE: r.SE, SW: r.SW, NE: r.NE, NW: r.NW}
 	rrectStack := rrect.Push(gtx.Ops)
 	paint.ColorOp{Color: b.Color}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
@@ -165,13 +172,7 @@ func DrawBox(gtx layout.Context, b Box) layout.Dimensions {
 	}
 	rrectStack.Pop()
 
-	// TODO: Fix stroke visual glitch
 	if b.StrokeW != 0 {
-		half := int(float32(gtx.Dp(b.StrokeW)) / 2)
-		rrect.Rect.Min.X += half
-		rrect.Rect.Min.Y += half
-		rrect.Rect.Max.X -= half
-		rrect.Rect.Max.Y -= half
 		stroke := clip.Stroke{
 			Path:  rrect.Path(gtx.Ops),
 			Width: float32(gtx.Dp(b.StrokeW)),
