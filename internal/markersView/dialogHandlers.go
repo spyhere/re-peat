@@ -20,9 +20,11 @@ func (m *MarkersView) dialogUpdate() {
 }
 
 func (m *MarkersView) confirmCreate() {
+	if !m.TimeMarkers.AttachNewMarker(m.draftMarker) {
+		return
+	}
 	m.markerDialog.executeConfirm(m.AudioMeta)
 	m.ChipsFilter.UpdateAll(m.draftMarker.CategoryTags)
-	m.TimeMarkers.AttachNewMarker(m.draftMarker)
 	m.draftMarker = tm.TimeMarker{}
 }
 func (m *MarkersView) confirmEdit() {
