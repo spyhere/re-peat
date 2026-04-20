@@ -35,7 +35,9 @@ func (p *Prompter) Ask(title, question string) bool {
 // This blocks goroutine
 func (p *Prompter) Tell(title, msg, ok string) bool {
 	p.Dialog.Info(p.th, title, func(gtx layout.Context) layout.Dimensions {
-		return material.Body2(p.th.Theme, msg).Layout(gtx)
+		txtStyles := material.Body2(p.th.Theme, msg)
+		txtStyles.TextSize = 16
+		return txtStyles.Layout(gtx)
 	})
 	if ok != "" {
 		p.Dialog.OkProps.Text = ok
