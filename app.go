@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"gioui.org/layout"
 	"github.com/spyhere/re-peat/internal/common"
 	editorview "github.com/spyhere/re-peat/internal/editorView"
+	"github.com/spyhere/re-peat/internal/logging"
 	markersview "github.com/spyhere/re-peat/internal/markersView"
 	projectview "github.com/spyhere/re-peat/internal/projectView"
 	"github.com/spyhere/re-peat/internal/state"
@@ -39,7 +41,8 @@ func newApp(appState *state.AppState) *App {
 	commonI18n := appInstance.I18n.Common
 	go func() {
 		for range appState.Lg.DumpDoneCh {
-			appState.Prompter.Tell(commonI18n.LogsDumpedTitle, commonI18n.LogsDumpedBody, commonI18n.LogsDumpedOk)
+			body := fmt.Sprintf(commonI18n.LogsDumpedBody, logging.LogReportFileName)
+			appState.Prompter.Tell(commonI18n.LogsDumpedTitle, body, commonI18n.LogsDumpedOk)
 			// Intentionally block DumpDoneCh to stop spamming with the same error logs (dump + notification blocked)
 			time.Sleep(logDumpCooldown)
 		}

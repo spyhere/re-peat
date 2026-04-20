@@ -12,8 +12,8 @@ import (
 
 const (
 	timeFormat          = "15:04:05-02/01/06"
-	logReportFileName   = "repeat_logs"
-	crashReportFileName = "repeat_crashreport"
+	LogReportFileName   = "repeat_logs"
+	CrashReportFileName = "repeat_crashreport"
 )
 
 func NewLogger(version string, size int) Logger {
@@ -66,7 +66,7 @@ func (l Logger) Debug(msg string, args ...any) {
 
 func (l Logger) dumpLogs() {
 	now := time.Now()
-	f, _ := os.Create(fmt.Sprintf("%v-%v.json", logReportFileName, now.Unix()))
+	f, _ := os.Create(fmt.Sprintf("%v-%v.json", LogReportFileName, now.Unix()))
 	defer f.Close()
 
 	fmt.Fprintf(f, "Version: %v\nOS: %v\nTime: %v\n\n", l.appVer, runtime.GOOS, now.Format(timeFormat))
@@ -75,7 +75,7 @@ func (l Logger) dumpLogs() {
 
 func (l Logger) dumpReport(ver string) {
 	now := time.Now()
-	f, _ := os.Create(fmt.Sprintf("%v-%v.json", crashReportFileName, now.Unix()))
+	f, _ := os.Create(fmt.Sprintf("%v-%v.json", CrashReportFileName, now.Unix()))
 	defer f.Close()
 
 	report := struct {
