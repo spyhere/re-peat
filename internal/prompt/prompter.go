@@ -32,6 +32,18 @@ func (p *Prompter) Ask(title, question string) bool {
 	return <-p.ch
 }
 
+// This blocks goroutine
+func (p *Prompter) Tell(title, msg, ok string) bool {
+	p.Dialog.Info(p.th, title, func(gtx layout.Context) layout.Dimensions {
+		return material.Body2(p.th.Theme, msg).Layout(gtx)
+	})
+	if ok != "" {
+		p.Dialog.OkProps.Text = ok
+	}
+	p.Dialog.Show()
+	return <-p.ch
+}
+
 // Should be at the end of the frame, since it uses dialog
 func (p *Prompter) Layout(gtx layout.Context) {
 	p.Dialog.Update(gtx)
