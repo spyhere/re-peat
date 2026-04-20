@@ -19,25 +19,29 @@ const (
 func NewLogger(version string, size int) Logger {
 	rb := newRingBuffer(size)
 	writer := logWriter(rb)
+	dumpDone := make(chan struct{})
 	l := Logger{
-		appVer: version,
-		slog:   slog.New(slog.NewJSONHandler(writer, nil)),
-		ring:   rb,
-		dumpCh: make(chan struct{}),
+		appVer:     version,
+		slog:       slog.New(slog.NewJSONHandler(writer, nil)),
+		ring:       rb,
+		dumpCh:     make(chan struct{}),
+		DumpDoneCh: dumpDone,
 	}
 	go func() {
 		for range l.dumpCh {
 			l.dumpLogs()
+			dumpDone <- struct{}{}
 		}
 	}()
 	return l
 }
 
 type Logger struct {
-	appVer string
-	dumpCh chan struct{}
-	slog   *slog.Logger
-	ring   *ringBuffer
+	appVer     string
+	dumpCh     chan struct{}
+	DumpDoneCh chan struct{}
+	slog       *slog.Logger
+	ring       *ringBuffer
 }
 
 func (l Logger) Info(msg string, args ...any) {

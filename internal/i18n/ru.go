@@ -2,7 +2,10 @@ package i18n
 
 var ruStr = Strings{
 	Common: Common{
-		LoadingFile: "Загрузка файла...",
+		LoadingFile:     "Загрузка файла...",
+		LogsDumpedBody:  "Файл логов с ошибками был сохранён в той же папке, где находится приложение.\nПожалуйста, отправьте этот файл разработчику, чтобы помочь диагностировать проблему.",
+		LogsDumpedOk:    "Понятно!",
+		LogsDumpedTitle: "Произошла непредвиденная ошибка",
 	},
 	Generic: Generic{
 		Amount:        "Количество",

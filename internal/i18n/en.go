@@ -2,7 +2,10 @@ package i18n
 
 var enStr = Strings{
 	Common: Common{
-		LoadingFile: "Loading file...",
+		LoadingFile:     "Loading file...",
+		LogsDumpedBody:  "An error log file has been saved in the same folder as the application.\nPlease share this file with the developer to help diagnose the issue.",
+		LogsDumpedOk:    "Got it!",
+		LogsDumpedTitle: "Unexpected error happened",
 	},
 	Generic: Generic{
 		Amount:        "Amount",

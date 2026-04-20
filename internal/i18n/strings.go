@@ -32,7 +32,10 @@ type Generic struct {
 }
 
 type Common struct {
-	LoadingFile string
+	LoadingFile     string
+	LogsDumpedBody  string
+	LogsDumpedOk    string
+	LogsDumpedTitle string
 }
 
 type ProjectView struct {

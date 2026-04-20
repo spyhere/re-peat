@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"time"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
@@ -12,6 +13,8 @@ import (
 	projectview "github.com/spyhere/re-peat/internal/projectView"
 	"github.com/spyhere/re-peat/internal/state"
 )
+
+const logDumpCooldown = time.Minute * 5
 
 func newApp(appState *state.AppState) *App {
 	fm := &common.FocusManager{}
@@ -33,6 +36,14 @@ func newApp(appState *state.AppState) *App {
 		OnStopEditCb:  appInstance.onStopMarkerEdit,
 	})
 	appInstance.editorView = ed
+	commonI18n := appInstance.I18n.Common
+	go func() {
+		for range appState.Lg.DumpDoneCh {
+			appState.Prompter.Tell(commonI18n.LogsDumpedTitle, commonI18n.LogsDumpedBody, commonI18n.LogsDumpedOk)
+			// Intentionally block DumpDoneCh to stop spamming with the same error logs (dump + notification blocked)
+			time.Sleep(logDumpCooldown)
+		}
+	}()
 	return appInstance
 }
 
