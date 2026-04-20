@@ -67,6 +67,9 @@ func (p *Player) SetAudio(f *os.File) error {
 }
 
 func (p *Player) SetVolume(volume float64) {
+	if p.volume == nil {
+		return
+	}
 	speaker.Lock()
 	defer speaker.Unlock()
 	if volume <= 0 {

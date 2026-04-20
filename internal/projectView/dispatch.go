@@ -8,36 +8,20 @@ import (
 func (pv *ProjectView) dispatch(gtx layout.Context) {
 	if pv.audioLoadCl.Clicked(gtx) {
 		pv.audioLoadCl = widget.Clickable{}
-		if err := pv.AudioLoad(); err != nil {
-			pv.Lg.Error("Project: audio load", err)
-			return
-		}
-		pv.Lg.Info("Project: audio loaded")
+		pv.AudioLoad()
 	}
 
 	if pv.markersLoadCl.Clicked(gtx) {
 		pv.markersLoadCl = widget.Clickable{}
-		if err := pv.MarkersLoad(); err != nil {
-			pv.Lg.Error("Project: markers load", err)
-			return
-		}
-		pv.Lg.Info("Project: markers loaded")
+		pv.MarkersLoad()
 	}
 
 	if pv.markersSaveCl.Clicked(gtx) {
-		if err := pv.MarkersSave(); err != nil {
-			pv.Lg.Error("Project: markers save", err)
-			return
-		}
-		pv.Lg.Info("Project: markers saved")
+		pv.MarkersSave()
 	}
 
 	if pv.markersSaveAsCl.Clicked(gtx) {
 		pv.markersSaveAsCl = widget.Clickable{}
-		if err := pv.MarkersSaveAs(); err != nil {
-			pv.Lg.Error("Project: markers save as", err)
-			return
-		}
-		pv.Lg.Info("Project: markers saved as")
+		pv.MarkersSaveAs()
 	}
 }
