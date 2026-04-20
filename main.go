@@ -31,7 +31,6 @@ func main() {
 	appState, err := state.NewAppState(window, locale, lg)
 	if err != nil {
 		lg.Error("Failed to create an AppState", err)
-		lg.DumpLogs()
 		os.Exit(1)
 	}
 	repeatApp := newApp(&appState)
@@ -52,7 +51,6 @@ func main() {
 		if err != nil {
 			lg.Error("Failed to save i18n preference", err)
 		}
-		lg.DumpLogs()
 		os.Exit(0)
 	}()
 	app.Main()

@@ -19,15 +19,23 @@ const (
 func NewLogger(version string, size int) Logger {
 	rb := newRingBuffer(size)
 	writer := logWriter(rb)
-	return Logger{
+	l := Logger{
 		appVer: version,
 		slog:   slog.New(slog.NewJSONHandler(writer, nil)),
 		ring:   rb,
+		dumpCh: make(chan struct{}),
 	}
+	go func() {
+		for range l.dumpCh {
+			l.dumpLogs()
+		}
+	}()
+	return l
 }
 
 type Logger struct {
 	appVer string
+	dumpCh chan struct{}
 	slog   *slog.Logger
 	ring   *ringBuffer
 }
@@ -42,18 +50,17 @@ func (l Logger) Warn(msg string, args ...any) {
 
 func (l Logger) Error(msg string, err error) {
 	l.slog.Error(msg, "err", err)
-	// NOTE: start goroutine to dump logs instead
-	l.ring.SeenErr = true
+	select {
+	case l.dumpCh <- struct{}{}:
+	default:
+	}
 }
 
 func (l Logger) Debug(msg string, args ...any) {
 	l.slog.Debug(msg, args...)
 }
 
-func (l Logger) DumpLogs() {
-	if !l.ring.SeenErr {
-		return
-	}
+func (l Logger) dumpLogs() {
 	now := time.Now()
 	f, _ := os.Create(fmt.Sprintf("%v-%v.json", logReportFileName, now.Unix()))
 	defer f.Close()
