@@ -243,9 +243,9 @@ func (ed *Editor) listenToPlayerUpdates() {
 	ed.Playhead.Samples = ed.Player.GetReadAmount()
 }
 
-// TODO: Hide create button when markers limit is reached
 func (ed *Editor) isCreateButtonVisible() bool {
-	return ed.mode == modeMLife || ed.mode == modeMCreateIntent || ed.mode == modeMDeleteIntent
+	correctMode := ed.mode == modeMLife || ed.mode == modeMCreateIntent || ed.mode == modeMDeleteIntent
+	return !ed.TimeMarkers.IsFull() && correctMode
 }
 
 func (ed *Editor) getMI9n(m *tm.TimeMarker) mInteraction {
@@ -278,4 +278,8 @@ func (ed *Editor) updateDifferedState() {
 
 func (ed *Editor) isDisabled() bool {
 	return !ed.HasAudioLoaded() || ed.AppState.IsLoading()
+}
+
+func (ed *Editor) isCreateButtonEnabled() bool {
+	return !ed.TimeMarkers.IsFull()
 }
