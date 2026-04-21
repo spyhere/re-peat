@@ -11,7 +11,12 @@ import (
 	"github.com/spyhere/re-peat/internal/state"
 )
 
-var version = "dev"
+var (
+	tag    = "dev"
+	commit = "none"
+	date   = "unknown"
+)
+var version = tag + "|" + commit + "|" + date
 
 const logSize = 128 * 1024
 
