@@ -3,32 +3,30 @@ package fonts
 import (
 	"log"
 	"math"
-	"os"
 	"path/filepath"
 	"strings"
+
+	"embed"
 
 	"gioui.org/font"
 	"gioui.org/font/opentype"
 	"gioui.org/text"
 )
 
-const fonstDir = "./fonts"
+//go:embed ttfs/*.ttf
+var ttfs embed.FS
 
 func LoadFonts(faces []text.FontFace) ([]text.FontFace, error) {
-	fontPath, err := filepath.Abs(fonstDir)
-	if err != nil {
-		return []text.FontFace{}, err
-	}
-	fonts, err := os.ReadDir(fontPath)
+	fonts, err := ttfs.ReadDir("ttfs")
 	if err != nil {
 		return []text.FontFace{}, err
 	}
 	for _, it := range fonts {
-		absPath := filepath.Join(fontPath, it.Name())
-		if !strings.HasSuffix(absPath, ".ttf") {
+		if it.IsDir() {
 			continue
 		}
-		data, err := os.ReadFile(absPath)
+
+		data, err := ttfs.ReadFile(filepath.Join("ttfs", it.Name()))
 		if err != nil {
 			return []text.FontFace{}, err
 		}
@@ -37,7 +35,7 @@ func LoadFonts(faces []text.FontFace) ([]text.FontFace, error) {
 			return []text.FontFace{}, err
 		}
 
-		fontName := strings.ToLower(filepath.Base(absPath))
+		fontName := strings.ToLower(it.Name())
 		newFont := newFace.Font()
 		switch {
 		case strings.Contains(fontName, "extrabold"):
