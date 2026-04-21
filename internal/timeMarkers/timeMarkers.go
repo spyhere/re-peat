@@ -145,6 +145,10 @@ func (t *TimeMarkers) IsEmpty() bool {
 	return len(*t) == 0
 }
 
+func (t *TimeMarkers) IsFull() bool {
+	return len(*t) >= Limit
+}
+
 func (t *TimeMarkers) SanitizeSamples(maxSamples int) {
 	for _, it := range *t {
 		if it.Samples > maxSamples {
