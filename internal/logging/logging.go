@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"time"
@@ -59,13 +60,22 @@ func (l Logger) Error(msg string, err error) {
 	}
 }
 
+func (l Logger) Crash(args ...any) {
+	l.slog.Error("CRASH", args...)
+	l.dumpFile(CrashReportFileName)
+}
+
 func (l Logger) Debug(msg string, args ...any) {
 	l.slog.Debug(msg, args...)
 }
 
+// FIX: log errors to tmp/log
 func (l Logger) dumpFile(filePrefix string) {
 	now := time.Now()
-	f, _ := os.Create(fmt.Sprintf("%v-%v.txt", filePrefix, now.Unix()))
+	filename := fmt.Sprintf("%v-%v.txt", filePrefix, now.Unix())
+	home, _ := os.UserHomeDir()
+	desktop := filepath.Join(home, "Desktop")
+	f, _ := os.Create(filepath.Join(desktop, filename))
 	defer f.Close()
 
 	fmt.Fprintf(f, "Version: %v\nOS: %v\nTime: %v\n\n", l.appVer, runtime.GOOS, now.Format(timeFormat))
@@ -74,8 +84,4 @@ func (l Logger) dumpFile(filePrefix string) {
 		f.WriteString("\n")
 		f.Write(debug.Stack())
 	}
-}
-
-func (l Logger) DumpReport() {
-	l.dumpFile(CrashReportFileName)
 }

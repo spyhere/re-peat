@@ -19,7 +19,7 @@ func main() {
 	lg := logging.NewLogger(version, logSize)
 	defer func() {
 		if r := recover(); r != nil {
-			lg.DumpReport()
+			lg.Crash("r", r)
 			os.Exit(1)
 		}
 	}()
@@ -30,14 +30,14 @@ func main() {
 	window := new(app.Window)
 	appState, err := state.NewAppState(window, locale, lg)
 	if err != nil {
-		lg.Error("Failed to create an AppState", err)
+		lg.Crash("err", err)
 		os.Exit(1)
 	}
 	repeatApp := newApp(&appState)
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				lg.DumpReport()
+				lg.Crash("r", r)
 				os.Exit(1)
 			}
 		}()
