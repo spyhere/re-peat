@@ -250,3 +250,7 @@ func (m *MarkersView) handleAddMarkerButton(gtx layout.Context) {
 func (m *MarkersView) isDisabled() bool {
 	return !m.HasAudioLoaded() || m.AppState.IsLoading()
 }
+
+func (m *MarkersView) isCreateButtonEnabled() bool {
+	return !m.TimeMarkers.IsFull()
+}

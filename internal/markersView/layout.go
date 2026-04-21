@@ -50,12 +50,13 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 		})
 	})
 
-	// TODO: disable button if markers limit is reached
 	cl := &m.createCl
 	if !gtx.Enabled() {
 		cl = &m.disabledCl
 	}
-	drawAddMarkerButton(gtx, m.Th, cl, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
+	if m.isCreateButtonEnabled() {
+		drawAddMarkerButton(gtx, m.Th, cl, gtx.Constraints.Max.X/4, topM+searchDims.Size.Y/2)
+	}
 
 	common.OffsetBy(gtx, image.Pt(0, topM+searchDims.Size.Y+20), func(gtx layout.Context) {
 		common.DrawDivider(gtx, m.Th, common.DividerProps{
