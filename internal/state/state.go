@@ -58,7 +58,7 @@ type AppState struct {
 	LoadedAFile string
 	LoadedMFile string
 	Player      *p.Player
-	MonoSamples []float32
+	MonoSamples []float32 // NOTE: Should it stay in state or moved to Editor?
 	AudioMeta   audio.AudioMeta
 	MarkersMeta tm.MarkersMeta
 	AFileMeta   filemanager.FileMeta
@@ -66,6 +66,7 @@ type AppState struct {
 	TimeMarkers tm.TimeMarkers
 	isChoosing  bool
 	isLoading   bool
+	isDecoding  bool
 }
 
 func (a *AppState) IsChoosing() bool {
@@ -73,6 +74,9 @@ func (a *AppState) IsChoosing() bool {
 }
 func (a *AppState) IsLoading() bool {
 	return a.isLoading
+}
+func (a *AppState) IsDecoding() bool {
+	return a.isDecoding
 }
 
 func (a *AppState) HasAudioLoaded() bool {
@@ -98,6 +102,22 @@ func (a *AppState) pausePlayer() {
 	}
 }
 
+func (a *AppState) DecodeAllSamples() {
+	if a.isDecoding {
+		return
+	}
+	a.isDecoding = true
+	go func() {
+		monoSamples, err := audio.FileToMonosamples(a.LoadedAFile)
+		if err != nil {
+			a.Lg.Error("Decoding samples", err)
+		}
+		a.Lg.Info("Decoded samples", "file", a.LoadedAFile)
+		a.MonoSamples = monoSamples
+		a.isDecoding = false
+	}()
+}
+
 func (a *AppState) AudioLoad() {
 	a.pausePlayer()
 	a.isChoosing = true
@@ -118,11 +138,6 @@ func (a *AppState) AudioLoad() {
 			a.isLoading = false
 		}()
 
-		monoSamples, err := audio.LoadMonoSamples(filePath)
-		if err != nil {
-			a.Lg.Error("AudioLoad", err)
-			return
-		}
 		file, err := os.Open(filePath)
 		if err != nil {
 			a.Lg.Error("AudioLoad", err)
@@ -147,7 +162,7 @@ func (a *AppState) AudioLoad() {
 			return
 		}
 		// Set everything at once only if it's happy path
-		a.MonoSamples = monoSamples
+		a.MonoSamples = a.MonoSamples[:0]
 		a.AudioMeta = audioMeta
 		a.AFileMeta = filemanager.NewFileMeta(filepath.Base(filePath), fileInfo.Size(), fileInfo.ModTime())
 		a.LoadedAFile = filePath

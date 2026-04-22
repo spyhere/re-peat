@@ -3,15 +3,14 @@ package editorview
 import (
 	"image"
 
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/widget"
 	"github.com/spyhere/re-peat/internal/common"
 )
 
 func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
-	if ed.isDisabled() {
-		gtx = gtx.Disabled()
-	}
 	ed.dispatch(gtx)
 	ed.updateDifferedState()
 	if ed.HasAudioLoaded() && ed.Player.IsPlaying() {
@@ -23,6 +22,21 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 
 	common.DrawBackground(gtx, ed.Th.Palette.Editor.Bg)
 	common.RegisterTag(gtx, &ed.tags.mLife, image.Rect(0, 0, gtx.Constraints.Max.X, ed.waveM))
+
+	if ed.LoadedAFile != "" && len(ed.MonoSamples) == 0 {
+		if ed.makeCacheCl.Clicked(gtx) {
+			ed.makeCacheCl = widget.Clickable{}
+			ed.DecodeAllSamples()
+		}
+		drawCreateCacheButton(gtx, ed.Th, &ed.makeCacheCl, ed.IsDecoding(), ed.I18n.Editor.BuildWave)
+		if ed.IsDecoding() {
+			common.DrawBlockingMessage(gtx, ed.Th, ed.I18n.Editor.BuildingWave)
+		}
+		if ed.makeCacheCl.Hovered() {
+			common.SetCursor(gtx, pointer.CursorPointer)
+		}
+		return layout.Dimensions{}
+	}
 
 	yCenter := gtx.Constraints.Max.Y / 2
 	offsetBy(gtx, image.Pt(-1, ed.waveM), func() {

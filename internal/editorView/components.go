@@ -393,3 +393,19 @@ func editingMarkerComp(gtx layout.Context, th *theme.RepeatTheme, backdropTag ev
 		markerComp(gtx, th, mProps)
 	})
 }
+
+var emptyCl = widget.Clickable{}
+
+func drawCreateCacheButton(gtx layout.Context, th *theme.RepeatTheme, cl *widget.Clickable, disabled bool, txt string) {
+	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		cl := cl
+		if disabled {
+			cl = &emptyCl
+			gtx = gtx.Disabled()
+		}
+		btn := material.Button(th.Theme, cl, txt)
+		btn.Background = th.Palette.Editor.SoundWave
+		gtx.Constraints.Min = image.Point{}
+		return btn.Layout(gtx)
+	})
+}

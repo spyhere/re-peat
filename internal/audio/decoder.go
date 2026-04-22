@@ -31,7 +31,7 @@ func Decode(f *os.File) (beep.StreamSeekCloser, beep.Format, error) {
 }
 
 // TODO: Pass slice here to avoid reallocations
-func LoadMonoSamples(path string) (monoSamples []float32, err error) {
+func FileToMonosamples(path string) (monoSamples []float32, err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return []float32{}, err

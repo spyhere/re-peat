@@ -23,14 +23,12 @@ const (
 type EditorProps struct {
 	OnStartEditCb func()
 	OnStopEditCb  func()
-	MonoSamples   []float32
 	*tm.TimeMarkers
 	State *state.AppState
 }
 
 func NewEditor(props EditorProps) Editor {
 	return Editor{
-		monoSamples:   props.MonoSamples,
 		playheadUpd:   playheadInitDur,
 		cache:         newCache(),
 		markers:       newMarkers(&props.State.TimeMarkers),
@@ -63,7 +61,6 @@ type Editor struct {
 	mode          interactionMode
 	cursor        pointer.Cursor
 	playheadUpd   time.Duration
-	monoSamples   []float32
 	cache         cache
 	markers       *markers
 	mEditor       *widget.Editor
@@ -71,12 +68,17 @@ type Editor struct {
 	tags          *tags
 	size          image.Point
 	scroll        scroll
+	makeCacheCl   widget.Clickable
+	disabledCl    widget.Clickable
 	onStartEditCb func()
 	onStopEditCb  func()
 	*state.AppState
 }
 
 func (ed *Editor) getRenderableWaves() [][2]float32 {
+	if !ed.cache.isPopulated {
+		return [][2]float32{}
+	}
 	samplesPerPx := ed.scroll.samplesPerPx
 	visibleSamples := int(samplesPerPx * float32(ed.size.X))
 	leftB := common.Clamp(0, ed.scroll.leftB, ed.AudioMeta.MonoSamplesLen-visibleSamples)
@@ -110,7 +112,7 @@ func (ed *Editor) SetSize(size image.Point) {
 // TODO: optimization - parallelise samples scan (~60 ms on resize for now)
 func (ed *Editor) MakePeakMap() {
 	isNewFile := ed.cachedFile != ed.LoadedAFile
-	if !ed.HasAudioLoaded() || (!isNewFile && ed.cache.isPopulated) {
+	if len(ed.MonoSamples) == 0 || !ed.HasAudioLoaded() || (!isNewFile && ed.cache.isPopulated) {
 		return
 	}
 	ed.cachedFile = ed.LoadedAFile
@@ -274,12 +276,4 @@ func (ed *Editor) setCursor(c pointer.Cursor) {
 
 func (ed *Editor) updateDifferedState() {
 	ed.markers.deleteDead()
-}
-
-func (ed *Editor) isDisabled() bool {
-	return !ed.HasAudioLoaded() || ed.AppState.IsLoading()
-}
-
-func (ed *Editor) isCreateButtonEnabled() bool {
-	return !ed.TimeMarkers.IsFull()
 }
