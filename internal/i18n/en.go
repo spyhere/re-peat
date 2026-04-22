@@ -48,4 +48,8 @@ var enStr = Strings{
 		MConflictLoadBody:  "These markers were initially saved for \"%s\", but currently loaded \"%s\".\nStill want to load them for this audio file?\n\nMarkers exceeding audio length will be set to 0 and have \"Redacted\" tag added.",
 		MConflictLoadTitle: "Markers loading conflict",
 	},
+	Editor: EditorView{
+		BuildWave:    "Generate waveform",
+		BuildingWave: "Generating waveform...",
+	},
 }

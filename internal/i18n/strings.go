@@ -5,6 +5,7 @@ type Strings struct {
 	Generic Generic
 	Markers MarkersView
 	Project ProjectView
+	Editor  EditorView
 }
 
 type Generic struct {
@@ -56,4 +57,9 @@ type MarkersView struct {
 	NoMatches          string
 	SearchBPlaceholder string
 	TagsFilter         string
+}
+
+type EditorView struct {
+	BuildWave    string
+	BuildingWave string
 }
