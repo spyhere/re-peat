@@ -17,6 +17,8 @@ func (m *MarkersView) dialogUpdate() {
 	if m.Dialog.IsConfirmed() {
 		m.confirmDialog()
 	}
+	m.Dialog.OkProps.Text = m.I18n.Generic.Ok
+	m.Dialog.CancelProps.Text = m.I18n.Generic.Cancel
 }
 
 func (m *MarkersView) confirmCreate() {
