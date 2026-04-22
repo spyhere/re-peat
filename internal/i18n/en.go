@@ -5,7 +5,6 @@ var enStr = Strings{
 		CrashFoundBody:  "On startup, the app found %d crash report(s) in the same folder as the application:\n%s\n\nPlease share these files with the developer to help diagnose the issue.\n\nThis message will appear on startup while these crash reports are present. You can remove them after sending them to the developer.",
 		CrashFoundTitle: "App closed unexpectedly",
 		InfoDialogOk:    "Got it!",
-		LoadingFile:     "Loading file...",
 		LogsDumpedBody:  "An error log file \"%s.json\" has been saved in the same folder as the application.\nPlease share this file with the developer to help diagnose the issue.",
 		LogsDumpedTitle: "Unexpected error happened",
 	},

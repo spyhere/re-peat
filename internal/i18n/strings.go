@@ -36,7 +36,6 @@ type Common struct {
 	CrashFoundBody  string
 	CrashFoundTitle string
 	InfoDialogOk    string
-	LoadingFile     string
 	LogsDumpedBody  string
 	LogsDumpedTitle string
 }

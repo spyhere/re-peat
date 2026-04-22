@@ -135,9 +135,5 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 	}
 
 	a.Prompter.Layout(gtx)
-
-	if a.AppState.IsLoading() {
-		common.DrawBlockingMessage(gtx, a.Th, a.I18n.Common.LoadingFile)
-	}
 	return layout.Dimensions{}
 }
