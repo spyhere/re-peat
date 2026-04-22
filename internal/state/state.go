@@ -300,7 +300,13 @@ func (a *AppState) MarkersSaveAs() {
 }
 
 func (a *AppState) NotifyCrashReportsOnStartup() {
-	matches, err := filepath.Glob(logging.CrashReportFileName + "*.txt")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		a.Lg.Error("Checking for crash", err)
+		return
+	}
+	desktop := filepath.Join(home, "Desktop")
+	matches, err := filepath.Glob(filepath.Join(desktop, logging.CrashReportFileName+"*.txt"))
 	if err != nil {
 		a.Lg.Error("Unreachable", err)
 		return
