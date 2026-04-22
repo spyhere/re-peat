@@ -308,45 +308,53 @@ func markerComp(gtx layout.Context, th *theme.RepeatTheme, mProps markerProps) l
 		passOp.Pop()
 	}
 
-	// Flag
-	var path clip.Path
-	path.Begin(gtx.Ops)
-	flagHalfW := float32(mrkSz.Pole.FlagW) / 2
-	// N
-	poleCenter := float32(mrkSz.Pole.W) / 2
-	yF := float32(-poleYPad)
-	path.MoveTo(f32.Pt(poleCenter, yF))
-	// NE
-	path.Line(f32.Pt(flagHalfW, 0))
-	// SE
-	// tan(corner) = flagH / flagW
-	notchVrtxY := int(math.Tan(mrkSz.Pole.FlagCorn) * float64(flagHalfW))
-	path.Line(f32.Pt(0, float32(mrkSz.Pole.FlagH-notchVrtxY)))
-	// S
-	path.Line(f32.Pt(-flagHalfW, float32(notchVrtxY)))
-	path.Close()
-	pathSpec := path.End()
-	paint.FillShape(gtx.Ops, col,
-		clip.Outline{Path: pathSpec}.Op(),
-	)
-	// Mirror Flag
-	t := f32.NewAffine2D(
-		-1, 0, 2*poleCenter,
-		0, 1, 0,
-	)
-	mir := op.Affine(t).Push(gtx.Ops)
-	paint.FillShape(gtx.Ops, col,
-		clip.Outline{Path: pathSpec}.Op(),
-	)
-	mir.Pop()
-	if mProps.i9n.flag {
-		iconSize := th.Sizing.Editor.Markers.Lbl.IconW
-		offsetBy(gtx, image.Pt(-int(flagHalfW), int(yF)), func() {
-			gtx.Constraints.Min.X = iconSize
-			micons.Delete.Layout(gtx, th.Palette.Editor.SoundWave)
-		})
-		flagArea := image.Rect(-int(flagHalfW), int(yF), int(flagHalfW), int(yF)+mrkSz.Pole.FlagH)
-		common.RegisterTag(gtx, &mProps.tags.Flag, flagArea)
+	flagM, _ := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+		// Flag
+		var path clip.Path
+		path.Begin(gtx.Ops)
+		flagHalfW := float32(mrkSz.Pole.FlagW) / 2
+		// N
+		poleCenter := float32(mrkSz.Pole.W) / 2
+		yF := float32(-poleYPad)
+		path.MoveTo(f32.Pt(poleCenter, yF))
+		// NE
+		path.Line(f32.Pt(flagHalfW, 0))
+		// SE
+		// tan(corner) = flagH / flagW
+		notchVrtxY := int(math.Tan(mrkSz.Pole.FlagCorn) * float64(flagHalfW))
+		path.Line(f32.Pt(0, float32(mrkSz.Pole.FlagH-notchVrtxY)))
+		// S
+		path.Line(f32.Pt(-flagHalfW, float32(notchVrtxY)))
+		path.Close()
+		pathSpec := path.End()
+		paint.FillShape(gtx.Ops, col,
+			clip.Outline{Path: pathSpec}.Op(),
+		)
+		// Mirror Flag
+		t := f32.NewAffine2D(
+			-1, 0, 2*poleCenter,
+			0, 1, 0,
+		)
+		mir := op.Affine(t).Push(gtx.Ops)
+		paint.FillShape(gtx.Ops, col,
+			clip.Outline{Path: pathSpec}.Op(),
+		)
+		mir.Pop()
+		if mProps.i9n.flag {
+			iconSize := th.Sizing.Editor.Markers.Lbl.IconW
+			offsetBy(gtx, image.Pt(-int(flagHalfW), int(yF)), func() {
+				gtx.Constraints.Min.X = iconSize
+				micons.Delete.Layout(gtx, th.Palette.Editor.SoundWave)
+			})
+			flagArea := image.Rect(-int(flagHalfW), int(yF), int(flagHalfW), int(yF)+mrkSz.Pole.FlagH)
+			common.RegisterTag(gtx, &mProps.tags.Flag, flagArea)
+		}
+		return layout.Dimensions{}
+	})
+	if mProps.i9n.hovered {
+		op.Defer(gtx.Ops, flagM)
+	} else {
+		flagM.Add(gtx.Ops)
 	}
 
 	// Label

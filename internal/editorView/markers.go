@@ -54,9 +54,7 @@ func (m *markers) isEditing() bool {
 }
 
 func (m *markers) startHover(curMarker *tm.TimeMarker) {
-	if m.hovering == nil {
-		m.hovering = curMarker
-	}
+	m.hovering = curMarker
 }
 
 func (m *markers) stopHover() {
