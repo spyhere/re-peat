@@ -2,7 +2,6 @@ package audio
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -32,15 +31,15 @@ func Decode(f *os.File) (beep.StreamSeekCloser, beep.Format, error) {
 }
 
 // TODO: Pass slice here to avoid reallocations
-func LoadMonoSamples(path string) (monoSamples []float32, a AudioMeta, err error) {
+func LoadMonoSamples(path string) (monoSamples []float32, err error) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		return []float32{}, err
 	}
 
-	streamer, format, err := Decode(file)
+	streamer, _, err := Decode(file)
 	if err != nil {
-		return []float32{}, AudioMeta{}, err
+		return []float32{}, err
 	}
 	defer streamer.Close()
 
@@ -57,6 +56,5 @@ func LoadMonoSamples(path string) (monoSamples []float32, a AudioMeta, err error
 			monoSamples = append(monoSamples, float32((lSample+rSample)*0.5))
 		}
 	}
-	a = NewAudioMeta(int(format.SampleRate), format.NumChannels, len(monoSamples))
-	return monoSamples, a, nil
+	return monoSamples, nil
 }

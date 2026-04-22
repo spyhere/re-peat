@@ -118,7 +118,7 @@ func (a *AppState) AudioLoad() {
 			a.isLoading = false
 		}()
 
-		monoSamples, audioMeta, err := audio.LoadMonoSamples(filePath)
+		monoSamples, err := audio.LoadMonoSamples(filePath)
 		if err != nil {
 			a.Lg.Error("AudioLoad", err)
 			return
@@ -133,19 +133,19 @@ func (a *AppState) AudioLoad() {
 			a.Lg.Error("AudioLoad", err)
 			return
 		}
+		var audioMeta audio.AudioMeta
 		if a.Player == nil {
 			a.Player = p.NewPlayer()
-			err = a.Player.SetAudio(file)
+			audioMeta, err = a.Player.SetAudio(file)
 			a.Player.SetVolume(defaultPlayerVol)
 		} else {
-			err = a.Player.SetAudio(file)
+			audioMeta, err = a.Player.SetAudio(file)
 		}
 
 		if err != nil {
 			a.Lg.Error("AudioLoad", err)
 			return
 		}
-		// NOTE: Is it safe to decode audio once?
 		// Set everything at once only if it's happy path
 		a.MonoSamples = monoSamples
 		a.AudioMeta = audioMeta

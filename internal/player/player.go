@@ -44,14 +44,14 @@ func (p *Player) attachStreamer(str beep.Streamer, f beep.Format) {
 	})))
 }
 
-func (p *Player) SetAudio(f *os.File) error {
+func (p *Player) SetAudio(f *os.File) (audio.AudioMeta, error) {
 	if p.streamer != nil {
 		p.streamer.Close()
 	}
 
 	streamer, format, err := audio.Decode(f)
 	if err != nil {
-		return err
+		return audio.AudioMeta{}, err
 	}
 
 	p.streamer = streamer
@@ -63,7 +63,7 @@ func (p *Player) SetAudio(f *os.File) error {
 		Silent:   false,
 	}
 	p.attachStreamer(p.volume, format)
-	return nil
+	return audio.NewAudioMeta(int(format.SampleRate), format.NumChannels, streamer.Len()), nil
 }
 
 func (p *Player) SetVolume(volume float64) {
