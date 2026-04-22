@@ -23,8 +23,9 @@ import (
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func colPremul(c, a byte) byte {
-	return byte(uint16(c) * uint16(a) / 255)
+func mulAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
+	c.A = uint8(uint32(c.A) * uint32(alpha) / 0xFF)
+	return c
 }
 
 // This is a copy-pasted function from gio's "widget/material/button.go"
@@ -115,12 +116,7 @@ func drawInk(gtx layout.Context, c widget.Press) {
 	alpha := 0.7 * alphaBezier
 	const col = 0.8
 	ba, bc := byte(alpha*0xff), byte(col*0xff)
-	rgba := color.NRGBA{
-		A: ba,
-		R: colPremul(bc, ba),
-		G: colPremul(bc, ba),
-		B: colPremul(bc, ba),
-	}
+	rgba := mulAlpha(color.NRGBA{A: 0xff, R: bc, G: bc, B: bc}, ba)
 	ink := paint.ColorOp{Color: rgba}
 	ink.Add(gtx.Ops)
 	rr := size / 2
