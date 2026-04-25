@@ -1196,3 +1196,13 @@ func (i I18nMenuStyle) Layout(gtx layout.Context) layout.Dimensions {
 	})
 	return dims
 }
+
+func DrawVersion(gtx layout.Context, th *theme.RepeatTheme, ver string) {
+	OffsetBy(gtx, image.Pt(gtx.Sp(20), gtx.Constraints.Min.Y-gtx.Sp(10)), func(gtx layout.Context) {
+		verStyles := material.Body2(th.Theme, ver)
+		verStyles.TextSize = 8
+		verStyles.Color.A = 0xbb
+		verStyles.Font = fonts.GoMono(font.Normal, font.Regular)
+		verStyles.Layout(gtx)
+	})
+}

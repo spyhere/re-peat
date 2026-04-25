@@ -117,6 +117,9 @@ func (a *App) Layout(gtx layout.Context, e app.FrameEvent) layout.Dimensions {
 			return groupedBtnsDims
 		})
 	})
+
+	common.DrawVersion(gtx, a.Th, version)
+
 	common.OffsetBy(gtx, image.Pt(gtx.Constraints.Max.X-400, a.Th.Sizing.SegButtonsTopM), func(gtx layout.Context) {
 		gtx.Constraints.Min.Y = groupedBtnsDims.Size.Y
 		common.I18nMenu(a.Th, &a.i18nSwitcher).Layout(gtx)
