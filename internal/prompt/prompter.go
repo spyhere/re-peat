@@ -10,20 +10,23 @@ import (
 
 func NewPrompter(th *theme.RepeatTheme) Prompter {
 	return Prompter{
-		th:     th,
-		Dialog: common.Dialog{},
-		ch:     make(chan bool),
+		th:      th,
+		Dialog:  common.Dialog{},
+		ch:      make(chan bool),
+		working: make(chan struct{}, 1),
 	}
 }
 
 type Prompter struct {
-	th     *theme.RepeatTheme
-	Dialog common.Dialog
-	ch     chan bool
+	th      *theme.RepeatTheme
+	Dialog  common.Dialog
+	ch      chan bool
+	working chan struct{}
 }
 
 // This blocks goroutine
 func (p *Prompter) Ask(title, question string) bool {
+	p.working <- struct{}{}
 	p.Dialog.Basic(p.th, title, func(gtx layout.Context) layout.Dimensions {
 		return material.Body2(p.th.Theme, question).Layout(gtx)
 	})
@@ -34,6 +37,7 @@ func (p *Prompter) Ask(title, question string) bool {
 
 // This blocks goroutine
 func (p *Prompter) Tell(title, msg, ok string) bool {
+	p.working <- struct{}{}
 	p.Dialog.Info(p.th, title, func(gtx layout.Context) layout.Dimensions {
 		txtStyles := material.Body2(p.th.Theme, msg)
 		txtStyles.TextSize = 16
@@ -52,10 +56,12 @@ func (p *Prompter) Layout(gtx layout.Context) {
 	if p.Dialog.IsCanceled() {
 		p.Dialog.Hide()
 		p.ch <- false
+		<-p.working
 	}
 	if p.Dialog.IsConfirmed() {
 		p.Dialog.Hide()
 		p.ch <- true
+		<-p.working
 	}
 
 	p.Dialog.Layout(gtx)
