@@ -155,3 +155,18 @@ func ParseSeconds(secondsStr string) (float64, error) {
 	}
 	return float64(minutes*60 + seconds), nil
 }
+
+func ParseSize(size int64) string {
+	if size == 0.0 {
+		return ""
+	}
+	bytes := size
+	if bytes < 1000*1000 {
+		kb := float64(bytes) / 1000
+		return fmt.Sprintf("%.1f Kb", kb)
+	} else if bytes < 1000*1000*1000 {
+		mb := float64(bytes) / (1000 * 1000)
+		return fmt.Sprintf("%.1f Mb", mb)
+	}
+	return strconv.Itoa(int(size))
+}

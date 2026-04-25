@@ -1,9 +1,9 @@
 package filemanager
 
 import (
-	"fmt"
-	"strconv"
 	"time"
+
+	"github.com/spyhere/re-peat/internal/common"
 )
 
 func NewFileMeta(name string, size int64, updTime time.Time) FileMeta {
@@ -21,18 +21,7 @@ type FileMeta struct {
 }
 
 func (f FileMeta) SizeString() string {
-	if f.Size == 0.0 {
-		return ""
-	}
-	bytes := f.Size
-	if bytes < 1000*1000 {
-		kb := float64(bytes) / 1000
-		return fmt.Sprintf("%.1f Kb", kb)
-	} else if bytes < 1000*1000*1000 {
-		mb := float64(bytes) / (1000 * 1000)
-		return fmt.Sprintf("%.1f Mb", mb)
-	}
-	return strconv.Itoa(int(f.Size))
+	return common.ParseSize(f.Size)
 }
 func (f FileMeta) UpdatedAtString() string {
 	if f.UpdatedAt.IsZero() {
