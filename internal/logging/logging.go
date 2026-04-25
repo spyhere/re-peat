@@ -20,12 +20,15 @@ func NewLogger(version string, size int) Logger {
 	rb := newRingBuffer(size)
 	writer := logWriter(rb)
 	dumpDone := make(chan struct{})
+	// This writer is never closed - that's fine, don't want to complicate Logger's API for that
+	f, _ := os.Create("/tmp/repeat.log")
 	l := Logger{
 		appVer:     version,
 		slog:       slog.New(slog.NewJSONHandler(writer, nil)),
 		ring:       rb,
 		dumpCh:     make(chan struct{}),
 		DumpDoneCh: dumpDone,
+		reserve:    slog.New(slog.NewJSONHandler(f, nil)),
 	}
 	go func() {
 		for range l.dumpCh {
@@ -42,6 +45,7 @@ type Logger struct {
 	DumpDoneCh chan struct{}
 	slog       *slog.Logger
 	ring       *ringBuffer
+	reserve    *slog.Logger
 }
 
 func (l Logger) Info(msg string, args ...any) {
@@ -69,13 +73,19 @@ func (l Logger) Debug(msg string, args ...any) {
 	l.slog.Debug(msg, args...)
 }
 
-// FIX: log errors to tmp/log
 func (l Logger) dumpFile(filePrefix string) {
 	now := time.Now()
 	filename := fmt.Sprintf("%v-%v.txt", filePrefix, now.Unix())
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		l.reserve.Error("Failed to dump", "err", err, "stack", string(l.ring.snapshot()))
+		return
+	}
 	desktop := filepath.Join(home, "Desktop")
-	f, _ := os.Create(filepath.Join(desktop, filename))
+	f, err := os.Create(filepath.Join(desktop, filename))
+	if err != nil {
+		l.reserve.Error("Failed to dump", "err", err, "stack", string(l.ring.snapshot()))
+	}
 	defer f.Close()
 
 	fmt.Fprintf(f, "Version: %v\nOS: %v\nTime: %v\n\n", l.appVer, runtime.GOOS, now.Format(timeFormat))
