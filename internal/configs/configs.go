@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 const fileName = "configs.json"
@@ -38,7 +39,8 @@ func Load() (*Configs, error) {
 }
 
 type Configs struct {
-	Lang string `json:"lang"`
+	Lang            string    `json:"lang"`
+	LastUpdateCheck time.Time `json:"last_update_check"`
 }
 
 func (c *Configs) Save() error {
@@ -64,4 +66,8 @@ func (c *Configs) GetLocale() (string, error) {
 		return getSystemLocale()
 	}
 	return c.Lang, nil
+}
+
+func (c *Configs) MarkUpdateChecked() {
+	c.LastUpdateCheck = time.Now().UTC()
 }
