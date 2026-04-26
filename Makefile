@@ -46,9 +46,11 @@ build-darwin:
 		/tmp/$(APP)-amd64 \
 		-output $(APP_BUNDLE)/$(CONTENTS)/$(MACOS)/$(APP)
 	rm -f /tmp/$(APP)-amd64 /tmp/$(APP)-arm64
+	codesign --deep --force --sign - $(APP_BUNDLE)
 
 	cp Info.plist $(APP_BUNDLE)/$(CONTENTS)/
-	cd $(BIN) && zip -m -r $(APP)_darwin_universal.zip $(APP).app
+	cd $(BIN) && ditto -c -k --keepParent $(APP).app $(APP)-darwin-universal.zip
+	rm -rf $(APP_BUNDLE)
 	@echo "Successfully created"
 build-windows:
 	@echo "Building Windows GUI"
