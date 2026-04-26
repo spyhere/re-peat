@@ -36,7 +36,7 @@ type release struct {
 
 type asset struct {
 	Name               string `json:"name"`
-	Size               int    `json:"size"`
+	Size               int64  `json:"size"`
 	Digest             string `json:"digest"`
 	BrowserDownloadUrl string `json:"browser_download_url"`
 }
