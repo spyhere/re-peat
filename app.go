@@ -48,6 +48,9 @@ func newApp(appState *state.AppState) *App {
 			time.Sleep(logDumpCooldown)
 		}
 	}()
+
+	go checkForUpdate(appState)
+
 	return appInstance
 }
 
