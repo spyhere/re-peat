@@ -1,22 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"image"
-	"time"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"github.com/spyhere/re-peat/internal/common"
 	editorview "github.com/spyhere/re-peat/internal/editorView"
-	"github.com/spyhere/re-peat/internal/logging"
 	markersview "github.com/spyhere/re-peat/internal/markersView"
 	projectview "github.com/spyhere/re-peat/internal/projectView"
 	"github.com/spyhere/re-peat/internal/state"
 )
-
-const logDumpCooldown = time.Minute * 5
 
 func newApp(appState *state.AppState) *App {
 	fm := &common.FocusManager{}
@@ -38,17 +33,8 @@ func newApp(appState *state.AppState) *App {
 		OnStopEditCb:  appInstance.onStopMarkerEdit,
 	})
 	appInstance.editorView = ed
-	commonI18n := appInstance.I18n.Common
-	go func() {
-		appState.NotifyCrashReportsOnStartup()
-		for range appState.Lg.DumpDoneCh {
-			body := fmt.Sprintf(commonI18n.LogsDumpedBody, logging.LogReportFileName)
-			appState.Prompter.Tell(commonI18n.LogsDumpedTitle, body, commonI18n.InfoDialogOk)
-			// Intentionally block DumpDoneCh to stop spamming with the same error logs (dump + notification blocked)
-			time.Sleep(logDumpCooldown)
-		}
-	}()
 
+	go notifyAboutErrors(appState)
 	go checkForUpdate(appState)
 
 	return appInstance
