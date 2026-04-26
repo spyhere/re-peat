@@ -13,6 +13,7 @@ import (
 	"gioui.org/x/explorer"
 	"github.com/spyhere/re-peat/internal/audio"
 	"github.com/spyhere/re-peat/internal/common"
+	"github.com/spyhere/re-peat/internal/configs"
 	"github.com/spyhere/re-peat/internal/filemanager"
 	"github.com/spyhere/re-peat/internal/filters"
 	"github.com/spyhere/re-peat/internal/i18n"
@@ -28,12 +29,17 @@ const (
 	defaultPlayerVol = 0.5
 )
 
-func NewAppState(window *app.Window, locale string, lg logging.Logger) (AppState, error) {
+func NewAppState(window *app.Window, lg logging.Logger, cfgs *configs.Configs) (AppState, error) {
 	th, err := theme.New()
 	if err != nil {
 		return AppState{}, err
 	}
+	locale, err := cfgs.GetLocale()
+	if err != nil {
+		lg.Warn("Failed to get locale", "err", err)
+	}
 	return AppState{
+		Cfgs:        cfgs,
 		Lg:          lg,
 		I18n:        i18n.NewI18n(i18n.Parse(locale)),
 		Th:          th,
@@ -46,6 +52,7 @@ func NewAppState(window *app.Window, locale string, lg logging.Logger) (AppState
 }
 
 type AppState struct {
+	Cfgs        *configs.Configs
 	Lg          logging.Logger
 	I18n        i18n.State
 	Th          *theme.RepeatTheme

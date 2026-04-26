@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"time"
 
 	"gioui.org/app"
 	"gioui.org/op"
@@ -28,12 +29,14 @@ func main() {
 			os.Exit(1)
 		}
 	}()
-	locale, err := configs.GetLocale()
+
+	cfgs, err := configs.Load()
 	if err != nil {
-		lg.Warn("Failed to get locale", "err", err)
+		lg.Error("Config load", err)
 	}
+
 	window := new(app.Window)
-	appState, err := state.NewAppState(window, locale, lg)
+	appState, err := state.NewAppState(window, lg, cfgs)
 	if err != nil {
 		lg.Crash("err", err)
 		os.Exit(1)
@@ -52,9 +55,9 @@ func main() {
 		if err != nil {
 			lg.Warn("Window is prematurely closed", "err", err)
 		}
-		err = configs.SaveLocale(repeatApp.i18nSwitcher.Active.Lang.Tag())
-		if err != nil {
+		if err = cfgs.Save(); err != nil {
 			lg.Error("Failed to save i18n preference", err)
+			time.Sleep(time.Second) // Give time to dump
 		}
 		os.Exit(0)
 	}()

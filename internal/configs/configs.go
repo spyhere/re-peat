@@ -2,7 +2,6 @@ package configs
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -17,41 +16,32 @@ func getConfigPath() (string, error) {
 	return filepath.Join(dir, "re-peat", fileName), nil
 }
 
-type configs struct {
-	Lang string `json:"lang"`
-}
-
-func loadI18nPreference() (string, error) {
+func Load() (*Configs, error) {
 	configPath, err := getConfigPath()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	f, err := os.Open(configPath)
 	if err != nil {
-		return "", err
+		if os.IsNotExist(err) {
+			return &Configs{}, nil
+		}
+		return nil, err
 	}
 	defer f.Close()
 
-	decoder := json.NewDecoder(f)
-	var c configs
-	if err = decoder.Decode(&c); err != nil {
-		return "", err
+	var configs Configs
+	if err = json.NewDecoder(f).Decode(&configs); err != nil {
+		return nil, err
 	}
-	if c.Lang == "" {
-		return "", fmt.Errorf("Configs file is being corrupted, defaulting.")
-	}
-	return c.Lang, nil
+	return &configs, nil
 }
 
-func GetLocale() (string, error) {
-	lang, err := loadI18nPreference()
-	if err != nil {
-		return getSystemLocale()
-	}
-	return lang, nil
+type Configs struct {
+	Lang string `json:"lang"`
 }
 
-func SaveLocale(lang string) error {
+func (c *Configs) Save() error {
 	configPath, err := getConfigPath()
 	if err != nil {
 		return err
@@ -66,6 +56,12 @@ func SaveLocale(lang string) error {
 	}
 	defer f.Close()
 
-	encoder := json.NewEncoder(f)
-	return encoder.Encode(configs{Lang: lang})
+	return json.NewEncoder(f).Encode(c)
+}
+
+func (c *Configs) GetLocale() (string, error) {
+	if c.Lang == "" {
+		return getSystemLocale()
+	}
+	return c.Lang, nil
 }
