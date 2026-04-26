@@ -97,6 +97,7 @@ var repeatPalette = palette{
 		},
 	},
 	Mimosa: mimosa,
+	Link:   rgb(0x0A69DA),
 }
 
 var (
@@ -129,6 +130,7 @@ type palette struct {
 	MarkersViewBg color.NRGBA
 	Editor        editorPalette
 	Mimosa        color.NRGBA
+	Link          color.NRGBA
 }
 type comboOptionStatesPalette struct {
 	Hovered comboOptionPalette

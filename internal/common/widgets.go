@@ -1114,3 +1114,40 @@ func (i *I18nSwitcher) Blur(gtx layout.Context) {
 	i.Open = false
 	gtx.Execute(op.InvalidateCmd{})
 }
+
+type Hyperlinkable struct {
+	tag       struct{}
+	isHovered bool
+	isPressed bool
+}
+
+func (h *Hyperlinkable) update(gtx layout.Context) {
+	HandlePointerEvents(gtx, &h.tag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
+		switch e.Kind {
+		case pointer.Enter:
+			h.isHovered = true
+		case pointer.Leave:
+			h.isHovered = false
+		case pointer.Press:
+			h.isPressed = true
+		}
+	})
+}
+
+func (h *Hyperlinkable) IsHovered() bool {
+	return h.isHovered
+}
+
+func (h *Hyperlinkable) IsPressed() bool {
+	v := h.isPressed
+	h.isPressed = false
+	return v
+}
+
+// TODO: Rename all "GetCursorType" -> "Cursor"
+func (h *Hyperlinkable) GetCursorType() (pointer.Cursor, bool) {
+	if h.isHovered {
+		return pointer.CursorPointer, true
+	}
+	return pointer.CursorDefault, false
+}

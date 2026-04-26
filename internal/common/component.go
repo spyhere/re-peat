@@ -1206,3 +1206,48 @@ func DrawVersion(gtx layout.Context, th *theme.RepeatTheme, ver string) {
 		verStyles.Layout(gtx)
 	})
 }
+
+type HyperlinkStyles struct {
+	Color      color.NRGBA
+	HoverColor color.NRGBA
+	LineH      unit.Dp
+	Size       unit.Sp
+	Txt        string
+	h          *Hyperlinkable
+	th         *theme.RepeatTheme
+}
+
+func Hyperlink(th *theme.RepeatTheme, h *Hyperlinkable, txt string) HyperlinkStyles {
+	return HyperlinkStyles{
+		Color:      th.Palette.Link,
+		HoverColor: th.Palette.Mimosa,
+		LineH:      2,
+		Size:       18,
+		Txt:        txt,
+		h:          h,
+		th:         th,
+	}
+}
+
+func (h HyperlinkStyles) Layout(gtx layout.Context) layout.Dimensions {
+	h.h.update(gtx)
+	c := h.Color
+	if h.h.IsHovered() {
+		c = h.HoverColor
+	}
+	txtStyles := material.Body2(h.th.Theme, h.Txt)
+	txtStyles.Color = c
+	gtx.Constraints.Min = image.Point{}
+	txtStyles.Font = fonts.Go(font.SemiBold, font.Regular)
+	txtDims := txtStyles.Layout(gtx)
+	lineH := gtx.Dp(h.LineH)
+	OffsetBy(gtx, image.Pt(0, txtDims.Size.Y), func(gtx layout.Context) {
+		DrawBox(gtx, Box{
+			Size:  image.Rect(0, 0, txtDims.Size.X, lineH),
+			Color: c,
+		})
+	})
+	area := image.Rect(0, 0, txtDims.Size.X, txtDims.Size.Y+lineH)
+	RegisterTag(gtx, &h.h.tag, area)
+	return layout.Dimensions{Size: image.Pt(area.Max.X, area.Max.Y)}
+}

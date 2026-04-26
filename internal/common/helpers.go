@@ -18,6 +18,7 @@ import (
 	"gioui.org/op/clip"
 )
 
+// TODO: Make it easier to work with "GetCursorType" ("Cursor")
 func SetCursor(gtx layout.Context, cursor pointer.Cursor) {
 	pointer.Cursor(cursor).Add(gtx.Ops)
 }
