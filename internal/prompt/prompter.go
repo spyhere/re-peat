@@ -1,6 +1,7 @@
 package prompt
 
 import (
+	"fmt"
 	"image"
 	"time"
 
@@ -8,12 +9,14 @@ import (
 	"gioui.org/text"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
+	"github.com/spyhere/re-peat/internal/i18n"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
 	"github.com/spyhere/re-peat/internal/ui/theme"
 )
 
-func NewPrompter(th *theme.RepeatTheme) Prompter {
+func NewPrompter(th *theme.RepeatTheme, i18n *i18n.State) Prompter {
 	return Prompter{
+		i18n:    i18n,
 		th:      th,
 		Dialog:  common.Dialog{},
 		ch:      make(chan bool),
@@ -22,6 +25,7 @@ func NewPrompter(th *theme.RepeatTheme) Prompter {
 }
 
 type Prompter struct {
+	i18n    *i18n.State
 	th      *theme.RepeatTheme
 	Dialog  common.Dialog
 	ch      chan bool
@@ -40,16 +44,14 @@ func (p *Prompter) Ask(title, question string) bool {
 }
 
 // This blocks goroutine
-func (p *Prompter) Tell(title, msg, ok string) bool {
+func (p *Prompter) Tell(title, msg string) bool {
 	p.working <- struct{}{}
 	p.Dialog.Info(p.th, title, func(gtx layout.Context) layout.Dimensions {
 		txtStyles := material.Body2(p.th.Theme, msg)
 		txtStyles.TextSize = 16
 		return txtStyles.Layout(gtx)
 	})
-	if ok != "" {
-		p.Dialog.OkProps.Text = ok
-	}
+	p.Dialog.OkProps.Text = p.i18n.Common.InfoDialogOk
 	p.Dialog.Show()
 	return <-p.ch
 }
@@ -68,8 +70,8 @@ var hyperl = common.Hyperlinkable{}
 func (p *Prompter) AskUpdate(upd UpdateInfo) bool {
 	p.working <- struct{}{}
 	tagName := upd.TagName
-	pubAt := upd.PublishedAt.Format("(02/01/2006)")
-	p.Dialog.Basic(p.th, "New version released - "+tagName+" "+pubAt, func(gtx layout.Context) layout.Dimensions {
+	pubAt := upd.PublishedAt.Format("02/01/2006")
+	p.Dialog.Basic(p.th, fmt.Sprintf(p.i18n.Common.NewUpdateTitle, tagName, pubAt), func(gtx layout.Context) layout.Dimensions {
 		if hyperl.IsPressed() {
 			common.OpenBrowserLink(upd.HtmlUrl)
 		}
@@ -80,9 +82,10 @@ func (p *Prompter) AskUpdate(upd UpdateInfo) bool {
 				gtx.Constraints.Min = image.Pt(gtx.Constraints.Max.X, 0)
 				return title.Layout(gtx)
 			}),
+			layout.Rigid(layout.Spacer{Height: 10}.Layout),
 			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Pt(gtx.Constraints.Max.X, 0)
-				dims := layout.Center.Layout(gtx, common.Hyperlink(p.th, &hyperl, "Read in browser").Layout)
+				dims := layout.Center.Layout(gtx, common.Hyperlink(p.th, &hyperl, p.i18n.Common.NewUpdateRead).Layout)
 				if cursor, ok := hyperl.GetCursorType(); ok {
 					common.SetCursor(gtx, cursor)
 				}
@@ -94,8 +97,9 @@ func (p *Prompter) AskUpdate(upd UpdateInfo) bool {
 			}),
 		)
 	})
-	p.Dialog.OkProps.Text = "Download from browser (" + common.ParseSize(upd.Size) + ")"
-	p.Dialog.CancelProps.Text = "Remind me later"
+
+	p.Dialog.OkProps.Text = fmt.Sprintf(p.i18n.Common.NewUpdateOk, common.ParseSize(upd.Size))
+	p.Dialog.CancelProps.Text = p.i18n.Common.NewUpdateCancel
 	p.Dialog.Show()
 	return <-p.ch
 }

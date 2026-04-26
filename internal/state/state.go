@@ -38,14 +38,15 @@ func NewAppState(window *app.Window, lg logging.Logger, cfgs *configs.Configs) (
 	if err != nil {
 		lg.Warn("Failed to get locale", "err", err)
 	}
+	newI18n := i18n.NewI18n(i18n.Parse(locale))
 	return AppState{
 		Cfgs:        cfgs,
 		Lg:          lg,
-		I18n:        i18n.NewI18n(i18n.Parse(locale)),
+		I18n:        newI18n,
 		Th:          th,
 		ChipsFilter: filters.NewChipsFilter(100), // TODO: think about centralized way of capacity constant
 		Dialog:      common.Dialog{},
-		Prompter:    prompt.NewPrompter(th),
+		Prompter:    prompt.NewPrompter(th, &newI18n),
 		fileManager: filemanager.NewFileManager(window),
 		TimeMarkers: tm.NewTimeMarkers(),
 	}, nil
@@ -324,5 +325,5 @@ func (a *AppState) NotifyCrashReportsOnStartup() {
 	commonI18n := a.I18n.Common
 	reports := strings.Join(matches, "\n")
 	body := fmt.Sprintf(commonI18n.CrashFoundBody, len(matches), reports)
-	a.Prompter.Tell(commonI18n.CrashFoundTitle, body, commonI18n.InfoDialogOk)
+	a.Prompter.Tell(commonI18n.CrashFoundTitle, body)
 }
