@@ -1,7 +1,11 @@
 package prompt
 
 import (
+	"image"
+	"time"
+
 	"gioui.org/layout"
+	"gioui.org/text"
 	"gioui.org/widget/material"
 	"github.com/spyhere/re-peat/internal/common"
 	micons "github.com/spyhere/re-peat/internal/mIcons"
@@ -46,6 +50,56 @@ func (p *Prompter) Tell(title, msg, ok string) bool {
 	if ok != "" {
 		p.Dialog.OkProps.Text = ok
 	}
+	p.Dialog.Show()
+	return <-p.ch
+}
+
+type UpdateInfo struct {
+	HtmlUrl     string
+	TagName     string
+	Name        string
+	PublishedAt time.Time
+	Body        string
+	Size        int64
+}
+
+var hyperl = common.Hyperlinkable{}
+
+func (p *Prompter) AskUpdate(upd UpdateInfo) bool {
+	p.working <- struct{}{}
+	tagName := upd.TagName
+	pubAt := upd.PublishedAt.Format("(02/01/2006)")
+	p.Dialog.Basic(p.th, "New version released - "+tagName+" "+pubAt, func(gtx layout.Context) layout.Dimensions {
+		if hyperl.IsPressed() {
+			common.OpenBrowserLink(upd.HtmlUrl)
+		}
+		return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+				title := material.H4(p.th.Theme, upd.Name)
+				title.Alignment = text.Middle
+				gtx.Constraints.Min = image.Pt(gtx.Constraints.Max.X, 0)
+				return title.Layout(gtx)
+			}),
+			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+				gtx.Constraints.Min = image.Pt(gtx.Constraints.Max.X, 0)
+				flex := layout.Flex{Spacing: layout.SpaceSides}.Layout(gtx,
+					layout.Rigid(material.Body2(p.th.Theme, "Read in browser").Layout),
+					layout.Rigid(layout.Spacer{Width: 10}.Layout),
+					layout.Rigid(common.Hyperlink(p.th, &hyperl, upd.HtmlUrl).Layout),
+				)
+				if cursor, ok := hyperl.GetCursorType(); ok {
+					common.SetCursor(gtx, cursor)
+				}
+				return flex
+			}),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				body := material.Body2(p.th.Theme, "\n\n"+upd.Body)
+				return body.Layout(gtx)
+			}),
+		)
+	})
+	p.Dialog.OkProps.Text = "Download from browser (" + common.ParseSize(upd.Size) + ")"
+	p.Dialog.CancelProps.Text = "Remind me later"
 	p.Dialog.Show()
 	return <-p.ch
 }
