@@ -62,8 +62,17 @@ func getLatestRelease() (releaseDTO, error) {
 	return releaseDTO{}, nil
 }
 
-func ShouldUpdate(tag string) (release, bool, error) {
-	if tag == "dev" {
+func isSameDay(checkTime time.Time) bool {
+	if checkTime.IsZero() {
+		return false
+	}
+	curY, curM, curD := time.Now().UTC().Date()
+	checkY, checkM, checkD := checkTime.Date()
+	return curY == checkY && curM == checkM && curD == checkD
+}
+
+func ShouldUpdate(tag string, lastCheckDate time.Time) (release, bool, error) {
+	if tag == "dev" || isSameDay(lastCheckDate) {
 		return release{}, false, nil
 	}
 	rel, err := getLatestRelease()
