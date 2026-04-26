@@ -6,6 +6,8 @@ import (
 	"image"
 	"log"
 	"math"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -170,4 +172,15 @@ func ParseSize(size int64) string {
 		return fmt.Sprintf("%.1f Mb", mb)
 	}
 	return strconv.Itoa(int(size))
+}
+
+func OpenBrowserLink(url string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", url).Start()
+	case "windows":
+		return exec.Command("xdg-open", url).Start()
+	default:
+		panic("uncreachable")
+	}
 }
