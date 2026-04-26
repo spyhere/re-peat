@@ -17,5 +17,8 @@
 
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+
+    <key>NSDesktopFolderUsageDescription</key>
+    <string>This app needs access to the Desktop to read crash reports.</string>
   </dict>
 </plist>
