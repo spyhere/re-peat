@@ -1,6 +1,6 @@
 MODULE := $(shell go list -m)
-APP := repeat
-BIN := bin
+APP := re-peat
+BIN := dist
 
 TAG := $(shell git describe --tags --abbrev=0 2>/dev/null || echo "dev")
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
@@ -33,6 +33,7 @@ build:
 	@echo "Successfully created"
 build-darwin:
 	@echo "Building MacOS GUI"
+	@mkdir -p $(BIN)
 	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 \
 	go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o /tmp/$(APP)-amd64 .
 	GOOS=darwin GOARCH=arm64 CGO_ENABLED=1 \
@@ -44,14 +45,17 @@ build-darwin:
 		/tmp/$(APP)-arm64 \
 		/tmp/$(APP)-amd64 \
 		-output $(APP_BUNDLE)/$(CONTENTS)/$(MACOS)/$(APP)
+	rm -f /tmp/$(APP)-amd64 /tmp/$(APP)-arm64
 
 	cp Info.plist $(APP_BUNDLE)/$(CONTENTS)/
+	cd $(BIN) && zip -m -r $(APP)_darwin_universal.zip $(APP).app
 	@echo "Successfully created"
 build-windows:
 	@echo "Building Windows GUI"
 	@mkdir -p $(BIN)
 	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 \
-	go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $(BIN)/$(APP)-windows-amd64.exe .
+	go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $(BIN)/$(APP).exe .
+	zip -j -m $(BIN)/$(APP)_windows_amd64.zip $(BIN)/$(APP).exe
 	@echo "Successfully created"
 clean:
 	rm -rf $(BIN)/
