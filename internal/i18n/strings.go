@@ -38,6 +38,10 @@ type Common struct {
 	InfoDialogOk    string
 	LogsDumpedBody  string
 	LogsDumpedTitle string
+	NewUpdateCancel string
+	NewUpdateOk     string
+	NewUpdateRead   string
+	NewUpdateTitle  string
 }
 
 type ProjectView struct {

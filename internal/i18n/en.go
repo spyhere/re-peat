@@ -7,6 +7,10 @@ var enStr = Strings{
 		InfoDialogOk:    "Got it!",
 		LogsDumpedBody:  "An error log file \"%s.json\" has been saved in the same folder as the application.\nPlease share this file with the developer to help diagnose the issue.",
 		LogsDumpedTitle: "Unexpected error happened",
+		NewUpdateCancel: "Remind me later",
+		NewUpdateOk:     "Download from browser (%s)",
+		NewUpdateRead:   "Read in browser",
+		NewUpdateTitle:  "New version released - %s (%s)",
 	},
 	Generic: Generic{
 		Amount:        "Amount",

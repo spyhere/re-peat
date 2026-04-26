@@ -7,6 +7,10 @@ var ruStr = Strings{
 		InfoDialogOk:    "Понятно",
 		LogsDumpedBody:  "Файл логов с ошибками \"%s.json\" был сохранён в той же папке, где находится приложение.\nПожалуйста, отправьте этот файл разработчику, чтобы помочь диагностировать проблему.",
 		LogsDumpedTitle: "Произошла непредвиденная ошибка",
+		NewUpdateCancel: "Напомнить позже",
+		NewUpdateOk:     "Скачать в браузере (%s)",
+		NewUpdateRead:   "Открыть в браузере",
+		NewUpdateTitle:  "Вышла новая версия - %s (%s)",
 	},
 	Generic: Generic{
 		Amount:        "Количество",
