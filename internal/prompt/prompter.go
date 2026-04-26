@@ -82,15 +82,11 @@ func (p *Prompter) AskUpdate(upd UpdateInfo) bool {
 			}),
 			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Pt(gtx.Constraints.Max.X, 0)
-				flex := layout.Flex{Spacing: layout.SpaceSides}.Layout(gtx,
-					layout.Rigid(material.Body2(p.th.Theme, "Read in browser").Layout),
-					layout.Rigid(layout.Spacer{Width: 10}.Layout),
-					layout.Rigid(common.Hyperlink(p.th, &hyperl, upd.HtmlUrl).Layout),
-				)
+				dims := layout.Center.Layout(gtx, common.Hyperlink(p.th, &hyperl, "Read in browser").Layout)
 				if cursor, ok := hyperl.GetCursorType(); ok {
 					common.SetCursor(gtx, cursor)
 				}
-				return flex
+				return dims
 			}),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				body := material.Body2(p.th.Theme, "\n\n"+upd.Body)
