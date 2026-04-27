@@ -633,6 +633,7 @@ type Dialog struct {
 	OkProps         dialogButton
 	Cancel          widget.Clickable
 	Scrim           widget.Clickable
+	isScrimDisabled bool
 	CancelProps     dialogButton
 	title           string
 	icon            *widget.Icon
@@ -652,7 +653,12 @@ func (d *Dialog) SetIconColor(c color.NRGBA) {
 	d.iconC = c
 }
 
+func (d *Dialog) DisableScrim() {
+	d.isScrimDisabled = true
+}
+
 func (d *Dialog) Info(th *theme.RepeatTheme, title string, w func(gtx layout.Context) layout.Dimensions) {
+	d.isScrimDisabled = false
 	d.CancelProps = dialogButton{}
 	d.OkProps = dialogButton{}
 	d.th = th
@@ -664,6 +670,7 @@ func (d *Dialog) Info(th *theme.RepeatTheme, title string, w func(gtx layout.Con
 }
 
 func (d *Dialog) Basic(th *theme.RepeatTheme, title string, w func(gtx layout.Context) layout.Dimensions) {
+	d.isScrimDisabled = false
 	d.CancelProps = dialogButton{}
 	d.OkProps = dialogButton{}
 	d.variant = dialogBasic
@@ -736,7 +743,10 @@ func (d *Dialog) Update(gtx layout.Context) {
 	if !d.isOpen {
 		return
 	}
-	if d.Cancel.Clicked(gtx) || d.Scrim.Clicked(gtx) {
+	if d.Cancel.Clicked(gtx) {
+		d.isCanceled = true
+	}
+	if !d.isScrimDisabled && d.Scrim.Clicked(gtx) {
 		d.isCanceled = true
 	}
 	if d.Ok.Clicked(gtx) {
