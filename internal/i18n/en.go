@@ -5,7 +5,7 @@ var enStr = Strings{
 		CrashFoundBody:  "On startup, the app found %d crash report(s) on your Desktop:\n%s\n\nPlease share these files with the developer to help diagnose the issue.\n\nThis message will continue to appear on startup while these crash reports are present. You can remove them after sending.",
 		CrashFoundTitle: "App closed unexpectedly",
 		InfoDialogOk:    "Got it!",
-		LogsDumpedBody:  "An error log file \"%s.json\" has been saved in the same folder as the application.\nPlease share this file with the developer to help diagnose the issue.",
+		LogsDumpedBody:  "An error log file \"%s.json\" has been saved on your Desktop.\nPlease share this file with the developer to help diagnose the issue.",
 		LogsDumpedTitle: "Unexpected error happened",
 		NewUpdateCancel: "Remind me later",
 		NewUpdateOk:     "Download from browser (%s)",
