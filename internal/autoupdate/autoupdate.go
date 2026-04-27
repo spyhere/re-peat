@@ -2,7 +2,9 @@ package autoupdate
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"runtime"
 	"strings"
@@ -77,6 +79,11 @@ func ShouldUpdate(tag string, lastCheckDate time.Time) (release, bool, error) {
 	}
 	rel, err := getLatestRelease()
 	if err != nil {
+		var dnsErr *net.DNSError
+		// if there is no internet connection
+		if errors.As(err, &dnsErr) {
+			return release{}, false, nil
+		}
 		return release{}, false, err
 	}
 	if rel.TagName.isLessOrEqual(tag) {
