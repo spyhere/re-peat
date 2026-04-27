@@ -38,6 +38,7 @@ func (p *Prompter) Ask(title, question string) bool {
 	p.Dialog.Basic(p.th, title, func(gtx layout.Context) layout.Dimensions {
 		return material.Body2(p.th.Theme, question).Layout(gtx)
 	})
+	p.Dialog.DisableScrim()
 	p.Dialog.SetIcon(micons.Warning)
 	p.Dialog.Show()
 	return <-p.ch
@@ -51,6 +52,7 @@ func (p *Prompter) Tell(title, msg string) bool {
 		txtStyles.TextSize = 16
 		return txtStyles.Layout(gtx)
 	})
+	p.Dialog.DisableScrim()
 	p.Dialog.OkProps.Text = p.i18n.Common.InfoDialogOk
 	p.Dialog.Show()
 	return <-p.ch
@@ -98,6 +100,7 @@ func (p *Prompter) AskUpdate(upd UpdateInfo) bool {
 		)
 	})
 
+	p.Dialog.DisableScrim()
 	p.Dialog.OkProps.Text = fmt.Sprintf(p.i18n.Common.NewUpdateOk, common.ParseSize(upd.Size))
 	p.Dialog.CancelProps.Text = p.i18n.Common.NewUpdateCancel
 	p.Dialog.Show()
