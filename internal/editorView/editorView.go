@@ -191,6 +191,7 @@ func (ed *Editor) handleWaveScroll(scroll f32.Point, pos f32.Point) {
 
 func (ed *Editor) startEdit(m *tm.TimeMarker) {
 	ed.mode = modeMEdit
+	ed.Player.Pause()
 	if m == nil {
 		ed.markers.newMarker(ed.Playhead.Samples)
 	} else {
