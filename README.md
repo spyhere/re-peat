@@ -1,7 +1,5 @@
 # ↺ re-peat
 
-:construction: Work in progress :construction:
-
 ## Description
 
 This is an application that can display sound waves of a given MP3 track, you can put/see/edit markers and able to play from them.
@@ -58,6 +56,16 @@ https://github.com/user-attachments/assets/de938d8c-4bb0-42dc-b3c9-d479ff98eb7b
 - create a time marker from the set playhead position
 - edit, drag or delete an existing time marker
 - set the playhead to a time marker's position
+
+## Error logs
+
+### Crash
+
+When the application crashes, it creates a crash report on your Desktop. If the application detects at least 1 crash report on the Desktop, it will notify the user on the next startup.
+
+### Error
+
+There still a possibility of device or software faults. Such errors are not expected, but if they occur, an error log will be immediately saved to the Desktop and the user will be notified.
 
 
 ## Contributing
