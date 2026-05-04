@@ -14,6 +14,10 @@ func (m *MarkersView) dispatch(gtx layout.Context) {
 		m.dispatchKeyEvents(gtx)
 	}
 
+	if m.pc.hasPlayEvent() {
+		m.Player.Toggle()
+	}
+
 	if newV, isSilent, ok := m.pc.getNewVolume(); ok {
 		v := 0.0
 		if !isSilent {

@@ -107,6 +107,14 @@ func (p *Player) Pause() {
 	p.isPlaying = false
 }
 
+func (p *Player) Toggle() {
+	if p.IsPlaying() {
+		p.Pause()
+	} else {
+		p.Play()
+	}
+}
+
 func (p *Player) IsPlaying() bool {
 	return p.isPlaying
 }

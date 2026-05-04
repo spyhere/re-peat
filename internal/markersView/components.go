@@ -89,21 +89,29 @@ type playerControllable struct {
 	isSilent         bool
 	muteTag          struct{}
 	isMutedHovered   bool
-}
-
-func (p *playerControllable) setVolume(vol float64, silent bool) {
-	p.volume = vol
-	p.isSilent = silent
+	isPlayHovered    bool
+	playTag          struct{}
+	playbackEvent    bool
 }
 
 func (p *playerControllable) getCursorType() (pointer.Cursor, bool) {
-	if p.isMutedHovered || p.isVolumeHoevered {
+	if p.isPlayHovered || p.isMutedHovered || p.isVolumeHoevered {
 		return pointer.CursorPointer, true
 	}
 	return pointer.CursorDefault, false
 }
 
 func (p *playerControllable) update(gtx layout.Context) {
+	common.HandlePointerEvents(gtx, &p.playTag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
+		switch e.Kind {
+		case pointer.Enter:
+			p.isPlayHovered = true
+		case pointer.Leave:
+			p.isPlayHovered = false
+		case pointer.Press:
+			p.playbackEvent = true
+		}
+	})
 	common.HandlePointerEvents(gtx, &p.volumeTag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
 		switch e.Kind {
 		case pointer.Enter:
@@ -129,10 +137,20 @@ func (p *playerControllable) update(gtx layout.Context) {
 	})
 }
 
+func (p *playerControllable) hasPlayEvent() bool {
+	hasPlayEvent := p.playbackEvent
+	p.playbackEvent = false
+	return hasPlayEvent
+}
+
 func (p *playerControllable) getNewVolume() (float64, bool, bool) {
 	hasNewVolume := p.hasNewVolume
 	p.hasNewVolume = false
 	return p.volume, p.isSilent, hasNewVolume
+}
+func (p *playerControllable) setVolume(vol float64, silent bool) {
+	p.volume = vol
+	p.isSilent = silent
 }
 
 type playerStateStyles struct {
@@ -229,6 +247,7 @@ func (pss playerStateStyles) Layout(gtx layout.Context) {
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 								return layout.W.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 									gtx.Constraints.Min.X = 60
+									common.RegisterTag(gtx, &pss.pc.playTag, image.Rect(0, 0, gtx.Constraints.Min.X, gtx.Constraints.Min.Y))
 									return micons.Pause.Layout(gtx, pss.th.Bg)
 								})
 							}),
