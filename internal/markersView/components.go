@@ -78,46 +78,8 @@ func defaultFieldGroupStyle() fieldGroupStyle {
 	}
 }
 
-type playerStateStyle struct {
-	width     float32
-	maxWidth  unit.Dp
-	yOffset   unit.Dp
-	bgH       unit.Dp
-	bgShape   int
-	trackH    unit.Dp
-	volumeH   unit.Dp
-	volumeX   unit.Dp
-	lineShape int
-	thumbDiam unit.Dp
-	inset     unit.Dp
-}
-
-func defaultPlayerStateStyle() playerStateStyle {
-	return playerStateStyle{
-		maxWidth:  780,
-		width:     80.0,
-		yOffset:   90,
-		bgH:       70,
-		bgShape:   10,
-		trackH:    3,
-		volumeH:   1,
-		volumeX:   150,
-		lineShape: 5,
-		thumbDiam: 16,
-		inset:     10,
-	}
-}
-
-func drawThumb(gtx layout.Context, bg color.NRGBA, diameter int) {
-	thumbRadi := diameter / 2
-	common.DrawBox(gtx, common.Box{
-		Size:  image.Rect(0, 0, diameter, diameter),
-		Color: bg,
-		R:     theme.CornerR(thumbRadi, thumbRadi, thumbRadi, thumbRadi),
-	})
-}
-
 type playerControllable struct {
+	currentSec       float64
 	totalS           float64
 	isVolumeHoevered bool
 	volumeMaxX       int
@@ -173,7 +135,50 @@ func (p *playerControllable) getNewVolume() (float64, bool, bool) {
 	return p.volume, p.isSilent, hasNewVolume
 }
 
-func getVolumeIcon(volume float64, isSilent bool) *widget.Icon {
+type playerStateStyles struct {
+	pc        *playerControllable
+	th        *theme.RepeatTheme
+	width     float32
+	maxWidth  unit.Dp
+	yOffset   unit.Dp
+	bgH       unit.Dp
+	bgShape   int
+	trackH    unit.Dp
+	volumeH   unit.Dp
+	volumeX   unit.Dp
+	lineShape int
+	thumbDiam unit.Dp
+	inset     unit.Dp
+}
+
+func playerState(th *theme.RepeatTheme, pc *playerControllable) playerStateStyles {
+	return playerStateStyles{
+		pc:        pc,
+		th:        th,
+		maxWidth:  780,
+		width:     80.0,
+		yOffset:   90,
+		bgH:       70,
+		bgShape:   10,
+		trackH:    3,
+		volumeH:   1,
+		volumeX:   150,
+		lineShape: 5,
+		thumbDiam: 16,
+		inset:     10,
+	}
+}
+
+func (pss playerStateStyles) drawThumb(gtx layout.Context, bg color.NRGBA, diameter int) {
+	thumbRadi := diameter / 2
+	common.DrawBox(gtx, common.Box{
+		Size:  image.Rect(0, 0, diameter, diameter),
+		Color: bg,
+		R:     theme.CornerR(thumbRadi, thumbRadi, thumbRadi, thumbRadi),
+	})
+}
+
+func (pss playerStateStyles) getVolumeIcon(volume float64, isSilent bool) *widget.Icon {
 	volIcon := micons.VolumeOff
 	if volume <= 0 || isSilent {
 		return volIcon
@@ -188,35 +193,34 @@ func getVolumeIcon(volume float64, isSilent bool) *widget.Icon {
 	return volIcon
 }
 
-func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, pc *playerControllable) {
-	pc.update(gtx)
+func (pss playerStateStyles) Layout(gtx layout.Context) {
+	pss.pc.update(gtx)
 	var timeLabel strings.Builder
-	fmt.Fprint(&timeLabel, common.FormatSeconds(curS))
+	fmt.Fprint(&timeLabel, common.FormatSeconds(pss.pc.currentSec))
 	timeLabel.WriteString(" / ")
-	fmt.Fprint(&timeLabel, common.FormatSeconds(pc.totalS))
+	fmt.Fprint(&timeLabel, common.FormatSeconds(pss.pc.totalS))
 
-	s := defaultPlayerStateStyle()
-	lineH := gtx.Dp(s.trackH)
-	common.OffsetBy(gtx, image.Pt(0, gtx.Constraints.Max.Y-gtx.Dp(s.yOffset)), func(gtx layout.Context) {
+	lineH := gtx.Dp(pss.trackH)
+	common.OffsetBy(gtx, image.Pt(0, gtx.Constraints.Max.Y-gtx.Dp(pss.yOffset)), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
 
 			// Bg
-			width := min(common.PrcToPx(gtx.Constraints.Max.X, s.width), gtx.Dp(s.maxWidth))
+			width := min(common.PrcToPx(gtx.Constraints.Max.X, pss.width), gtx.Dp(pss.maxWidth))
 			bgDims := common.DrawBox(gtx, common.Box{
-				Size:  image.Rect(0, 0, width, gtx.Dp(s.bgH)),
-				Color: th.Palette.Backdrop,
-				R:     theme.CornerR(s.bgShape, s.bgShape, s.bgShape, s.bgShape),
+				Size:  image.Rect(0, 0, width, gtx.Dp(pss.bgH)),
+				Color: pss.th.Palette.Backdrop,
+				R:     theme.CornerR(pss.bgShape, pss.bgShape, pss.bgShape, pss.bgShape),
 			})
 
 			gtx.Constraints.Min = bgDims.Size
 			gtx.Constraints.Max = bgDims.Size
 			timeM, timeDims := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
 				gtx.Constraints.Min = image.Point{}
-				txtStyle := material.H5(th.Theme, timeLabel.String())
-				txtStyle.Color = th.Bg
+				txtStyle := material.H5(pss.th.Theme, timeLabel.String())
+				txtStyle.Color = pss.th.Bg
 				return txtStyle.Layout(gtx)
 			})
-			layout.UniformInset(s.inset).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			layout.UniformInset(pss.inset).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return layout.Flex{Axis: layout.Vertical, Spacing: layout.SpaceAround}.Layout(gtx,
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						gtx.Constraints.Max.Y = timeDims.Size.Y
@@ -225,7 +229,7 @@ func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, pc
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 								return layout.W.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 									gtx.Constraints.Min.X = 60
-									return micons.Pause.Layout(gtx, th.Bg)
+									return micons.Pause.Layout(gtx, pss.th.Bg)
 								})
 							}),
 							layout.Rigid(layout.Spacer{Width: 25}.Layout),
@@ -239,28 +243,28 @@ func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, pc
 										layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 											return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 												gtx.Constraints.Min.X = 42
-												volIcon := getVolumeIcon(pc.volume, pc.isSilent)
-												common.RegisterTag(gtx, &pc.muteTag, image.Rect(0, 0, gtx.Constraints.Min.X, gtx.Constraints.Max.Y))
-												return volIcon.Layout(gtx, th.Bg)
+												volIcon := pss.getVolumeIcon(pss.pc.volume, pss.pc.isSilent)
+												common.RegisterTag(gtx, &pss.pc.muteTag, image.Rect(0, 0, gtx.Constraints.Min.X, gtx.Constraints.Max.Y))
+												return volIcon.Layout(gtx, pss.th.Bg)
 											})
 										}),
 										layout.Rigid(layout.Spacer{Width: 15}.Layout),
 										layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-											lineH := gtx.Dp(s.volumeH)
+											lineH := gtx.Dp(pss.volumeH)
 											half := gtx.Constraints.Min.Y/2 - lineH/2
-											volX := gtx.Dp(s.volumeX)
-											pc.volumeMaxX = volX
+											volX := gtx.Dp(pss.volumeX)
+											pss.pc.volumeMaxX = volX
 											lineDims := common.DrawBox(gtx, common.Box{
 												Size:  image.Rect(0, half, volX, half+lineH),
-												Color: th.Bg,
+												Color: pss.th.Bg,
 											})
 											areaPad := gtx.Dp(6)
-											common.RegisterTag(gtx, &pc.volumeTag, image.Rect(0, areaPad, volX, gtx.Constraints.Max.Y-areaPad))
-											thumbDiam := gtx.Dp(s.thumbDiam)
+											common.RegisterTag(gtx, &pss.pc.volumeTag, image.Rect(0, areaPad, volX, gtx.Constraints.Max.Y-areaPad))
+											thumbDiam := gtx.Dp(pss.thumbDiam)
 											thumbRadi := thumbDiam / 2
-											xOffset := int(pc.volume * float64(volX))
+											xOffset := int(pss.pc.volume * float64(volX))
 											common.OffsetBy(gtx, image.Pt(xOffset-thumbRadi, half-thumbDiam/2), func(gtx layout.Context) {
-												drawThumb(gtx, th.Bg, thumbDiam)
+												pss.drawThumb(gtx, pss.th.Bg, thumbDiam)
 											})
 											return lineDims
 										}),
@@ -274,16 +278,16 @@ func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, pc
 						// Line
 						lineDims := common.DrawBox(gtx, common.Box{
 							Size:  image.Rect(0, 0, gtx.Constraints.Max.X, lineH),
-							Color: th.Bg,
-							R:     theme.CornerR(s.lineShape, s.lineShape, s.lineShape, s.lineShape),
+							Color: pss.th.Bg,
+							R:     theme.CornerR(pss.lineShape, pss.lineShape, pss.lineShape, pss.lineShape),
 						})
 
 						// Thumb
-						xOffset := int(curS) * gtx.Constraints.Max.X / int(pc.totalS)
-						thumbDiam := gtx.Dp(s.thumbDiam)
+						xOffset := int(pss.pc.currentSec) * gtx.Constraints.Max.X / int(pss.pc.totalS)
+						thumbDiam := gtx.Dp(pss.thumbDiam)
 						thumbRadi := thumbDiam / 2
 						common.OffsetBy(gtx, image.Pt(xOffset-thumbRadi, -thumbDiam/2+lineH/2), func(gtx layout.Context) {
-							drawThumb(gtx, th.Bg, thumbDiam)
+							pss.drawThumb(gtx, pss.th.Bg, thumbDiam)
 						})
 						return lineDims
 					}),

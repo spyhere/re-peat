@@ -298,7 +298,8 @@ func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
 	if isPlaying {
 		m.pc.totalS = m.AudioMeta.Seconds
 		m.pc.setVolume(m.Player.GetVolume())
-		drawPlayerState(gtx, m.Th, m.Player.GetCurrentSecond(), &m.pc)
+		m.pc.currentSec = m.Player.GetCurrentSecond()
+		playerState(m.Th, &m.pc).Layout(gtx)
 		if cursor, ok := m.pc.getCursorType(); ok {
 			common.SetCursor(gtx, cursor)
 		}
