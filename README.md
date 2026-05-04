@@ -63,3 +63,7 @@ https://github.com/user-attachments/assets/de938d8c-4bb0-42dc-b3c9-d479ff98eb7b
 ## Contributing
 
 If you are good at math or Go and you spot that there is a room for improvement, you can create a PR.
+
+## License
+
+This product is licensed under Apache 2.0
