@@ -79,23 +79,27 @@ func defaultFieldGroupStyle() fieldGroupStyle {
 }
 
 type playerControllable struct {
-	currentSec       float64
-	totalS           float64
-	isVolumeHoevered bool
-	volumeMaxX       int
-	volume           float64
-	volumeTag        struct{}
-	hasNewVolume     bool
-	isSilent         bool
-	muteTag          struct{}
-	isMutedHovered   bool
-	isPlayHovered    bool
-	playTag          struct{}
-	playbackEvent    bool
+	currentSec      float64
+	totalS          float64
+	seekMaxX        int
+	isSeekHovered   bool
+	seekTag         struct{}
+	hasSeekEvent    bool
+	isVolumeHovered bool
+	volumeMaxX      int
+	volume          float64
+	volumeTag       struct{}
+	hasNewVolume    bool
+	isSilent        bool
+	muteTag         struct{}
+	isMutedHovered  bool
+	isPlayHovered   bool
+	playTag         struct{}
+	playbackEvent   bool
 }
 
 func (p *playerControllable) getCursorType() (pointer.Cursor, bool) {
-	if p.isPlayHovered || p.isMutedHovered || p.isVolumeHoevered {
+	if p.isPlayHovered || p.isSeekHovered || p.isMutedHovered || p.isVolumeHovered {
 		return pointer.CursorPointer, true
 	}
 	return pointer.CursorDefault, false
@@ -112,12 +116,23 @@ func (p *playerControllable) update(gtx layout.Context) {
 			p.playbackEvent = true
 		}
 	})
+	common.HandlePointerEvents(gtx, &p.seekTag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
+		switch e.Kind {
+		case pointer.Enter:
+			p.isSeekHovered = true
+		case pointer.Leave:
+			p.isSeekHovered = false
+		case pointer.Press:
+			p.hasSeekEvent = true
+			p.currentSec = float64(e.Position.X) * p.totalS / float64(p.seekMaxX)
+		}
+	})
 	common.HandlePointerEvents(gtx, &p.volumeTag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
 		switch e.Kind {
 		case pointer.Enter:
-			p.isVolumeHoevered = true
+			p.isVolumeHovered = true
 		case pointer.Leave:
-			p.isVolumeHoevered = false
+			p.isVolumeHovered = false
 		case pointer.Press:
 			p.volume = float64(e.Position.X / float32(p.volumeMaxX))
 			p.hasNewVolume = true
@@ -141,6 +156,12 @@ func (p *playerControllable) hasPlayEvent() bool {
 	hasPlayEvent := p.playbackEvent
 	p.playbackEvent = false
 	return hasPlayEvent
+}
+
+func (p *playerControllable) getSeekEvent() (float64, bool) {
+	hasSeekEvent := p.hasSeekEvent
+	p.hasSeekEvent = false
+	return p.currentSec, hasSeekEvent
 }
 
 func (p *playerControllable) getNewVolume() (float64, bool, bool) {
@@ -300,6 +321,8 @@ func (pss playerStateStyles) Layout(gtx layout.Context) {
 							Color: pss.th.Bg,
 							R:     theme.CornerR(pss.lineShape, pss.lineShape, pss.lineShape, pss.lineShape),
 						})
+						pss.pc.seekMaxX = gtx.Constraints.Max.X
+						common.RegisterTag(gtx, &pss.pc.seekTag, image.Rect(0, -lineH, gtx.Constraints.Max.X, lineH*2))
 
 						// Thumb
 						xOffset := int(pss.pc.currentSec) * gtx.Constraints.Max.X / int(pss.pc.totalS)

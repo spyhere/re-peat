@@ -70,8 +70,6 @@ func (p *Player) GetVolume() (float64, bool) {
 	return math.Pow(2, p.volume.Volume/p.volume.Base), p.volume.Silent
 }
 
-// PERF: The volume is only changed for next buffered chunk, thus the change is not immediate.
-// In order to make it immediate custom reader should be used instead of volume beep effect.
 func (p *Player) SetVolume(volume float64) {
 	if p.volume == nil {
 		return

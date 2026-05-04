@@ -18,6 +18,12 @@ func (m *MarkersView) dispatch(gtx layout.Context) {
 		m.Player.Toggle()
 	}
 
+	if sec, ok := m.pc.getSeekEvent(); ok {
+		if _, err := m.Player.Search(float32(sec)); err != nil {
+			m.Lg.Error("Player status seek", err)
+		}
+	}
+
 	if newV, isSilent, ok := m.pc.getNewVolume(); ok {
 		v := 0.0
 		if !isSilent {
