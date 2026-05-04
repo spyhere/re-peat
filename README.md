@@ -9,6 +9,14 @@ This is an application that can display sound waves of a given MP3 track, you ca
 In theaters, philharmonics, and even amateur rehearsals, there is often a struggle to start playback from a specific point in the music. Since music usually serves as the backbone of a performance, and actors or dancers tend to repeat certain sections during rehearsals, they rely on music as a reference. The person responsible for the music then has to locate the correct point in the soundtrack, which is often a hassle.
 The goal of this application is to eliminate that hassle by allowing users to mark those points once and then start the music directly from them.
 
+## macOS users
+
+This application is not signed with Apple Developer ID, so it won't run by default on macOS. If you still want to run it, open Terminal in the directory, where unzipped application is located, and run:
+```
+xattr -dr com.apple.quarantine re-peat.app
+```
+This will remove quarantine attribute from the binary, so macOS won't block its execution.
+
 ## Demo
 
 https://github.com/user-attachments/assets/233cf3d8-69d5-40ba-94cf-6a9ac8e92d9e
