@@ -3,10 +3,10 @@ package markersview
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"strings"
 
 	"gioui.org/layout"
-	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -78,27 +78,40 @@ func defaultFieldGroupStyle() fieldGroupStyle {
 }
 
 type playerStateStyle struct {
+	width     float32
+	maxWidth  unit.Dp
 	yOffset   unit.Dp
-	bgW       unit.Dp
 	bgH       unit.Dp
 	bgShape   int
-	lineH     unit.Dp
+	trackH    unit.Dp
+	volumeH   unit.Dp
 	lineShape int
-	gapY      unit.Dp
 	thumbDiam unit.Dp
+	inset     unit.Dp
 }
 
 func defaultPlayerStateStyle() playerStateStyle {
 	return playerStateStyle{
+		maxWidth:  780,
+		width:     80.0,
 		yOffset:   90,
-		bgW:       200,
 		bgH:       70,
 		bgShape:   10,
-		lineH:     3,
+		trackH:    3,
+		volumeH:   1,
 		lineShape: 5,
-		gapY:      12,
 		thumbDiam: 16,
+		inset:     10,
 	}
+}
+
+func drawThumb(gtx layout.Context, bg color.NRGBA, diameter int) {
+	thumbRadi := diameter / 2
+	common.DrawBox(gtx, common.Box{
+		Size:  image.Rect(0, 0, diameter, diameter),
+		Color: bg,
+		R:     theme.CornerR(thumbRadi, thumbRadi, thumbRadi, thumbRadi),
+	})
 }
 
 func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, totalS float64) {
@@ -108,31 +121,75 @@ func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, to
 	fmt.Fprint(&timeLabel, common.FormatSeconds(totalS))
 
 	s := defaultPlayerStateStyle()
-	lineH := gtx.Dp(s.lineH)
+	lineH := gtx.Dp(s.trackH)
 	common.OffsetBy(gtx, image.Pt(0, gtx.Constraints.Max.Y-gtx.Dp(s.yOffset)), func(gtx layout.Context) {
 		common.CenteredX(gtx, func() layout.Dimensions {
 
 			// Bg
+			width := min(common.PrcToPx(gtx.Constraints.Max.X, s.width), gtx.Dp(s.maxWidth))
 			bgDims := common.DrawBox(gtx, common.Box{
-				Size:  image.Rect(0, 0, gtx.Dp(s.bgW), gtx.Dp(s.bgH)),
+				Size:  image.Rect(0, 0, width, gtx.Dp(s.bgH)),
 				Color: th.Palette.Backdrop,
 				R:     theme.CornerR(s.bgShape, s.bgShape, s.bgShape, s.bgShape),
 			})
+
 			gtx.Constraints.Min = bgDims.Size
 			gtx.Constraints.Max = bgDims.Size
-			layout.UniformInset(10).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-
-					// Time
+			timeM, timeDims := common.MakeMacro(gtx, func(gtx layout.Context) layout.Dimensions {
+				gtx.Constraints.Min = image.Point{}
+				txtStyle := material.H5(th.Theme, timeLabel.String())
+				txtStyle.Color = th.Bg
+				return txtStyle.Layout(gtx)
+			})
+			layout.UniformInset(s.inset).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return layout.Flex{Axis: layout.Vertical, Spacing: layout.SpaceAround}.Layout(gtx,
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						txtStyle := material.H5(th.Theme, timeLabel.String())
-						txtStyle.Alignment = text.Middle
-						txtStyle.Color = th.Bg
-						return txtStyle.Layout(gtx)
+						gtx.Constraints.Max.Y = timeDims.Size.Y
+						gtx.Constraints.Min.Y = timeDims.Size.Y
+						return layout.Flex{}.Layout(gtx,
+							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+								return layout.W.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+									gtx.Constraints.Min.X = 60
+									return micons.Pause.Layout(gtx, th.Bg)
+								})
+							}),
+							layout.Rigid(layout.Spacer{Width: 25}.Layout),
+							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+								timeM.Add(gtx.Ops)
+								return timeDims
+							}),
+							layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+								return layout.E.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+									return layout.Flex{}.Layout(gtx,
+										layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+											return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+												gtx.Constraints.Min.X = 42
+												return micons.VolumeUp.Layout(gtx, th.Bg)
+											})
+										}),
+										layout.Rigid(layout.Spacer{Width: 20}.Layout),
+										layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+											lineH := gtx.Dp(s.volumeH)
+											half := gtx.Constraints.Min.Y/2 - lineH/2
+											lineDims := common.DrawBox(gtx, common.Box{
+												Size:  image.Rect(0, half, 250, half+lineH),
+												Color: th.Bg,
+											})
+											thumbDiam := gtx.Dp(s.thumbDiam)
+											thumbRadi := thumbDiam / 2
+											xOffset := 0
+											common.OffsetBy(gtx, image.Pt(xOffset-thumbRadi, half-thumbDiam/2), func(gtx layout.Context) {
+												drawThumb(gtx, th.Bg, thumbDiam)
+											})
+											return lineDims
+										}),
+									)
+								})
+							}),
+						)
 					}),
-					layout.Rigid(layout.Spacer{Height: s.gapY}.Layout),
-					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						// Line
 						lineDims := common.DrawBox(gtx, common.Box{
 							Size:  image.Rect(0, 0, gtx.Constraints.Max.X, lineH),
@@ -145,11 +202,7 @@ func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, to
 						thumbDiam := gtx.Dp(s.thumbDiam)
 						thumbRadi := thumbDiam / 2
 						common.OffsetBy(gtx, image.Pt(xOffset-thumbRadi, -thumbDiam/2+lineH/2), func(gtx layout.Context) {
-							common.DrawBox(gtx, common.Box{
-								Size:  image.Rect(0, 0, thumbDiam, thumbDiam),
-								Color: th.Bg,
-								R:     theme.CornerR(thumbRadi, thumbRadi, thumbRadi, thumbRadi),
-							})
+							drawThumb(gtx, th.Bg, thumbDiam)
 						})
 						return lineDims
 					}),

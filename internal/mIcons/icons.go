@@ -25,6 +25,7 @@ var (
 	Play             = newIcon(icons.AVPlayArrow)
 	Replay           = newIcon(icons.AVReplay)
 	Pause            = newIcon(icons.AVPause)
+	VolumeUp         = newIcon(icons.AVVolumeUp)
 	Filter           = newIcon(icons.ContentFilterList)
 	Edit             = newIcon(icons.EditorModeEdit)
 	Warning          = newIcon(icons.AlertWarning)
