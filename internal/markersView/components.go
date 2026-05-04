@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"strings"
 
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/unit"
 	"gioui.org/widget"
@@ -85,6 +86,7 @@ type playerStateStyle struct {
 	bgShape   int
 	trackH    unit.Dp
 	volumeH   unit.Dp
+	volumeX   unit.Dp
 	lineShape int
 	thumbDiam unit.Dp
 	inset     unit.Dp
@@ -99,6 +101,7 @@ func defaultPlayerStateStyle() playerStateStyle {
 		bgShape:   10,
 		trackH:    3,
 		volumeH:   1,
+		volumeX:   150,
 		lineShape: 5,
 		thumbDiam: 16,
 		inset:     10,
@@ -114,11 +117,83 @@ func drawThumb(gtx layout.Context, bg color.NRGBA, diameter int) {
 	})
 }
 
-func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, totalS float64) {
+type playerControllable struct {
+	totalS           float64
+	isVolumeHoevered bool
+	volumeMaxX       int
+	volume           float64
+	volumeTag        struct{}
+	hasNewVolume     bool
+	isSilent         bool
+	muteTag          struct{}
+	isMutedHovered   bool
+}
+
+func (p *playerControllable) setVolume(vol float64, silent bool) {
+	p.volume = vol
+	p.isSilent = silent
+}
+
+func (p *playerControllable) getCursorType() (pointer.Cursor, bool) {
+	if p.isMutedHovered || p.isVolumeHoevered {
+		return pointer.CursorPointer, true
+	}
+	return pointer.CursorDefault, false
+}
+
+func (p *playerControllable) update(gtx layout.Context) {
+	common.HandlePointerEvents(gtx, &p.volumeTag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
+		switch e.Kind {
+		case pointer.Enter:
+			p.isVolumeHoevered = true
+		case pointer.Leave:
+			p.isVolumeHoevered = false
+		case pointer.Press:
+			p.volume = float64(e.Position.X / float32(p.volumeMaxX))
+			p.hasNewVolume = true
+			p.isSilent = false
+		}
+	})
+	common.HandlePointerEvents(gtx, &p.muteTag, pointer.Enter|pointer.Leave|pointer.Press, func(e pointer.Event) {
+		switch e.Kind {
+		case pointer.Enter:
+			p.isMutedHovered = true
+		case pointer.Leave:
+			p.isMutedHovered = false
+		case pointer.Press:
+			p.isSilent = !p.isSilent
+			p.hasNewVolume = true
+		}
+	})
+}
+
+func (p *playerControllable) getNewVolume() (float64, bool, bool) {
+	hasNewVolume := p.hasNewVolume
+	p.hasNewVolume = false
+	return p.volume, p.isSilent, hasNewVolume
+}
+
+func getVolumeIcon(volume float64, isSilent bool) *widget.Icon {
+	volIcon := micons.VolumeOff
+	if volume <= 0 || isSilent {
+		return volIcon
+	}
+	if volume > 0.6 {
+		volIcon = micons.VolumeUp
+	} else if volume > 0.3 {
+		volIcon = micons.VolumeDown
+	} else if volume > 0.01 {
+		volIcon = micons.VolumeMuted
+	}
+	return volIcon
+}
+
+func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, pc *playerControllable) {
+	pc.update(gtx)
 	var timeLabel strings.Builder
 	fmt.Fprint(&timeLabel, common.FormatSeconds(curS))
 	timeLabel.WriteString(" / ")
-	fmt.Fprint(&timeLabel, common.FormatSeconds(totalS))
+	fmt.Fprint(&timeLabel, common.FormatSeconds(pc.totalS))
 
 	s := defaultPlayerStateStyle()
 	lineH := gtx.Dp(s.trackH)
@@ -164,20 +239,26 @@ func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, to
 										layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 											return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 												gtx.Constraints.Min.X = 42
-												return micons.VolumeUp.Layout(gtx, th.Bg)
+												volIcon := getVolumeIcon(pc.volume, pc.isSilent)
+												common.RegisterTag(gtx, &pc.muteTag, image.Rect(0, 0, gtx.Constraints.Min.X, gtx.Constraints.Max.Y))
+												return volIcon.Layout(gtx, th.Bg)
 											})
 										}),
-										layout.Rigid(layout.Spacer{Width: 20}.Layout),
+										layout.Rigid(layout.Spacer{Width: 15}.Layout),
 										layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 											lineH := gtx.Dp(s.volumeH)
 											half := gtx.Constraints.Min.Y/2 - lineH/2
+											volX := gtx.Dp(s.volumeX)
+											pc.volumeMaxX = volX
 											lineDims := common.DrawBox(gtx, common.Box{
-												Size:  image.Rect(0, half, 250, half+lineH),
+												Size:  image.Rect(0, half, volX, half+lineH),
 												Color: th.Bg,
 											})
+											areaPad := gtx.Dp(6)
+											common.RegisterTag(gtx, &pc.volumeTag, image.Rect(0, areaPad, volX, gtx.Constraints.Max.Y-areaPad))
 											thumbDiam := gtx.Dp(s.thumbDiam)
 											thumbRadi := thumbDiam / 2
-											xOffset := 0
+											xOffset := int(pc.volume * float64(volX))
 											common.OffsetBy(gtx, image.Pt(xOffset-thumbRadi, half-thumbDiam/2), func(gtx layout.Context) {
 												drawThumb(gtx, th.Bg, thumbDiam)
 											})
@@ -198,7 +279,7 @@ func drawPlayerState(gtx layout.Context, th *theme.RepeatTheme, curS float64, to
 						})
 
 						// Thumb
-						xOffset := int(curS) * gtx.Constraints.Max.X / int(totalS)
+						xOffset := int(curS) * gtx.Constraints.Max.X / int(pc.totalS)
 						thumbDiam := gtx.Dp(s.thumbDiam)
 						thumbRadi := thumbDiam / 2
 						common.OffsetBy(gtx, image.Pt(xOffset-thumbRadi, -thumbDiam/2+lineH/2), func(gtx layout.Context) {

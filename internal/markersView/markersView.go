@@ -95,6 +95,7 @@ type MarkersView struct {
 	tagsDialog    tagsDialog
 	commentDialog commentDialog
 	hotKeyBuf     []rune
+	pc            playerControllable
 }
 
 func (m *MarkersView) togglePlayer(curMarker *tm.TimeMarker) {

@@ -13,6 +13,14 @@ func (m *MarkersView) dispatch(gtx layout.Context) {
 	if !m.searchbar.IsFocused(gtx) && !isModalOpen {
 		m.dispatchKeyEvents(gtx)
 	}
+
+	if newV, isSilent, ok := m.pc.getNewVolume(); ok {
+		v := 0.0
+		if !isSilent {
+			v = newV
+		}
+		m.Player.SetVolume(v)
+	}
 }
 
 func (m *MarkersView) dispatchKeyEvents(gtx layout.Context) {
