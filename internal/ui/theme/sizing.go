@@ -4,10 +4,10 @@ var repeatSizing = sizing{
 	SegButtonsTopM: 30,
 	Editor: editorSizing{
 		PlayheadW:    4,
-		CreateButtMT: "85%",
-		WaveM:        "32%",
+		CreateButtMT: 85.0,
+		WaveM:        32.0,
 		Grid: gridSizing{
-			MargT:           "85%",
+			MargT:           85.0,
 			TickW:           2,
 			TickH:           10,
 			Tick5s:          20,
@@ -25,15 +25,15 @@ type sizing struct {
 
 type editorSizing struct {
 	PlayheadW    int
-	CreateButtMT string // create button margin top
-	WaveM        string
+	CreateButtMT float32 // create button margin top
+	WaveM        float32
 	Grid         gridSizing
 	Markers      markersSizing
 }
 
 // In px
 type gridSizing struct {
-	MargT           string
+	MargT           float32
 	MinTimeInterval int
 	TickW           int
 	TickH           int

@@ -15,9 +15,9 @@ import (
 
 const (
 	columnMar   unit.Dp = 40
-	columnW             = "30%"
+	columnW             = 30.0
 	columnWMax  unit.Dp = 400
-	columnH             = "38%"
+	columnH             = 38.0
 	columnHMax  unit.Dp = 270
 	titleCtaGap unit.Dp = 30
 	CtaListGap  unit.Dp = 20

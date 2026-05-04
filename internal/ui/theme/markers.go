@@ -6,7 +6,7 @@ var markers = markersSizing{
 		MaxW:      150,
 		H:         50,
 		Margin:    4,
-		OffsetY:   "18%",
+		OffsetY:   18.0,
 		IconW:     32,
 		InvisPad:  5,
 		MaxGlyphs: 12,
@@ -15,7 +15,7 @@ var markers = markersSizing{
 	Pole: poleSizing{
 		W:          2,
 		ActiveWPad: 10,
-		Pad:        "40%",
+		Pad:        40.0,
 		FlagW:      30,
 		FlagH:      50,
 		FlagCorn:   45,
@@ -32,7 +32,7 @@ type labelSizing struct {
 	MaxW      int
 	H         int
 	Margin    int
-	OffsetY   string
+	OffsetY   float32
 	IconW     int
 	InvisPad  int // invisible padding primarily for East and North to make overlapping more smooth
 	MaxGlyphs int
@@ -40,7 +40,7 @@ type labelSizing struct {
 }
 
 type poleSizing struct {
-	Pad        string
+	Pad        float32
 	W          int
 	ActiveWPad int // padding for width to make grabbing easier
 	FlagH      int
