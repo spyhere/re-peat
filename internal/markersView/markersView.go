@@ -126,6 +126,8 @@ func (m *MarkersView) startPlaying(curMarker *tm.TimeMarker) {
 func (m *MarkersView) pausePlaying() {
 	m.markerInPlay = nil
 	m.Player.Pause()
+	m.Playhead.Reset()
+	m.Player.Set(m.Playhead.Samples)
 }
 
 func (m *MarkersView) isThisMarkerPlaying(curMarker *tm.TimeMarker) bool {
