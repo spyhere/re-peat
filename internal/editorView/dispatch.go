@@ -8,6 +8,9 @@ import (
 )
 
 func (ed *Editor) dispatch(gtx layout.Context) {
+	if len(ed.MonoSamples) == 0 {
+		return
+	}
 	ed.dispatchMEditorEvent(gtx)
 	ed.dispatchKeyEvents(gtx)
 

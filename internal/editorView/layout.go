@@ -23,7 +23,7 @@ func (ed *Editor) Layout(gtx layout.Context) layout.Dimensions {
 	common.DrawBackground(gtx, ed.Th.Palette.Editor.Bg)
 	common.RegisterTag(gtx, &ed.tags.mLife, image.Rect(0, 0, gtx.Constraints.Max.X, ed.waveM))
 
-	if ed.LoadedAFile != "" && len(ed.MonoSamples) == 0 {
+	if ed.HasAudioLoaded() && len(ed.MonoSamples) == 0 {
 		if ed.makeCacheCl.Clicked(gtx) {
 			ed.makeCacheCl = widget.Clickable{}
 			ed.DecodeAllSamples()
