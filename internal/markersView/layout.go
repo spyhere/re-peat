@@ -20,7 +20,7 @@ import (
 
 var (
 	topM           = 140
-	redrawInterval = 250 * time.Millisecond
+	redrawInterval = 50 * time.Millisecond
 )
 
 func (m *MarkersView) Layout(gtx layout.Context) layout.Dimensions {
