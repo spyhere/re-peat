@@ -49,6 +49,7 @@ func NewAppState(window *app.Window, lg logging.Logger, cfgs *configs.Configs) (
 		Prompter:    prompt.NewPrompter(th, &newI18n),
 		fileManager: filemanager.NewFileManager(window),
 		TimeMarkers: tm.NewTimeMarkers(),
+		window:      window,
 	}, nil
 }
 
@@ -75,6 +76,7 @@ type AppState struct {
 	isChoosing  bool
 	isLoading   bool
 	isDecoding  bool
+	window      *app.Window
 }
 
 func (a *AppState) IsChoosing() bool {
@@ -123,6 +125,7 @@ func (a *AppState) DecodeAllSamples() {
 		a.Lg.Info("Decoded samples", "file", a.LoadedAFile)
 		a.MonoSamples = monoSamples
 		a.isDecoding = false
+		a.window.Invalidate()
 	}()
 }
 
