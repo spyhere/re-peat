@@ -11,6 +11,7 @@ import (
 const logDumpCooldown = time.Minute * 5
 
 func notifyAboutErrors(appState *state.AppState) {
+	appState.Lg.Info("Checking for error logs")
 	commonI18n := appState.I18n.Common
 	appState.NotifyCrashReportsOnStartup()
 	for range appState.Lg.DumpDoneCh {

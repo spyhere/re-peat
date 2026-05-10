@@ -14,6 +14,7 @@ const (
 	timeFormat          = "15:04:05-02/01/06"
 	LogReportFileName   = "repeat_logs"
 	CrashReportFileName = "repeat_crashreport"
+	appName             = "re-peat"
 )
 
 func NewLogger(version string, size int) Logger {
@@ -76,13 +77,16 @@ func (l Logger) Debug(msg string, args ...any) {
 func (l Logger) dumpFile(filePrefix string) {
 	now := time.Now()
 	filename := fmt.Sprintf("%v-%v.txt", filePrefix, now.Unix())
-	home, err := os.UserHomeDir()
+	logsPath, err := GetLogsPath()
 	if err != nil {
 		l.reserve.Error("Failed to dump", "err", err, "stack", string(l.ring.snapshot()))
 		return
 	}
-	desktop := filepath.Join(home, "Desktop")
-	f, err := os.Create(filepath.Join(desktop, filename))
+	if err = os.MkdirAll(logsPath, 0755); err != nil {
+		l.reserve.Error("Failed to dump", "err", err, "stack", string(l.ring.snapshot()))
+		return
+	}
+	f, err := os.Create(filepath.Join(logsPath, filename))
 	if err != nil {
 		l.reserve.Error("Failed to dump", "err", err, "stack", string(l.ring.snapshot()))
 	}
