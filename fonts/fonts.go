@@ -3,7 +3,7 @@ package fonts
 import (
 	"log"
 	"math"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"embed"
@@ -26,7 +26,7 @@ func LoadFonts(faces []text.FontFace) ([]text.FontFace, error) {
 			continue
 		}
 
-		data, err := ttfs.ReadFile(filepath.Join("ttfs", it.Name()))
+		data, err := ttfs.ReadFile(path.Join("ttfs", it.Name()))
 		if err != nil {
 			return []text.FontFace{}, err
 		}

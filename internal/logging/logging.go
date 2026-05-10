@@ -21,7 +21,7 @@ func NewLogger(version string, size int) Logger {
 	writer := logWriter(rb)
 	dumpDone := make(chan struct{})
 	// This writer is never closed - that's fine, don't want to complicate Logger's API for that
-	f, _ := os.Create("/tmp/repeat.log")
+	f, _ := os.Create(filepath.Join(os.TempDir(), "repeat.log"))
 	l := Logger{
 		appVer:     version,
 		slog:       slog.New(slog.NewJSONHandler(writer, nil)),
